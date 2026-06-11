@@ -1,0 +1,109 @@
+import { lazy, Suspense } from 'react'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
+
+import Layout from '../components/layout/Layout'
+import AuthLayout from '../components/layout/AuthLayout'
+import ProtectedRoute from '../components/layout/ProtectedRoute'
+import ErrorBoundary from '../components/layout/ErrorBoundary'
+import { PageSpinner } from '../components/ui/Spinner'
+
+const lazyLoad = (importFn) => {
+  const Component = lazy(importFn)
+  return (
+    <Suspense fallback={<PageSpinner />}>
+      <Component />
+    </Suspense>
+  )
+}
+
+const Home = () => lazyLoad(() => import('../pages/Home'))
+const Jobs = () => lazyLoad(() => import('../pages/Jobs'))
+const NotFound = () => lazyLoad(() => import('../pages/NotFound'))
+const Login = () => lazyLoad(() => import('../pages/auth/Login'))
+const Register = () => lazyLoad(() => import('../pages/auth/Register'))
+const VerifyEmail = () => lazyLoad(() => import('../pages/auth/VerifyEmail'))
+const VerifyEmailPrompt = () => lazyLoad(() => import('../pages/auth/VerifyEmailPrompt'))
+const ForgotPassword = () => lazyLoad(() => import('../pages/auth/ForgotPassword'))
+const ResetPassword = () => lazyLoad(() => import('../pages/auth/ResetPassword'))
+const CandidateDashboard = () => lazyLoad(() => import('../pages/candidate/Dashboard'))
+const CandidateProfile = () => lazyLoad(() => import('../pages/candidate/Profile'))
+const ApplyJob = () => lazyLoad(() => import('../pages/candidate/ApplyJob'))
+const MyApplications = () => lazyLoad(() => import('../pages/candidate/MyApplications'))
+const ApplicationAnalysis = () => lazyLoad(() => import('../pages/candidate/ApplicationAnalysis'))
+const JobDetail = () => lazyLoad(() => import('../pages/JobDetail'))
+const SavedJobs = () => lazyLoad(() => import('../pages/SavedJobs'))
+const ResumeAnalyzer = () => lazyLoad(() => import('../pages/candidate/ResumeAnalyzer'))
+const SkillGapAnalysis = () => lazyLoad(() => import('../pages/candidate/SkillGapAnalysis'))
+const MockInterview = () => lazyLoad(() => import('../pages/candidate/MockInterview'))
+const CareerRoadmap = () => lazyLoad(() => import('../pages/candidate/CareerRoadmap'))
+const MyInterviews = () => lazyLoad(() => import('../pages/MyInterviews'))
+const ChatPage = () => lazyLoad(() => import('../pages/ChatPage'))
+const RecruiterDashboard = () => lazyLoad(() => import('../pages/recruiter/Dashboard'))
+const RecruiterJobApplications = () => lazyLoad(() => import('../pages/recruiter/JobApplications'))
+const RecruiterProfile = () => lazyLoad(() => import('../pages/recruiter/Profile'))
+const CreateJob = () => lazyLoad(() => import('../pages/recruiter/CreateJob'))
+const MyJobs = () => lazyLoad(() => import('../pages/recruiter/MyJobs'))
+const EditJob = () => lazyLoad(() => import('../pages/recruiter/EditJob'))
+const AdminDashboard = () => lazyLoad(() => import('../pages/admin/Dashboard'))
+const AdminUsers = () => lazyLoad(() => import('../pages/admin/Users'))
+const NotificationsPage = () => lazyLoad(() => import('../pages/notifications/NotificationsPage'))
+const PlansPage = () => lazyLoad(() => import('../pages/profile/PlansPage'))
+const SubscriptionPage = () => lazyLoad(() => import('../pages/profile/SubscriptionPage'))
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    errorElement: <ErrorBoundary />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: 'jobs', element: <Jobs /> },
+      { path: 'jobs/:id', element: <JobDetail /> },
+      { path: 'verify-email', element: <VerifyEmail /> },
+      { path: 'verify-email-prompt', element: <VerifyEmailPrompt /> },
+      { element: <ProtectedRoute />, children: [
+        { path: 'dashboard', element: <CandidateDashboard /> },
+        { path: 'profile', element: <CandidateProfile /> },
+        { path: 'jobs/:id/apply', element: <ApplyJob /> },
+        { path: 'my-applications', element: <MyApplications /> },
+        { path: 'my-interviews', element: <MyInterviews /> },
+        { path: 'applications/:id/analysis', element: <ApplicationAnalysis /> },
+        { path: 'saved-jobs', element: <SavedJobs /> },
+        { path: 'resume-analyzer', element: <ResumeAnalyzer /> },
+        { path: 'skill-gap-analysis', element: <SkillGapAnalysis /> },
+        { path: 'mock-interview', element: <MockInterview /> },
+        { path: 'career-roadmap', element: <CareerRoadmap /> },
+        { path: 'notifications', element: <NotificationsPage /> },
+        { path: 'plans', element: <PlansPage /> },
+        { path: 'subscription', element: <SubscriptionPage /> },
+        { path: 'chat', element: <ChatPage /> },
+      ]},
+      { path: 'recruiter', element: <ProtectedRoute allowedRoles={['recruiter', 'admin']} />, children: [
+        { index: true, element: <Navigate to="dashboard" replace /> },
+        { path: 'dashboard', element: <RecruiterDashboard /> },
+        { path: 'profile', element: <RecruiterProfile /> },
+        { path: 'jobs/create', element: <CreateJob /> },
+        { path: 'my-jobs', element: <MyJobs /> },
+        { path: 'interviews', element: <MyInterviews /> },
+        { path: 'jobs/:jobId/applications', element: <RecruiterJobApplications /> },
+        { path: 'jobs/:id/edit', element: <EditJob /> },
+        { path: 'chat', element: <ChatPage /> },
+      ]},
+      { path: 'admin', element: <ProtectedRoute allowedRoles={['admin']} />, children: [
+        { index: true, element: <Navigate to="dashboard" replace /> },
+        { path: 'dashboard', element: <AdminDashboard /> },
+        { path: 'users', element: <AdminUsers /> },
+      ]},
+    ],
+  },
+  {
+    element: <AuthLayout />,
+    children: [
+      { path: 'login', element: <Login /> },
+      { path: 'register', element: <Register /> },
+      { path: 'forgot-password', element: <ForgotPassword /> },
+      { path: 'reset-password', element: <ResetPassword /> },
+    ],
+  },
+  { path: '*', element: <NotFound /> },
+])

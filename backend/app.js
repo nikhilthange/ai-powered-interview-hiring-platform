@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
@@ -58,6 +59,9 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS']
 }));
+
+// Compress all JSON/API responses (gzip)
+app.use(compression());
 
 // Request logger for local development debugging
 if (process.env.NODE_ENV === 'development') {

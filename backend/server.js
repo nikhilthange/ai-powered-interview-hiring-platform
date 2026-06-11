@@ -66,3 +66,30 @@ process.on('unhandledRejection', (reason) => {
   console.error('Stack:', reason?.stack || 'N/A');
   console.error('========================================');
 });
+
+/**
+ * Graceful Shutdown handler.
+ * Closes HTTP server + Socket.io, then disconnects MongoDB.
+ * Gives in-flight requests up to 10s to finish before force exit.
+ */
+const gracefulShutdown = async (signal) => {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
+  server.close(async () => {
+    console.log('HTTP server closed.');
+    try {
+      await require('mongoose').disconnect();
+      console.log('MongoDB disconnected.');
+    } catch (err) {
+      console.error('MongoDB disconnect error:', err.message);
+    }
+    process.exit(0);
+  });
+
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout.');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

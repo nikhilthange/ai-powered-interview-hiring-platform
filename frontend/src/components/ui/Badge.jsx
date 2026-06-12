@@ -2,11 +2,11 @@ import { cn } from '../../lib/utils'
 
 const variants = {
   default: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]',
-  primary: 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-[var(--color-primary-900)] dark:text-[var(--color-primary-300)]',
-  success: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300',
-  warning: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
-  danger: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300',
-  info: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+  primary: 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-[var(--color-primary-950)] dark:text-[var(--color-primary-300)]',
+  success: 'bg-[var(--color-success-bg)] text-[var(--color-success)]',
+  warning: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]',
+  danger: 'bg-[var(--color-error-bg)] text-[var(--color-error)]',
+  info: 'bg-[var(--color-info-bg)] text-[var(--color-info)]',
 }
 
 const sizes = {
@@ -20,7 +20,7 @@ export default function Badge({ className, variant = 'default', size = 'sm', dot
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full font-medium',
+        'inline-flex items-center gap-1.5 rounded-full font-medium border border-transparent',
         variants[variant],
         sizes[size],
         className

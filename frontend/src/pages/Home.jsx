@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { Card, CardContent } from '../components/ui/Card'
-import { ArrowRight, Zap, MessageCircle, TrendingUp, Star, Shield, UserCheck, Sparkles } from 'lucide-react'
+import { ArrowRight, Zap, MessageCircle, TrendingUp, Star, Shield, UserCheck, Sparkles, CheckCircle } from 'lucide-react'
 
 const features = [
   {
@@ -70,15 +70,16 @@ const tiers = [
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* Hero */}
       <section className="relative overflow-hidden px-4 py-20 sm:py-28 lg:py-36">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(168,85,247,0.05),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.15),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(168,85,247,0.08),transparent_50%)]" />
+        <div className="absolute top-1/4 left-1/4 h-64 w-64 rounded-full bg-[var(--color-primary-500)]/5 blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-[var(--color-primary-600)]/5 blur-3xl" />
         <div className="relative mx-auto max-w-4xl text-center">
-          <Badge variant="primary" size="lg" className="mb-6">
+          <Badge variant="primary" size="lg" className="mb-6 shadow-sm">
             <Sparkles className="h-3.5 w-3.5" /> AI-Powered Hiring Platform
           </Badge>
-          <h1 className="text-display-sm sm:text-display-md lg:text-display-lg font-bold text-[var(--text-primary)]">
+          <h1 className="text-display-sm sm:text-display-md lg:text-display-lg font-bold text-[var(--text-primary)] leading-tight">
             Land Your Dream Job with{' '}
             <span className="text-gradient">AI Intelligence</span>
           </h1>
@@ -88,7 +89,7 @@ export default function Home() {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link to="/register">
-              <Button size="xl" className="w-full sm:w-auto">
+              <Button size="xl" className="w-full sm:w-auto shadow-lg shadow-[var(--color-primary-500)]/25">
                 Get Started Free <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
@@ -101,7 +102,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats */}
       <section className="border-y border-[var(--border-color)] bg-[var(--bg-primary)] py-12">
         <div className="mx-auto max-w-6xl px-4">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
@@ -115,7 +115,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
       <section className="mx-auto max-w-6xl px-4 py-20">
         <div className="mb-12 text-center">
           <h2 className="text-heading-md sm:text-heading-xl font-bold text-[var(--text-primary)]">
@@ -131,7 +130,7 @@ export default function Home() {
             return (
               <Card key={feature.title} hover className="group">
                 <CardContent className="p-6">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-primary-50)] text-[var(--color-primary-600)] dark:bg-[var(--color-primary-900)] dark:text-[var(--color-primary-400)] transition-colors group-hover:scale-110 transition-transform duration-200">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--color-primary-50)] to-[var(--color-primary-100)] text-[var(--color-primary-600)] dark:from-[var(--color-primary-950)] dark:to-[var(--color-primary-900)] dark:text-[var(--color-primary-400)] transition-all duration-200 group-hover:scale-110 group-hover:shadow-md">
                     <Icon className="h-6 w-6" />
                   </div>
                   <div className="flex items-center gap-2">
@@ -148,7 +147,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing */}
       <section className="border-t border-[var(--border-color)] bg-[var(--bg-primary)] py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-12 text-center">
@@ -161,7 +159,7 @@ export default function Home() {
           </div>
           <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
             {tiers.map((tier) => (
-              <Card key={tier.name} className={`relative ${tier.popular ? 'ring-2 ring-[var(--color-primary-500)]' : ''}`}>
+              <Card key={tier.name} className={`relative ${tier.popular ? 'ring-2 ring-[var(--color-primary-500)] shadow-lg' : ''}`}>
                 {tier.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge variant="primary" size="md">Most Popular</Badge>
@@ -180,7 +178,7 @@ export default function Home() {
                   <ul className="space-y-3">
                     {tier.features.map((f) => (
                       <li key={f} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                        <Zap className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-primary-500)]" />
+                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-primary-500)]" />
                         {f}
                       </li>
                     ))}
@@ -200,20 +198,27 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="mx-auto max-w-4xl px-4 py-20 text-center">
-        <h2 className="text-heading-md sm:text-heading-xl font-bold text-[var(--text-primary)]">
-          Ready to transform your career?
-        </h2>
-        <p className="mt-3 text-body-md text-[var(--text-secondary)]">
-          Join thousands of professionals who are landing their dream jobs with AI.
-        </p>
-        <div className="mt-8">
-          <Link to="/register">
-            <Button size="xl">
-              Get Started Free <ArrowRight className="h-5 w-5" />
-            </Button>
-          </Link>
+        <div className="rounded-2xl bg-gradient-to-br from-[var(--color-primary-600)] via-[var(--color-primary-500)] to-[var(--color-primary-700)] p-12 sm:p-16 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white" />
+            <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white" />
+          </div>
+          <div className="relative">
+            <h2 className="text-heading-md sm:text-heading-xl font-bold text-white">
+              Ready to transform your career?
+            </h2>
+            <p className="mt-3 text-body-md text-white/80">
+              Join thousands of professionals who are landing their dream jobs with AI.
+            </p>
+            <div className="mt-8">
+              <Link to="/register">
+                <Button size="xl" className="bg-white text-[var(--color-primary-700)] hover:bg-white/90 shadow-lg shadow-black/20">
+                  Get Started Free <ArrowRight className="h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
     </div>

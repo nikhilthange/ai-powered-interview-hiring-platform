@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { applicationApi } from '../../services/applicationApi'
-import { PageSpinner } from '../../components/ui/Spinner'
+import { SkeletonPage } from '../../components/ui/Skeleton'
 import { ArrowLeft, Trophy, AlertTriangle, Lightbulb } from 'lucide-react'
 
 export default function ApplicationAnalysis() {
@@ -12,7 +12,7 @@ export default function ApplicationAnalysis() {
     queryFn: () => applicationApi.getApplicationAnalysis(id).then((r) => r.data),
   })
 
-  if (isLoading) return <PageSpinner />
+  if (isLoading) return <SkeletonPage />
 
   const analysis = data?.data
   if (!analysis) return <p className="text-gray-500">Analysis not available.</p>

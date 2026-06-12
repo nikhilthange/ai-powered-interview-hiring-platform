@@ -5,12 +5,12 @@ import Layout from '../components/layout/Layout'
 import AuthLayout from '../components/layout/AuthLayout'
 import ProtectedRoute from '../components/layout/ProtectedRoute'
 import ErrorBoundary from '../components/layout/ErrorBoundary'
-import { PageSpinner } from '../components/ui/Spinner'
+import { SkeletonPage } from '../components/ui/Skeleton'
 
 const lazyLoad = (importFn) => {
   const Component = lazy(importFn)
   return (
-    <Suspense fallback={<PageSpinner />}>
+    <Suspense fallback={<SkeletonPage />}>
       <Component />
     </Suspense>
   )

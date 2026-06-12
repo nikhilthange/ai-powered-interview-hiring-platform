@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { PageSpinner } from '../ui/Spinner'
+import { SkeletonPage } from '../ui/Skeleton'
 import { useState, useEffect } from 'react'
 
 export default function ProtectedRoute({ allowedRoles }) {
@@ -16,7 +16,7 @@ export default function ProtectedRoute({ allowedRoles }) {
   }, [loading])
 
   if (loading && !timedOut) {
-    return <PageSpinner />
+    return <SkeletonPage />
   }
 
   if (!isAuthenticated) {

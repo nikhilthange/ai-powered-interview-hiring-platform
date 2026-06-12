@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { interviewApi } from '../services/interviewApi'
 import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../hooks/useAuth'
-import { PageSpinner } from '../components/ui/Spinner'
+import { SkeletonPage } from '../components/ui/Skeleton'
 import { Calendar, Clock, Video, XCircle, ExternalLink, AlertCircle } from 'lucide-react'
 import { cn } from '../lib/utils'
 
@@ -37,7 +37,7 @@ export default function MyInterviews() {
     },
   })
 
-  if (isLoading) return <PageSpinner />
+  if (isLoading) return <SkeletonPage />
   if (isError) {
     return (
       <div className="space-y-6">

@@ -6,7 +6,7 @@ import { chatApi } from '../services/chatApi'
 import ChatRoomList from '../components/chat/ChatRoomList'
 import ChatMessages from '../components/chat/ChatMessages'
 import ChatInput from '../components/chat/ChatInput'
-import { PageSpinner } from '../components/ui/Spinner'
+import { SkeletonPage } from '../components/ui/Skeleton'
 import { MessageCircle, AlertCircle } from 'lucide-react'
 
 export default function ChatPage() {
@@ -96,7 +96,7 @@ export default function ChatPage() {
     }, 0)
   }
 
-  if (roomsLoading) return <PageSpinner />
+  if (roomsLoading) return <SkeletonPage />
   if (roomsError) {
     return (
       <div className="flex h-[calc(100vh-8rem)] items-center justify-center rounded-xl border border-gray-200 bg-white">

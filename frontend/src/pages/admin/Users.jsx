@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../services/adminApi'
-import { PageSpinner } from '../../components/ui/Spinner'
+import { SkeletonPage } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
 import { Trash2, CheckCircle, Search, ShieldCheck } from 'lucide-react'
 
@@ -75,7 +75,7 @@ export default function AdminUsers() {
         </div>
 
         {users.isLoading ? (
-          <div className="p-6"><PageSpinner /></div>
+          <div className="p-6"><SkeletonPage /></div>
         ) : users.isError ? (
           <div className="p-8 text-center">
             <p className="text-sm text-red-600">Failed to load users.</p>

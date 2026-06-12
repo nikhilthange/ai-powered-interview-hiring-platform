@@ -12,10 +12,10 @@ const icons = {
 }
 
 const styles = {
-  success: 'border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200',
-  error: 'border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200',
-  warning: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200',
-  info: 'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200',
+  success: 'border-green-200/50 bg-green-50 text-green-800 dark:border-green-800/50 dark:bg-green-950 dark:text-green-200',
+  error: 'border-red-200/50 bg-red-50 text-red-800 dark:border-red-800/50 dark:bg-red-950 dark:text-red-200',
+  warning: 'border-amber-200/50 bg-amber-50 text-amber-800 dark:border-amber-800/50 dark:bg-amber-950 dark:text-amber-200',
+  info: 'border-blue-200/50 bg-blue-50 text-blue-800 dark:border-blue-800/50 dark:bg-blue-950 dark:text-blue-200',
 }
 
 export function ToastProvider({ children }) {
@@ -53,16 +53,17 @@ export function ToastProvider({ children }) {
             <div
               key={t.id}
               className={cn(
-                'pointer-events-auto flex items-start gap-3 rounded-xl border p-4 shadow-lg animate-slideInRight',
+                'pointer-events-auto flex items-start gap-3 rounded-2xl border p-4 shadow-lg animate-slideInRight',
                 styles[t.type] || styles.info
               )}
+              role="alert"
             >
               <Icon className="mt-0.5 h-5 w-5 shrink-0" />
               <div className="flex-1 min-w-0">
                 {t.title && <p className="font-medium text-sm">{t.title}</p>}
-                {t.message && <p className="text-sm opacity-90">{t.message}</p>}
+                {t.message && <p className="text-sm opacity-90 mt-0.5">{t.message}</p>}
               </div>
-              <button onClick={() => removeToast(t.id)} className="shrink-0 rounded-lg p-0.5 opacity-70 hover:opacity-100 transition-opacity">
+              <button onClick={() => removeToast(t.id)} className="shrink-0 rounded-lg p-0.5 opacity-60 hover:opacity-100 transition-opacity" aria-label="Dismiss">
                 <X className="h-4 w-4" />
               </button>
             </div>

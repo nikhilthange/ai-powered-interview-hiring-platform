@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useApi } from '../../hooks/useApi'
 import { profileApi } from '../../services/profileApi'
-import { PageSpinner } from '../../components/ui/Spinner'
+import { SkeletonPage } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
 import ProfileForm from '../../components/profile/ProfileForm'
 import AvatarUpload from '../../components/profile/AvatarUpload'
@@ -81,7 +81,7 @@ export default function CandidateProfile() {
     if (resumeInputRef.current) resumeInputRef.current.value = ''
   }
 
-  if (isLoading) return <PageSpinner />
+  if (isLoading) return <SkeletonPage />
   if (isError) {
     return (
       <div className="space-y-6">

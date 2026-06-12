@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { subscriptionApi } from '../../services/subscriptionApi'
-import { PageSpinner } from '../../components/ui/Spinner'
+import { SkeletonPage } from '../../components/ui/Skeleton'
 import Button from '../../components/ui/Button'
 import { ArrowLeft, Crown, Zap, AlertTriangle, Calendar } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -25,7 +25,7 @@ export default function SubscriptionPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['subscription'] }),
   })
 
-  if (isLoading) return <PageSpinner />
+  if (isLoading) return <SkeletonPage />
 
   const sub = data?.data?.subscription
   const tier = TIERS[sub?.planId] || TIERS.Free

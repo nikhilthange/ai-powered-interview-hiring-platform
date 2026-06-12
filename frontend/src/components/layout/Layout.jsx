@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
+import BottomNav from './BottomNav'
 
 const authPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/verify-email-prompt']
 
@@ -23,12 +24,13 @@ export default function Layout() {
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col min-w-0">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-auto p-4 lg:p-6 page-section">
+        <main className="flex-1 overflow-auto p-4 lg:p-6 pb-20 lg:pb-6 page-section">
           <div className="mx-auto max-w-7xl">
             <Outlet />
           </div>
         </main>
       </div>
+      <BottomNav />
     </div>
   )
 }

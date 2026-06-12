@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../../services/jobApi'
 import JobForm from '../../components/jobs/JobForm'
-import { PageSpinner } from '../../components/ui/Spinner'
+import { SkeletonPage } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
 
 export default function EditJob() {
@@ -29,7 +29,7 @@ export default function EditJob() {
     },
   })
 
-  if (isLoading) return <PageSpinner />
+  if (isLoading) return <SkeletonPage />
   if (isError) {
     return (
       <div className="max-w-2xl space-y-6">

@@ -6,9 +6,7 @@ export default function ChatInput({ onSend, onTyping, roomId }) {
   const typingTimeoutRef = useRef(null)
   const inputRef = useRef(null)
 
-  useEffect(() => {
-    inputRef.current?.focus()
-  }, [roomId])
+  useEffect(() => { inputRef.current?.focus() }, [roomId])
 
   const handleChange = (e) => {
     setText(e.target.value)
@@ -27,7 +25,7 @@ export default function ChatInput({ onSend, onTyping, roomId }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-gray-200 bg-white px-4 py-3">
+    <form onSubmit={handleSubmit} className="border-t border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3">
       <div className="flex items-center gap-3">
         <input
           ref={inputRef}
@@ -35,12 +33,12 @@ export default function ChatInput({ onSend, onTyping, roomId }) {
           value={text}
           onChange={handleChange}
           placeholder="Type a message..."
-          className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
         />
         <button
           type="submit"
           disabled={!text.trim()}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary-500)] text-white transition-all hover:bg-[var(--color-primary-600)] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Send className="h-4 w-4" />
         </button>

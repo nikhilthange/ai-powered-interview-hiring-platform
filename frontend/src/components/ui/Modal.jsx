@@ -35,28 +35,32 @@ export default function Modal({ open, onClose, title, children, className, size 
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
       onClick={(e) => { if (e.target === overlayRef.current) onClose?.() }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title || 'Dialog'}
     >
       <div
         className={cn(
-          'w-full rounded-2xl border bg-[var(--bg-primary)] border-[var(--border-color)] shadow-xl animate-scaleIn',
+          'w-full rounded-2xl border bg-[var(--bg-primary)] border-[var(--border-color)] shadow-elevated animate-scaleIn',
           sizes[size],
           className
         )}
       >
         {title && (
-          <div className="flex items-center justify-between border-b border-[var(--border-color)] px-6 py-4">
+          <div className="flex items-center justify-between border-b border-[var(--border-color)] px-5 py-4 sm:px-6">
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">{title}</h2>
             <button
               onClick={onClose}
               className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+              aria-label="Close modal"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
         )}
-        <div className={cn('p-6', !title && 'pt-6')}>{children}</div>
+        <div className={cn('p-5 sm:p-6', !title && 'pt-6')}>{children}</div>
       </div>
     </div>
   )

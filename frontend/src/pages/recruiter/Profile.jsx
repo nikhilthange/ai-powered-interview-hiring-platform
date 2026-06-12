@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useApi } from '../../hooks/useApi'
 import { profileApi } from '../../services/profileApi'
-import { PageSpinner } from '../../components/ui/Spinner'
+import { SkeletonPage } from '../../components/ui/Skeleton'
 import ProfileForm from '../../components/profile/ProfileForm'
 import AvatarUpload from '../../components/profile/AvatarUpload'
 import { Building2, Globe } from 'lucide-react'
@@ -27,7 +27,7 @@ export default function RecruiterProfile() {
     },
   })
 
-  if (isLoading) return <PageSpinner />
+  if (isLoading) return <SkeletonPage />
 
   const profile = data?.data?.profile
 

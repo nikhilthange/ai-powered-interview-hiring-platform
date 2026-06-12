@@ -14,7 +14,7 @@ const Input = forwardRef(function Input(
       )}
       <div className="relative">
         {prefix && (
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-[var(--text-tertiary)]">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-[var(--text-tertiary)]">
             {prefix}
           </div>
         )}
@@ -23,7 +23,7 @@ const Input = forwardRef(function Input(
           id={id}
           type={type}
           className={cn(
-            'block w-full rounded-xl border px-3 py-2.5 text-sm transition-all duration-150',
+            'block w-full rounded-xl border px-3.5 py-2.5 text-sm transition-all duration-150',
             'bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]',
             'focus:outline-none focus:ring-2 focus:ring-offset-0',
             error
@@ -36,7 +36,7 @@ const Input = forwardRef(function Input(
           {...props}
         />
         {suffix && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-[var(--text-tertiary)]">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[var(--text-tertiary)]">
             {suffix}
           </div>
         )}

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { applicationApi } from '../../services/applicationApi'
-import { PageSpinner } from '../../components/ui/Spinner'
+import { SkeletonPage } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
 import ScheduleInterviewModal from '../../components/interviews/ScheduleInterviewModal'
 import { ArrowLeft, ExternalLink, AlertCircle, Calendar } from 'lucide-react'
@@ -53,7 +53,7 @@ export default function JobApplications() {
     statusMutation.mutate({ id, status: newStatus })
   }
 
-  if (isLoading) return <PageSpinner />
+  if (isLoading) return <SkeletonPage />
   if (isError) {
     return (
       <div className="space-y-6">

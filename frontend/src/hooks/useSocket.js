@@ -17,7 +17,8 @@ export default function useSocket() {
     socket.on('typing_status', ({ userId, isTyping }) => {
       setTypingUsers((prev) => {
         if (isTyping) return { ...prev, [userId]: true }
-        const { [userId]: _, ...rest } = prev
+        const rest = { ...prev }
+        delete rest[userId]
         return rest
       })
     })

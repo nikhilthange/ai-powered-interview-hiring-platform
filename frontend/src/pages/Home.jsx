@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { Card, CardContent } from '../components/ui/Card'
-import { ArrowRight, Zap, Briefcase, MessageCircle, TrendingUp, Star, Shield, UserCheck, Sparkles, Menu } from 'lucide-react'
+import { ArrowRight, Zap, MessageCircle, TrendingUp, Star, Shield, UserCheck, Sparkles } from 'lucide-react'
 
 const features = [
   {

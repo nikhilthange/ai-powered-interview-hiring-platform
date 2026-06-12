@@ -5,7 +5,7 @@ import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { SkeletonPage } from '../../components/ui/Skeleton'
-import { Briefcase, Users, Eye, Plus, ArrowRight, FileText } from 'lucide-react'
+import { Briefcase, Eye, Plus, ArrowRight, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function RecruiterDashboard() {

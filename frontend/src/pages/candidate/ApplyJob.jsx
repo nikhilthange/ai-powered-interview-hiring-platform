@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { jobApi } from '../../services/jobApi'
 import { applicationApi } from '../../services/applicationApi'
@@ -10,7 +10,6 @@ import { CheckCircle, Upload, ArrowLeft, FileText, AlertCircle } from 'lucide-re
 
 export default function ApplyJob() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const fileRef = useRef(null)
   const [resume, setResume] = useState(null)
   const [resumeSource, setResumeSource] = useState('upload')

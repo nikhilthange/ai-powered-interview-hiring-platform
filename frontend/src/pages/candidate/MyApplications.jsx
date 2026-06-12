@@ -6,7 +6,7 @@ import { applicationApi } from '../../services/applicationApi'
 import { PageSpinner } from '../../components/ui/Spinner'
 import { useToast } from '../../components/ui/Toast'
 import { cn } from '../../lib/utils'
-import { FileText, ArrowRight, XCircle, CheckCircle, Clock, Send, Users, Briefcase, Currency } from 'lucide-react'
+import { FileText, ArrowRight, XCircle, CheckCircle, Clock, Send, Users, Currency } from 'lucide-react'
 
 const stages = [
   { key: 'Applied', label: 'Applied', icon: Send },

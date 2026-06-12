@@ -4,7 +4,6 @@ import { analysisApi } from '../../services/analysisApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
-import { PageSpinner } from '../../components/ui/Spinner'
 import { Upload, FileText, AlertCircle, CheckCircle, Briefcase, Star, ArrowUpRight, Award, X, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 

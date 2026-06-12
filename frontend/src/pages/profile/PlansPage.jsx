@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { subscriptionApi } from '../../services/subscriptionApi'
 import Button from '../../components/ui/Button'
-import { PageSpinner } from '../../components/ui/Spinner'
 import { ArrowLeft, Check, Zap, Crown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -111,7 +110,7 @@ export default function PlansPage() {
       const rzp = new window.Razorpay(options)
       rzp.on('payment.failed', () => setLoadingPlan(null))
       rzp.open()
-    } catch (err) {
+    } catch {
       setLoadingPlan(null)
     }
   }

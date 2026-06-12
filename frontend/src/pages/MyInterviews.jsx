@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { interviewApi } from '../services/interviewApi'
-import Button from '../components/ui/Button'
 import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../hooks/useAuth'
 import { PageSpinner } from '../components/ui/Spinner'
-import { Calendar, Clock, Video, XCircle, ExternalLink, AlertCircle, CheckCircle } from 'lucide-react'
+import { Calendar, Clock, Video, XCircle, ExternalLink, AlertCircle } from 'lucide-react'
 import { cn } from '../lib/utils'
 
 const statusColors = {

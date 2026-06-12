@@ -20,7 +20,7 @@ export function useApiMutation(mutationFn, options = {}) {
 
   return useMutation({
     mutationFn,
-    onSuccess: (data) => {
+    onSuccess: () => {
       if (options.invalidateKeys) {
         options.invalidateKeys.forEach((key) => {
           queryClient.invalidateQueries({ queryKey: key })

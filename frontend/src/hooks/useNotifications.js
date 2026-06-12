@@ -5,7 +5,7 @@ import { getSocket, connectSocket } from '../services/socket'
 import { useAuth } from './useAuth'
 
 export default function useNotifications() {
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated } = useAuth()
   const queryClient = useQueryClient()
   const [newNotif, setNewNotif] = useState(null)
 

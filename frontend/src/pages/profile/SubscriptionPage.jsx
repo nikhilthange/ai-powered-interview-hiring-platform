@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { subscriptionApi } from '../../services/subscriptionApi'
 import { PageSpinner } from '../../components/ui/Spinner'
 import Button from '../../components/ui/Button'
-import { ArrowLeft, Crown, Zap, CheckCircle, AlertTriangle, Calendar } from 'lucide-react'
+import { ArrowLeft, Crown, Zap, AlertTriangle, Calendar } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
 const TIERS = {

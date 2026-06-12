@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext'
 import NotificationBell from '../notifications/NotificationBell'
@@ -8,7 +8,6 @@ import { useState, useRef, useEffect } from 'react'
 export default function Navbar({ onMenuClick }) {
   const { user, isAuthenticated } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const navigate = useNavigate()
   const [profileOpen, setProfileOpen] = useState(false)
   const ref = useRef(null)
 

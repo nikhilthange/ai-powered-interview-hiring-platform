@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import ChatMessage from './ChatMessage'
 import { Loader2 } from 'lucide-react'
 
-export default function ChatMessages({ messages, loading, typingUsers, onScrollTop }) {
+export default function ChatMessages({ messages, loading, typingUsers }) {
   const bottomRef = useRef(null)
   const containerRef = useRef(null)
 

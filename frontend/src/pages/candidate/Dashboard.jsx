@@ -9,7 +9,7 @@ import { SkeletonPage } from '../../components/ui/Skeleton'
 import EmptyState from '../../components/ui/EmptyState'
 import {
   Briefcase, FileText, Bookmark, TrendingUp, ArrowRight, Zap, Star,
-  Target, GraduationCap, Clock, CheckCircle, MapPin, Building,
+  Target, GraduationCap, Clock, MapPin,
   ChevronRight, Award
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -71,7 +71,6 @@ export default function CandidateDashboard() {
 
   const [profileQuery, appsQuery, savedQuery, sessionsQuery, jobsQuery] = results
   const isInitialLoading = results.some((q) => q.isPending && !q.data)
-  const hasAnyError = results.some((q) => q.isError)
   const allFailed = results.every((q) => q.isError)
 
   if (isInitialLoading) return <SkeletonPage />

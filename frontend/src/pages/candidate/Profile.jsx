@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from '../../hooks/useAuth'
 import { useApi } from '../../hooks/useApi'
 import { profileApi } from '../../services/profileApi'
 import { PageSpinner } from '../../components/ui/Spinner'
@@ -9,7 +8,7 @@ import ProfileForm from '../../components/profile/ProfileForm'
 import AvatarUpload from '../../components/profile/AvatarUpload'
 import SkillBadge from '../../components/profile/SkillBadge'
 import RoadmapView from '../../components/profile/RoadmapView'
-import { User, Briefcase, GraduationCap, Upload, FileText, X, AlertCircle, Plus } from 'lucide-react'
+import { GraduationCap, Upload, FileText, AlertCircle, Plus } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
@@ -20,7 +19,6 @@ function getResumeUrl(resumeUrl) {
 }
 
 export default function CandidateProfile() {
-  const { user } = useAuth()
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const [newSkill, setNewSkill] = useState('')

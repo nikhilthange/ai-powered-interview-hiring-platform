@@ -25,7 +25,6 @@ export default function ChatPage() {
   })
 
   const {
-    onlineUsers,
     typingUsers,
     isUserOnline,
     joinRoom,

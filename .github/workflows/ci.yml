@@ -2,48 +2,68 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
     branches: [main]
 
 jobs:
-  backend-lint:
-    name: Backend lint & syntax
+  backend-ci:
+    name: Backend CI
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (Node 22)
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: npm
           cache-dependency-path: backend/package-lock.json
-      - run: npm ci
-      - run: node -c server.js
-      - run: node -c app.js
 
-  frontend-lint:
-    name: Frontend lint & build
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Check Syntax
+        run: |
+          node -c server.js
+          node -c app.js
+
+  frontend-ci:
+    name: Frontend CI
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (Node 22)
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run build
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Lint
+        run: npm run lint
+
+      - name: Run Build
+        run: npm run build
 
   docker-build:
-    name: Docker build check
+    name: Docker Build Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: docker compose build
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Containers
+        run: docker compose build

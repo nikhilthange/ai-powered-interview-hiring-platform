@@ -11,7 +11,7 @@ const scheduleInterviewSchema = z.object({
 
 const updateInterviewSchema = z.object({
   status: z.enum(['Scheduled', 'Completed', 'Cancelled']).optional(),
-  gptInterviewFeedback: z.string().optional()
+  aiInterviewFeedback: z.string().optional()
 });
 
 const validateBody = (schema) => (req, res, next) => {

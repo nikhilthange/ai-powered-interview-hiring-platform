@@ -210,7 +210,7 @@ exports.createApplication = async (applicationData) => {
   // 2. Insert Application into Database
   const application = await Application.create(applicationData);
 
-  // 3. (Async Async-Worker style) Run AI ATS Analysis
+  // 3. (Async Async-Worker style) Run AI ATS Analysis via NVIDIA NIM
   // Don't await this synchronously if it blocks HTTP response, run in background
   aiService.analyzeResumeBackground(application._id, application.resumeUrl, job.description);
 

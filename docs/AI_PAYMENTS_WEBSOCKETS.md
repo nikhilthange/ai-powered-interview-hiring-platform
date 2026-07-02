@@ -1,62 +1,47 @@
 # AI, Payment Gateways, and Real-Time WebSockets Architecture
-> **Senior Engineer Note:** When combining slow third-party web services (OpenAI) with real-time operations (WebSockets) and billing transactions (Razorpay), reliability is key. Always validate signatures on payment webhooks, handle rate-limiting errors from LLMs gracefully, and authenticate Socket.io handshakes securely using standard JWT verification.
+> **Senior Engineer Note:** When combining slow third-party web services (NVIDIA NIM) with real-time operations (WebSockets) and billing transactions (Razorpay), reliability is key. Always validate signatures on payment webhooks, handle rate-limiting errors from LLMs gracefully, and authenticate Socket.io handshakes securely using standard JWT verification.
 
 ---
 
-## 1. GPT Integration Architecture (OpenAI SDK v4+)
+## 1. NVIDIA NIM Integration Architecture
 
-We utilize OpenAI's **Structured Outputs** (`response_format`) to guarantee that the JSON response matches our database schemas. This eliminates runtime parsing failures caused by raw text outputs.
+We utilize NVIDIA NIM's OpenAI-compatible API to guarantee that the JSON response matches our database schemas. This eliminates runtime parsing failures caused by raw text outputs.
 
 ### 1.1 Resume & ATS Score Analyzer Service (`services/aiService.js`)
 This parses the resume text against a job description, calculates the ATS matching score, and identifies weaknesses.
 
 ```javascript
-const { OpenAI } = require('openai');
 const Application = require('../models/Application');
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const NVIDIA_BASE_URL = 'https://integrate.api.nvidia.com/v1';
+const MODEL = 'meta/llama-3.3-70b-instruct';
 
-// JSON Schema definition to enforce model structure
-const resumeAnalysisSchema = {
-  type: "object",
-  properties: {
-    atsScore: { type: "integer", description: "Score out of 100 based on keyword match and syntax" },
-    matchPercent: { type: "integer", description: "Relevance alignment to job specifications out of 100" },
-    strengths: { type: "array", items: { type: "string" } },
-    weaknesses: { type: "array", items: { type: "string" } },
-    interviewTips: { type: "array", items: { type: "string" } }
-  },
-  required: ["atsScore", "matchPercent", "strengths", "weaknesses", "interviewTips"],
-  additionalProperties: false
-};
+async function callNvidia(messages) {
+  const response = await fetch(`${NVIDIA_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.NVIDIA_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages,
+      temperature: 0.2,
+      max_tokens: 1024,
+      stream: false,
+      response_format: { type: 'json_object' }
+    })
+  });
+  const data = await response.json();
+  return JSON.parse(data.choices[0].message.content);
+}
 
 exports.analyzeResumeBackground = async (applicationId, resumeText, jobDescription) => {
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Cost-efficient and highly performant for text analysis
-      messages: [
-        {
-          role: "system",
-          content: "You are a professional HR recruiter and ATS algorithms expert. Analyze candidate resume text against the job description and output structured analytics."
-        },
-        {
-          role: "user",
-          content: `Job Description:\n${jobDescription}\n\nCandidate Resume Text:\n${resumeText}`
-        }
-      ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "resume_analysis",
-          schema: resumeAnalysisSchema,
-          strict: true
-        }
-      }
-    });
-
-    const parsedData = JSON.parse(response.choices[0].message.content);
+    const parsedData = await callNvidia([
+      { role: 'system', content: 'You are a professional HR recruiter and ATS algorithms expert. Analyze candidate resume text against the job description and output structured analytics. Output purely valid JSON: { "atsScore": integer, "matchPercent": integer, "strengths": [string], "weaknesses": [string], "interviewTips": [string] }' },
+      { role: 'user', content: `Job Description:\n${jobDescription}\n\nCandidate Resume Text:\n${resumeText}` }
+    ]);
 
     // Save outputs back to MongoDB
     await Application.findByIdAndUpdate(applicationId, {
@@ -69,7 +54,7 @@ exports.analyzeResumeBackground = async (applicationId, resumeText, jobDescripti
       }
     });
   } catch (error) {
-    console.error("OpenAI analysis failed:", error);
+    console.error("NVIDIA NIM analysis failed:", error);
     // Gracefully handle or schedule retry
   }
 };

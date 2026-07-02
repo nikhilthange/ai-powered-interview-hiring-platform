@@ -74,7 +74,7 @@ exports.getMyInterviews = asyncHandler(async (req, res, next) => {
  * UPDATE INTERVIEW STATUS (Recruiter)
  */
 exports.updateInterview = asyncHandler(async (req, res, next) => {
-  const { status, gptInterviewFeedback } = req.body;
+  const { status, aiInterviewFeedback } = req.body;
 
   const interview = await Interview.findById(req.params.id);
   if (!interview) {
@@ -86,7 +86,7 @@ exports.updateInterview = asyncHandler(async (req, res, next) => {
   }
 
   if (status) interview.status = status;
-  if (gptInterviewFeedback) interview.gptInterviewFeedback = gptInterviewFeedback;
+  if (aiInterviewFeedback) interview.aiInterviewFeedback = aiInterviewFeedback;
   await interview.save();
 
   res.status(200).json({

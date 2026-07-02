@@ -159,9 +159,9 @@ export default function MyInterviews() {
                             })}
                           </p>
                         </div>
-                        {interview.gptInterviewFeedback && (
+                        {interview.aiInterviewFeedback && (
                           <p className="mt-2 text-sm text-gray-600 italic">
-                            Feedback: {interview.gptInterviewFeedback}
+                            Feedback: {interview.aiInterviewFeedback}
                           </p>
                         )}
                       </div>

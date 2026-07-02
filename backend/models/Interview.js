@@ -29,7 +29,7 @@ const InterviewSchema = new mongoose.Schema({
     enum: ['Scheduled', 'Completed', 'Cancelled'],
     default: 'Scheduled'
   },
-  gptInterviewFeedback: {
+  aiInterviewFeedback: {
     type: String, // Dynamic comments returned from AI panel
     default: ''
   }

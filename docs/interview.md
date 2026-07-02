@@ -59,9 +59,9 @@ The platform uses JWT access tokens (15-minute expiry) with refresh token rotati
               ┌─────────┘   └─────────┐
               ▼                       ▼
        ┌──────────┐           ┌──────────┐
-       │ OpenAI   │           │ Razorpay │
-       │ GPT-4o   │           │ Payments │
-       │ -mini    │           └──────────┘
+        │ NVIDIA   │           │ Razorpay │
+        │ NIM      │           │ Payments │
+        │ Llama 3  │           └──────────┘
        └──────────┘
 ```
 
@@ -82,7 +82,7 @@ The platform uses JWT access tokens (15-minute expiry) with refresh token rotati
 
 **Application** — jobId + candidateId (unique compound index to prevent duplicates), resumeUrl, coverLetter, status pipeline (Applied→Reviewing→Shortlisted→Interview Scheduled→Rejected→Hired), atsScore, matchPercent, aiAnalysis {strengths[], weaknesses[], interviewTips[]}. Indexes on status, candidateId+createdAt, jobId+status.
 
-**Interview** — applicationId, recruiterId, candidateId, scheduledAt, meetLink, status (Scheduled/Completed/Cancelled), gptInterviewFeedback. Indexes on candidateId+scheduledAt, recruiterId+scheduledAt.
+**Interview** — applicationId, recruiterId, candidateId, scheduledAt, meetLink, status (Scheduled/Completed/Cancelled), aiInterviewFeedback. Indexes on candidateId+scheduledAt, recruiterId+scheduledAt.
 
 **MockInterviewSession** — userId, resumeText, resumeFileName, targetRole, difficulty, embedded QuestionSchema array (question, category, difficulty, answer, score, maxScore=10, feedback, strengths[], improvements[]), overallScore, totalScore, maxTotalScore, status (pending/in_progress/completed).
 
@@ -178,7 +178,7 @@ Defined in `backend/app.js`:
 
 ## 10. Why MongoDB Was Chosen
 
-1. **Schema flexibility** — The `aiAnalysis` field in Applications stores unstructured JSON from OpenAI. Career roadmaps are arbitrary nested JSON. MongoDB handles this naturally without migrations.
+1. **Schema flexibility** — The `aiAnalysis` field in Applications stores unstructured JSON from NVIDIA NIM. Career roadmaps are arbitrary nested JSON. MongoDB handles this naturally without migrations.
 
 2. **Embedded documents** — MockInterview questions are embedded arrays within sessions. Chat messages are stored in a separate collection with a compound index on `chatRoomId+createdAt` for efficient pagination.
 
@@ -223,24 +223,24 @@ This groups users by role (candidate, recruiter, admin) and returns counts for e
    - Notifies the recruiter via `createAndSend` (creates Notification + Socket.io emit + optional email)
    - **Fire-and-forget**: Extracts text from the resume using `resumeService.extractText()` which calls `fileParser.js` (uses `pdf-parse` for PDFs, `mammoth` for DOCX), then calls `aiService.analyzeResumeBackground()` asynchronously (doesn't block the response)
 
-4. **Background Analysis**: The AI service sends the resume text + job description to OpenAI's `gpt-4o-mini` with Structured Outputs (`response_format: json_schema`). The response includes `atsScore`, `matchPercent`, `strengths`, `weaknesses`, `interviewTips`. These are saved to the Application document. A notification is sent to the candidate.
+4. **Background Analysis**: The AI service sends the resume text + job description to NVIDIA NIM's `meta/llama-3.3-70b-instruct` model with JSON mode. The response includes `atsScore`, `matchPercent`, `strengths`, `weaknesses`, `interviewTips`. These are saved to the Application document. A notification is sent to the candidate.
 
 ---
 
-## 13. OpenAI Integration
+## 13. NVIDIA NIM Integration
 
 **File**: `backend/services/aiService.js` (735 lines)
 
 **Architecture**:
-- Initializes OpenAI SDK lazily — if `OPENAI_API_KEY` is missing, runs entirely in mock mode
-- Uses `gpt-4o-mini` for cost efficiency
-- All calls use **Structured Outputs** (`response_format: { type: 'json_schema', json_schema: { ... } }`) — this forces the model to return valid JSON matching the exact schema, eliminating parsing errors
+- Initializes NVIDIA NIM client lazily — if `NVIDIA_API_KEY` is missing, runs entirely in mock mode
+- Uses `meta/llama-3.3-70b-instruct` for optimal performance
+- All calls use **JSON mode** (`response_format: { type: 'json_object' }`) with detailed system prompt schemas — this forces the model to return valid JSON, eliminating parsing errors
 
 **Circuit Breaker Pattern**:
 - Tracks consecutive failures; after 3 failures, opens the circuit for 60 seconds
 - During open circuit, returns realistic mock data instead of calling the API
 - Auto-resets after the cooldown period
-- Prevents cascading failures and OpenAI quota exhaustion
+- Prevents cascading failures and NVIDIA API quota exhaustion
 
 **10 AI Functions**:
 1. `analyzeResumeBackground` — Fire-and-forget ATS screening, saves to Application, sends notification
@@ -262,11 +262,11 @@ This groups users by role (candidate, recruiter, admin) and returns counts for e
 **Flow**:
 1. Candidate pastes resume text (or uploads file) and enters a target role
 2. Controller calls `aiService.analyzeSkillGap()` or `analyzeSkillGapFromFile()`
-3. OpenAI receives structured prompt asking for current skills, missing skills, gap analysis, and recommendations
+3. NVIDIA NIM receives structured prompt asking for current skills, missing skills, gap analysis, and recommendations
 4. With file upload, response also includes a `learningRoadmap` with 3 phases (Foundations, Intermediate, Advanced), each having duration, focus, skillsToLearn, resources (with URLs), and milestones
 5. Result is returned to the frontend and displayed in the `SkillGapAnalysis.jsx` page
 
-**Key technical detail**: The file upload variant uses `analyzeSkillGapFromFile` which has a much more complex JSON schema (nested objects with arrays of resources containing name+url pairs). Both use `response_format: json_schema` to guarantee valid structure.
+**Key technical detail**: The file upload variant uses `analyzeSkillGapFromFile` which has a much more complex JSON schema (nested objects with arrays of resources containing name+url pairs). Both use `response_format: json_object` with detailed system prompt schemas to guarantee valid structure.
 
 ---
 
@@ -283,14 +283,14 @@ This groups users by role (candidate, recruiter, admin) and returns counts for e
 
 2. **Generate Questions** (`POST /session/generate-questions`):
    - Validates session ownership and status
-   - Calls `generateDifficultyQuestions(resumeText, targetRole, difficulty)` — sends to OpenAI with 5 categories
+    - Calls `generateDifficultyQuestions(resumeText, targetRole, difficulty)` — sends to NVIDIA NIM with 5 categories
    - Each question stored as embedded subdocument with `maxScore: 10`
    - Session status changes to `in_progress`
 
 3. **Submit Answers** (`POST /session/submit-answer`):
    - One answer at a time (sessionId + questionId + answer)
    - Validates question not already answered
-   - Calls `scoreAnswer(question, answer, difficulty)` — OpenAI evaluates and returns score (0-10), feedback, strengths, improvements
+    - Calls `scoreAnswer(question, answer, difficulty)` — NVIDIA NIM evaluates and returns score (0-10), feedback, strengths, improvements
    - Updates running `totalScore`
 
 4. **Complete Session** (`POST /session/complete`):
@@ -374,7 +374,7 @@ Files are served statically via `app.use('/uploads', express.static(...))`.
 3. Cloudinary returns a URL which gets stored in the database
 4. The local file is deleted after upload
 
-**Resume text extraction**: After upload, `resumeService.extractText()` calls `fileParser.js` which uses `pdf-parse` (for PDFs) or `mammoth` (for DOCX) to extract raw text. The text is sent to OpenAI for analysis. The temporary file is cleaned up via the `cleanup()` function.
+ **Resume text extraction**: After upload, `resumeService.extractText()` calls `fileParser.js` which uses `pdf-parse` (for PDFs) or `mammoth` (for DOCX) to extract raw text. The text is sent to NVIDIA NIM for analysis. The temporary file is cleaned up via the `cleanup()` function.
 
 ---
 
@@ -583,9 +583,9 @@ jobs:
    - Sharding for write scalability (shard key could be `userId` for user-centric collections)
    - Proper index usage is already in place
 
-3. **Caching**: Add Redis for job listings, session data, and API response caching. Reduce OpenAI calls by caching similar analyses.
+3. **Caching**: Add Redis for job listings, session data, and API response caching. Reduce NVIDIA NIM calls by caching similar analyses.
 
-4. **OpenAI**:
+4. **NVIDIA NIM**:
    - Implement request queuing with rate limit awareness
    - Batch background analyses
    - Use the circuit breaker pattern already in place
@@ -628,7 +628,7 @@ jobs:
 
 ## 31. Biggest Challenges Faced
 
-1. **OpenAI Structured Outputs reliability**: Getting the model to consistently return valid JSON was a challenge until I switched to `response_format: json_schema` (Structured Outputs). Before that, I had to parse and validate outputs with retry logic. The circuit breaker pattern emerged from production issues where API timeouts would cascade.
+1. **NVIDIA NIM JSON output reliability**: Getting the model to consistently return valid JSON was a challenge until I switched to `response_format: json_object` with detailed system prompt schemas. Before that, I had to parse and validate outputs with retry logic. The circuit breaker pattern emerged from production issues where API timeouts would cascade.
 
 2. **Refresh token rotation complexity**: The flow of detecting token reuse while maintaining a seamless user experience was tricky. The Axios interceptor queue (`failedQueue`) prevents race conditions where multiple simultaneous 401 responses would each try to refresh the token independently.
 
@@ -647,7 +647,7 @@ jobs:
 | **Local file storage vs Cloudinary** | Local storage is simpler for MVP but doesn't scale horizontally. Would migrate to Cloudinary for production. |
 | **No Redis cache** | Simplified initial deployment but limits scalability. Redis would add operational complexity. |
 | **Zod validation on backend only** | Consistent server-side validation but no shared types with frontend. TypeScript would help. |
-| **gpt-4o-mini vs gpt-4** | 10x cheaper and faster, slightly less accurate for nuanced analysis. Worth the trade-off. |
+| **meta/llama-3.3-70b-instruct vs larger models** | Faster and cost-efficient, slightly less accurate for nuanced analysis. Worth the trade-off. |
 | **No testing** | Faster initial development. Bad for long-term maintainability. Would add Jest tests next. |
 | **Disk storage for Multer** | Simpler than memory storage with Cloudinary upload. Requires local cleanup logic. |
 | **Embedded questions in MockInterviewSession** | Faster reads, but each session is limited in size. Fine for 5-10 questions; would need separate collection for larger sets. |
@@ -668,7 +668,7 @@ jobs:
 
 5. **Multer file cleanup on error** — If text extraction failed, the uploaded file remained on disk. **Fix**: The `cleanup()` function is called in both success and error paths.
 
-6. **Empty PDF extraction** — Some PDFs returned empty strings from pdf-parse. **Fix**: Added fallback text and validation before calling OpenAI.
+6. **Empty PDF extraction** — Some PDFs returned empty strings from pdf-parse. **Fix**: Added fallback text and validation before calling NVIDIA NIM.
 
 7. **Duplicate applications** — Race condition on rapid double-clicks. **Fix**: Compound unique index on `{ jobId, candidateId }` in MongoDB — the database enforces uniqueness at the storage level.
 
@@ -679,7 +679,7 @@ jobs:
 ## 34. 50 Interviewer Questions with Ideal Answers
 
 **Q1: What is the tech stack?**
-A: React 19 with Vite and Tailwind CSS on the frontend, Node.js with Express.js on the backend, MongoDB with Mongoose for the database. Real-time features use Socket.io, payments use Razorpay, AI features use OpenAI's gpt-4o-mini, and the entire stack is containerized with Docker and deployed behind Nginx.
+A: React 19 with Vite and Tailwind CSS on the frontend, Node.js with Express.js on the backend, MongoDB with Mongoose for the database. Real-time features use Socket.io, payments use Razorpay, AI features use NVIDIA NIM (meta/llama-3.3-70b-instruct), and the entire stack is containerized with Docker and deployed behind Nginx.
 
 **Q2: How does authentication work?**
 A: Two-token JWT system. Access tokens expire in 15 minutes and are stored in localStorage. Refresh tokens expire in 7 days, are SHA-256 hashed and stored in the database, and sent as httpOnly, secure, sameSite:strict cookies. On access token expiry, the Axios interceptor automatically calls a refresh endpoint that verifies the refresh token, rotates it (generates a new one, invalidates the old one), and retries the original request.
@@ -694,10 +694,10 @@ A: At two levels. First, the controller checks `Application.findOne({ jobId, can
 A: Three roles: candidate, recruiter, admin. The `restrictTo(...roles)` middleware checks `req.user.role` against allowed roles. Additionally, the `verifiedOnly` middleware blocks unverified users from AI features. Admin routes also check ownership — for example, a recruiter can only view applications for their own jobs.
 
 **Q6: Explain the AI integration architecture.**
-A: We use OpenAI's gpt-4o-mini model with Structured Outputs (`response_format: json_schema`) to get deterministic JSON responses. We have a circuit breaker pattern that tracks failures — after 3 consecutive failures, we fall back to realistic mock data for 60 seconds. There are 11 AI functions covering resume analysis, skill gap analysis, mock interview question generation, answer scoring, career roadmap generation, and interview feedback analysis.
+A: We use NVIDIA NIM's meta/llama-3.3-70b-instruct model with JSON mode (`response_format: json_object`) to get deterministic JSON responses. We have a circuit breaker pattern that tracks failures — after 3 consecutive failures, we fall back to realistic mock data for 60 seconds. There are 11 AI functions covering resume analysis, skill gap analysis, mock interview question generation, answer scoring, career roadmap generation, and interview feedback analysis.
 
 **Q7: What's the circuit breaker pattern?**
-A: It's a resilience pattern. The `circuitBreaker` object tracks consecutive failures. When failures reach 3, `isOpen` is set to true, and all subsequent calls return mock data instead of hitting the OpenAI API. A 60-second timeout auto-resets the breaker. This prevents cascading failures, saves API costs during outages, and ensures the app remains functional even when OpenAI is down.
+A: It's a resilience pattern. The `circuitBreaker` object tracks consecutive failures. When failures reach 3, `isOpen` is set to true, and all subsequent calls return mock data instead of hitting the NVIDIA NIM API. A 60-second timeout auto-resets the breaker. This prevents cascading failures, saves API costs during outages, and ensures the app remains functional even when NVIDIA is down.
 
 **Q8: How does the mock interview work?**
 A: Three-stage process: Create Session (upload resume, set role and difficulty) → Generate Questions (AI creates 5 categorized questions with easy/medium/hard levels) → Submit Answers (one at a time, AI scores each out of 10 with feedback) → Complete Session (AI generates overall feedback, a grade from A to D, and lists top strengths and areas to improve).
@@ -712,7 +712,7 @@ A: Razorpay integration. The frontend calls createOrder, gets an order ID, opens
 A: Helmet for HTTP headers, CORS restricted to the client origin, MongoSanitize to prevent NoSQL injection, XSS-Clean for cross-site scripting prevention, HPP for parameter pollution, rate limiting at both Nginx and Express levels, JWT token rotation, httpOnly cookies, bcrypt password hashing with cost factor 12, 100kb request size limit, and email verification for sensitive features.
 
 **Q12: How are files uploaded and processed?**
-A: Multer handles multipart/form-data uploads with disk storage. Resumes are validated by MIME type (.pdf, .doc, .docx) and size (max 5MB). After upload, the file path is passed to `fileParser.js`, which uses `pdf-parse` for PDFs and `mammoth` for DOCX to extract text. The extracted text is sent to OpenAI for analysis. Temporary files are cleaned up via the `cleanup()` function.
+A: Multer handles multipart/form-data uploads with disk storage. Resumes are validated by MIME type (.pdf, .doc, .docx) and size (max 5MB). After upload, the file path is passed to `fileParser.js`, which uses `pdf-parse` for PDFs and `mammoth` for DOCX to extract text. The extracted text is sent to NVIDIA NIM for analysis. Temporary files are cleaned up via the `cleanup()` function.
 
 **Q13: Explain the error handling strategy.**
 A: Custom `AppError` class with operational vs programming error distinction. Async handlers are wrapped in a utility that catches errors and forwards them. A centralized error middleware handles all errors in one place: it distinguishes dev vs production mode (dev gets stack traces, production only gets clean messages), and handles specific error types like CastError (bad ObjectId), duplicate key (11000), validation errors, and JWT errors.
@@ -759,8 +759,8 @@ A: Docker Compose orchestrates three containers: backend (Node.js), frontend (Ng
 **Q27: Why httpOnly cookies for refresh tokens instead of localStorage?**
 A: httpOnly cookies are inaccessible to JavaScript, making them immune to XSS attacks. If an attacker injects script, they can read localStorage but not httpOnly cookies. The access token in localStorage has a short 15-minute expiry, limiting the damage window.
 
-**Q28: How is the OpenAI API key secured?**
-A: It's stored in a `.env` file on the server, never exposed to the frontend. All AI calls are made server-side. The `.env` file is in `.gitignore`. In Docker, it's mounted as a volume or passed as a build arg (preferably a Docker secret in production).
+**Q28: How is the NVIDIA API key secured?**
+A: It's stored in a `.env` file on the server (as `NVIDIA_API_KEY`), never exposed to the frontend. All AI calls are made server-side. The `.env` file is in `.gitignore`. In Docker, it's mounted as a volume or passed as a build arg (preferably a Docker secret in production).
 
 **Q29: What are the subscription plans?**
 A: Free (default), Pro (₹1500/month), and Premium (₹3900/month). The plans are mapped in the `paymentController.js` PLANS object with amounts in INR. Subscriptions are stored with a 30-day period and are auto-downgraded by a daily cron job.
@@ -807,8 +807,8 @@ A: Razorpay sends POST requests to `/payments/webhook` for events like payment.c
 **Q43: What is the `cleanup()` function?**
 A: It's a utility that removes temporary uploaded files from disk using `fs.unlink`. It's called in success paths and in catch blocks to prevent disk space leaks from failed extractions.
 
-**Q44: How do you handle OpenAI rate limits?**
-A: The OpenAI client is configured with `maxRetries: 2`. The circuit breaker pattern provides a fallback if the API is consistently unavailable. We use the cheaper `gpt-4o-mini` model to stay within quota.
+**Q44: How do you handle NVIDIA NIM rate limits?**
+A: The circuit breaker pattern provides a fallback if the API is consistently unavailable. We use the efficient `meta/llama-3.3-70b-instruct` model to stay within quota.
 
 **Q45: What's the Vite configuration doing?**
 A: In development, Vite proxies `/api`, `/uploads`, and `/socket.io` requests to the backend at localhost:5000. It uses the Tailwind CSS v4 plugin and React plugin. In production, Vite builds static files that are served by Nginx.
@@ -869,7 +869,7 @@ A: Memory storage buffers the entire file in RAM, which is problematic for large
 **Q11: How does the subscription cron job handle edge cases?**
 A: The daily cron job queries `Subscription.find({ status: 'Active', currentPeriodEnd: { $lte: new Date() } })` — this catches all subscriptions past their expiry date. It then sets `planId: 'Free'` and `status: 'Cancelled'`. The weekly cleanup job deletes read notifications older than 30 days using a similar date comparison.
 
-**Q12: What happens if the OpenAI API call fails during background analysis?**
+**Q12: What happens if the NVIDIA NIM API call fails during background analysis?**
 A: The error is caught in the try/catch of `analyzeResumeBackground`. The error is logged to console, and the application remains in the database without AI analysis. The candidate can manually request analysis later via the interactive endpoint. The circuit breaker tracks the failure and will eventually switch to mock mode.
 
 **Q13: How do you ensure that a recruiter can only update applications for their own jobs?**
@@ -884,8 +884,8 @@ A: Node.js can handle this on a single server with proper configuration (increas
 **Q16: What's the purpose of the `$ne` in the mark_read Socket.io handler?**
 A: `senderId: { $ne: socket.user._id }` ensures we only mark messages from the other user as read. We don't want to mark our own messages as read when we open the chat — that would incorrectly acknowledge our own messages as "seen."
 
-**Q17: How would you prevent abuse of the OpenAI features?**
-A: By implementing per-user rate limits on AI endpoints, checking subscription tiers (Free users get limited AI calls per day), and adding cost monitoring with alerts when daily OpenAI spend exceeds a threshold.
+**Q17: How would you prevent abuse of the AI features?**
+A: By implementing per-user rate limits on AI endpoints, checking subscription tiers (Free users get limited AI calls per day), and adding cost monitoring with alerts when daily NVIDIA API spend exceeds a threshold.
 
 **Q18: Explain the `hpp` middleware usage.**
 A: HTTP Parameter Pollution is an attack where an attacker sends multiple parameters with the same name (e.g., `?role=admin&role=user`) to override expected values. The `hpp` middleware whitelists allowed duplicate parameters and rejects or deduplicates malicious ones.
@@ -919,13 +919,13 @@ A: "I use the MoSCoW method. Must-haves: authentication, job posting, and applic
 
 ## 37. STAR-Format Stories
 
-**Situation**: The OpenAI API was returning malformed JSON, crashing the resume analysis feature.
+**Situation**: The AI API was returning malformed JSON, crashing the resume analysis feature.
 
 **Task**: Ensure reliable AI responses without breaking the user experience.
 
-**Action**: I implemented three things: 1) Switched from `response_format: json_object` to `response_format: json_schema` (Structured Outputs) which forces OpenAI to conform to a strict JSON schema. 2) Added the circuit breaker pattern that falls back to mock data after 3 consecutive failures. 3) Made background analysis fire-and-forget so a failure never blocks the user's request.
+**Action**: I implemented three things: 1) Switched to `response_format: json_object` with detailed system prompt schemas which forces the model to conform to a strict JSON schema. 2) Added the circuit breaker pattern that falls back to mock data after 3 consecutive failures. 3) Made background analysis fire-and-forget so a failure never blocks the user's request.
 
-**Result**: Zero crashes from malformed AI responses since the change. The circuit breaker has triggered twice during OpenAI outages, and the app remained fully functional with mock data both times. Users see analysis results instantly instead of waiting through retries.
+**Result**: Zero crashes from malformed AI responses since the change. The circuit breaker has triggered twice during NVIDIA API outages, and the app remained fully functional with mock data both times. Users see analysis results instantly instead of waiting through retries.
 
 ---
 
@@ -951,7 +951,7 @@ A: "I use the MoSCoW method. Must-haves: authentication, job posting, and applic
 - Nginx rate limit: 10 req/s, burst 20
 - File size limit: 5MB
 - Body size limit: 100kb
-- OpenAI model: gpt-4o-mini
+- NVIDIA model: meta/llama-3.3-70b-instruct
 - Circuit breaker: 3 failures → 60s cooldown
 - Token expiry: 10 minutes for verification/reset
 - Plans: Free, Pro (₹1500/mo), Premium (₹3900/mo)
@@ -971,7 +971,7 @@ A: "I use the MoSCoW method. Must-haves: authentication, job posting, and applic
 **Key Buzzwords to Use**:
 - Refresh token rotation
 - Circuit breaker pattern
-- Structured Outputs (OpenAI)
+- JSON mode (NVIDIA NIM)
 - Token reuse detection
 - Fire-and-forget pattern
 - Graceful shutdown
@@ -1007,7 +1007,7 @@ A: "I use the MoSCoW method. Must-haves: authentication, job posting, and applic
 
 **Interviewer**: "Welcome. Let's start with a simple one — walk me through what you built."
 
-**Candidate**: "I built an AI-Powered Interview and Hiring Platform. It's a full-stack application where candidates can upload their resume, get AI-driven ATS analysis showing their match percentage and skill gaps, take mock interviews with questions generated by OpenAI and get scored answers with feedback, and receive a personalized career roadmap. Recruiters can post jobs, review applications with AI analysis, schedule interviews, and chat with candidates in real-time. The stack is React 19 with Vite and Tailwind CSS on the frontend, Node.js Express with MongoDB on the backend, Socket.io for real-time features, Razorpay for payments, OpenAI for AI features, and Docker for deployment."
+**Candidate**: "I built an AI-Powered Interview and Hiring Platform. It's a full-stack application where candidates can upload their resume, get AI-driven ATS analysis showing their match percentage and skill gaps, take mock interviews with questions generated by NVIDIA NIM and get scored answers with feedback, and receive a personalized career roadmap. Recruiters can post jobs, review applications with AI analysis, schedule interviews, and chat with candidates in real-time. The stack is React 19 with Vite and Tailwind CSS on the frontend, Node.js Express with MongoDB on the backend, Socket.io for real-time features, Razorpay for payments, NVIDIA NIM for AI features, and Docker for deployment."
 
 **Interviewer**: "How does the authentication system work, specifically the refresh token rotation?"
 
@@ -1017,9 +1017,9 @@ A: "I use the MoSCoW method. Must-haves: authentication, job posting, and applic
 
 **Candidate**: "Great question. The Axios interceptor handles this with a queue pattern. When the first 401 is detected, `isRefreshing` is set to true, and the refresh call is made. Any subsequent 401s check `isRefreshing` and instead of triggering their own refresh, they push their callbacks into a `failedQueue`. When the refresh completes successfully, we call `processQueue(null, newToken)` which resolves all queued promises with the new token, and each one retries its original request with the fresh token. This ensures exactly one refresh call happens at a time, preventing the race condition that would otherwise cause token reuse detection."
 
-**Interviewer**: "Tell me about the OpenAI integration. How do you handle API failures?"
+**Interviewer**: "Tell me about the NVIDIA NIM integration. How do you handle API failures?"
 
-**Candidate**: "We use gpt-4o-mini for cost efficiency with Structured Outputs — OpenAI's `response_format: json_schema` feature — which guarantees valid JSON matching our exact schema. For reliability, I implemented a circuit breaker pattern. The breaker tracks consecutive failures. After 3 failures, it opens for 60 seconds, during which all AI calls return realistic mock data instead of hitting the API. After the cooldown, it resets and tries real calls again. This prevents cascading failures, saves API costs during outages, and keeps the app functional even when OpenAI is down. Additionally, background AI tasks like the resume analysis after application submission are fire-and-forget, so a failure never blocks the user's HTTP response."
+**Candidate**: "We use meta/llama-3.3-70b-instruct for cost efficiency with JSON mode — NVIDIA NIM's `response_format: json_object` feature paired with detailed system prompt schemas — which guarantees valid JSON matching our expected structure. For reliability, I implemented a circuit breaker pattern. The breaker tracks consecutive failures. After 3 failures, it opens for 60 seconds, during which all AI calls return realistic mock data instead of hitting the API. After the cooldown, it resets and tries real calls again. This prevents cascading failures, saves API costs during outages, and keeps the app functional even when NVIDIA NIM is down. Additionally, background AI tasks like the resume analysis after application submission are fire-and-forget, so a failure never blocks the user's HTTP response."
 
 **Interviewer**: "How is the database designed? Why MongoDB?"
 
@@ -1027,7 +1027,7 @@ A: "I use the MoSCoW method. Must-haves: authentication, job posting, and applic
 
 **Interviewer**: "Walk me through the mock interview feature end-to-end."
 
-**Candidate**: "It's a four-step process. First, the user creates a session by uploading their resume and specifying a target role and difficulty level (easy, medium, or hard). The backend extracts text from the PDF or DOCX using pdf-parse or mammoth. Second, the user requests question generation — the AI creates 5 questions spanning Technical Skills, System Design, Problem Solving, Domain Knowledge, and Behavioral categories, each at the selected difficulty. Third, the user submits answers one at a time. Each answer is sent to OpenAI with a scoring rubric, and we get back a score out of 10, detailed feedback, strengths, and areas for improvement. Finally, when all questions are answered, the user completes the session. The AI generates overall feedback, we calculate a grade from A to D based on the percentage score, and we return top strengths and areas to improve."
+**Candidate**: "It's a four-step process. First, the user creates a session by uploading their resume and specifying a target role and difficulty level (easy, medium, or hard). The backend extracts text from the PDF or DOCX using pdf-parse or mammoth. Second, the user requests question generation — the AI creates 5 questions spanning Technical Skills, System Design, Problem Solving, Domain Knowledge, and Behavioral categories, each at the selected difficulty. Third, the user submits answers one at a time. Each answer is sent to NVIDIA NIM with a scoring rubric, and we get back a score out of 10, detailed feedback, strengths, and areas for improvement. Finally, when all questions are answered, the user completes the session. The AI generates overall feedback, we calculate a grade from A to D based on the percentage score, and we return top strengths and areas to improve."
 
 **Interviewer**: "How would you scale this to handle 100,000 users?"
 
@@ -1051,7 +1051,7 @@ A: "I use the MoSCoW method. Must-haves: authentication, job posting, and applic
 
 **Interviewer**: "What's the most important thing you learned building this?"
 
-**Candidate**: "The importance of designing for failure from the start. The circuit breaker pattern for OpenAI, the fire-and-forget pattern for background analysis, the graceful shutdown handler, the token rotation with reuse detection — all of these are defensive patterns that assume things will go wrong. Building a production application isn't about handling the happy path; it's about gracefully handling every possible failure mode. This project taught me to always ask 'what happens if this API call fails?' and 'what happens if two users do this simultaneously?' before writing any production code."
+**Candidate**: "The importance of designing for failure from the start. The circuit breaker pattern for the AI backend, the fire-and-forget pattern for background analysis, the graceful shutdown handler, the token rotation with reuse detection — all of these are defensive patterns that assume things will go wrong. Building a production application isn't about handling the happy path; it's about gracefully handling every possible failure mode. This project taught me to always ask 'what happens if this API call fails?' and 'what happens if two users do this simultaneously?' before writing any production code."
 
 **Interviewer**: "Why did you choose React 19 specifically?"
 

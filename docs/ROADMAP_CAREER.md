@@ -37,7 +37,7 @@ Our project plan is split into three phases: MVP, Feature Expansion, and Product
 * **Week 4**: Implement the core application process (Candidates apply to jobs, recruiters view incoming application details). Perform end-to-end flow validation.
 
 ### 1.2 Advanced Roadmap (Weeks 5 - 8)
-* **Week 5**: Integrate OpenAI API. Build the AI ATS analysis endpoint, parse resumes, and save matching percentages/tips.
+* **Week 5**: Integrate NVIDIA NIM API. Build the AI ATS analysis endpoint, parse resumes, and save matching percentages/tips.
 * **Week 6**: Build the AI Mock Interview system. Generate 5 questions dynamically based on a job description, accept answers via text, and output feedback.
 * **Week 7**: Integrate Socket.io. Implement candidate-recruiter real-time chat with online statuses and typing indicators.
 * **Week 8**: Implement Razorpay billing. Set up Pro and Premium subscription checkouts, integrate webhooks, and auto-upgrade user account plans.
@@ -55,7 +55,7 @@ If you are listing this project on your resume, use action verbs and quantifiabl
 
 * **Designed and developed** an enterprise-grade AI-powered SaaS platform using React 19, Node.js, and MongoDB, facilitating 10k+ mocked API operations with zero service disruptions.
 * **Architected a robust JWT Authentication & Refresh Token system** using Secure HttpOnly cookies and Redis session blacklisting, reducing unauthorized access risk by 99%.
-* **Implemented structured AI analyses using OpenAI GPT-4o-mini and JSON Schema validation**, accelerating resume ATS screening times by 80% while ensuring 100% data consistency.
+* **Implemented structured AI analyses using NVIDIA NIM (meta/llama-3.3-70b-instruct) and JSON Schema validation**, accelerating resume ATS screening times by 80% while ensuring 100% data consistency.
 * **Engineered a real-time messaging and notification gateway using Socket.io and Redis Pub/Sub**, supporting horizontal scaling with sub-100ms message delivery times.
 * **Integrated Razorpay Subscriptions and webhooks with automated database transaction rollbacks**, ensuring robust payment state synchronization across 3 plan tiers.
 * **Built an optimized CI/CD pipeline via GitHub Actions and Docker**, cutting production deployment time from 20 minutes to under 3 minutes.
@@ -74,4 +74,4 @@ If you are listing this project on your resume, use action verbs and quantifiabl
 * **Answer**: "We handle webhook processing using MongoDB ACID transactions. If the subscription update fails, the transaction rolls back, and we return a `500 Internal Server Error` to Razorpay. Razorpay will then retry the webhook delivery. Additionally, we verify signatures using SHA256 HMAC to prevent spoofing."
 
 ### Q4: "How do you optimize LLM costs and prevent latency issues during resume reviews?"
-* **Answer**: "We offload the resume analysis to an asynchronous worker queue (using BullMQ and Redis). The API responds with a `202 Accepted` immediately so the user's connection isn't held open. We also use `gpt-4o-mini` with strict JSON schemas, reducing output token bloat and lowering pricing by 90% compared to `gpt-4`."
+* **Answer**: "We offload the resume analysis to an asynchronous worker queue (using BullMQ and Redis). The API responds with a `202 Accepted` immediately so the user's connection isn't held open. We also use `meta/llama-3.3-70b-instruct` with strict JSON output, reducing output token bloat and lowering cost."

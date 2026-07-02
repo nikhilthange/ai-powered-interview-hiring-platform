@@ -63,7 +63,7 @@ erDiagram
         date scheduledAt
         string meetLink
         string status "Scheduled | Completed | Cancelled"
-        string gptInterviewFeedback
+        string aiInterviewFeedback
     }
 
     CHAT_ROOM {
@@ -166,7 +166,7 @@ const ProfileSchema = new mongoose.Schema({
   resumeUrl: { type: String, default: '' },
   skills: [{ type: String, index: true }], // Multikey index to search candidates by skill
   experienceYears: { type: Number, default: 0 },
-  careerRoadmap: { type: mongoose.Schema.Types.Mixed }, // JSON dump from GPT
+  careerRoadmap: { type: mongoose.Schema.Types.Mixed }, // JSON dump from NVIDIA NIM
   
   // Recruiter-specific attributes
   company: {

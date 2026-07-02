@@ -26,7 +26,7 @@ graph TD
     subgraph Application Tier [Express.js Application Cluster]
         API[API Gateway / Router]
         AUTH[Auth Service - JWT / Refresh]
-        AIS[AI Service - OpenAI Wrapper]
+        AIS[AI Service - NVIDIA NIM Wrapper]
         PAY[Razorpay Payment Service]
         SOC[WebSocket Server - Socket.io]
     end
@@ -39,7 +39,7 @@ graph TD
 
     %% Integration Tier
     subgraph External Services [External SaaS Integrations]
-        OAI[OpenAI API]
+        OAI[NVIDIA NIM API]
         RP[Razorpay Gateway]
         CLD[Cloudinary Storage]
         SES[Nodemailer / SMTP]
@@ -59,7 +59,7 @@ graph TD
     API & AUTH ==>|Read / Write Session & Cache| RED
     
     %% Integrations Hooks
-    AIS ==>|Completions / Embeddings| OAI
+    AIS ==>|Chat Completions| OAI
     PAY ==>|Create Order / Verify Webhooks| RP
     API ==>|Upload Resumes/Images| CLD
     API ==>|Trigger Transactional Emails| SES
@@ -193,7 +193,7 @@ We avoid scattered `try/catch` blocks in controllers using an async handler util
 We partition rate limits into three categories to optimize UX and safety:
 * **Global Rate Limit**: `100 requests per 15 minutes` for standard endpoints.
 * **Auth Rate Limit**: Strict `5 requests per 15 minutes` for login, signup, and password resets.
-* **AI API Rate Limit**: `15 requests per hour` to manage OpenAI costs and prevent abuse.
+* **AI API Rate Limit**: `15 requests per hour` to manage NVIDIA NIM costs and prevent abuse.
 
 ### 5.3 Redis Caching Strategy
 We cache computational or DB-heavy read results in Redis:

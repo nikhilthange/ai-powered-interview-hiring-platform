@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import useNotifications from '../../hooks/useNotifications'
+import { useNotifications } from '../../hooks/useNotifications'
 import { cn } from '../../lib/utils'
 import { LayoutDashboard, Sparkles, Bell, User, Search } from 'lucide-react'
 

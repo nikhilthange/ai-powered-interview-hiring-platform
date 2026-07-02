@@ -1,14 +1,15 @@
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'
+import { savedJobApi } from '../services/savedJobApi'
 import { Card, CardContent } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import { useToast } from '../components/ui/Toast'
 import { SkeletonPage } from '../components/ui/Skeleton'
 import { cn } from '../lib/utils'
+import { useAuth } from '../hooks/useAuth'
 import {
   MapPin, Briefcase, DollarSign,
   Share2, Bookmark, ArrowLeft, CheckCircle,
@@ -28,12 +29,23 @@ const itemVariants = {
 export default function JobDetail() {
   const { id } = useParams()
   const { toast } = useToast()
-  const [saved, setSaved] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const queryClient = useQueryClient()
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['job', id],
-    queryFn: () => jobApi.getJobById(id).then((r) => r.data),
+    queryFn: () => jobApi.getJob(id).then((r) => r.data),
   })
+
+  const saveMutation = useMutation({
+    mutationFn: () => savedJobApi.saveJob(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-jobs'] })
+      toast.success('Job saved')
+    },
+  })
+
+  const job = data?.data?.job || data?.data || data
 
   if (isLoading) return <SkeletonPage />
 
@@ -47,8 +59,6 @@ export default function JobDetail() {
       </div>
     )
   }
-
-  const job = data?.data?.job || data?.data || data
 
   return (
     <motion.div
@@ -102,15 +112,13 @@ export default function JobDetail() {
                       {job.location}
                     </Badge>
                   )}
-                  {job.salary && (
+                  {job.salaryRange?.min > 0 && (
                     <Badge variant="primary" size="md">
                       <DollarSign className="h-3.5 w-3.5" />
-                      {job.salary}
+                      ₹{job.salaryRange.min.toLocaleString('en-IN')}
                     </Badge>
                   )}
-                  {job.jobType && (
-                    <Badge variant="info" size="md">{job.jobType}</Badge>
-                  )}
+                  {job.jobType && <Badge variant="info" size="md">{job.jobType}</Badge>}
                   {job.experienceLevel && (
                     <Badge variant="warning" size="md">
                       <GraduationCap className="h-3.5 w-3.5" />
@@ -120,19 +128,21 @@ export default function JobDetail() {
                 </div>
 
                 <div className="flex items-center gap-3 mt-6">
-                  <Link to={`/jobs/${id}/apply`}>
-                    <Button size="lg">
-                      <Briefcase className="h-4 w-4" />
-                      Apply Now
-                    </Button>
-                  </Link>
+                  {isAuthenticated && (
+                    <Link to={`/jobs/${id}/apply`}>
+                      <Button size="lg">
+                        <Briefcase className="h-4 w-4" />
+                        Apply Now
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     variant="outline"
                     size="lg"
-                    onClick={() => { setSaved(!saved); toast.success(saved ? 'Job removed from saved' : 'Job saved') }}
+                    onClick={() => saveMutation.mutate()}
                   >
-                    <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} />
-                    {saved ? 'Saved' : 'Save'}
+                    <Bookmark className="h-4 w-4" />
+                    Save
                   </Button>
                   <Button variant="ghost" size="lg">
                     <Share2 className="h-4 w-4" />
@@ -221,10 +231,13 @@ export default function JobDetail() {
                       <span className="text-sm font-medium text-[var(--text-primary)]">{job.location}</span>
                     </div>
                   )}
-                  {job.salary && (
+                  {job.salaryRange?.min > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-[var(--text-secondary)]">Salary</span>
-                      <span className="text-sm font-medium text-[var(--text-primary)]">{job.salary}</span>
+                      <span className="text-sm font-medium text-[var(--text-primary)]">
+                        ₹{job.salaryRange.min.toLocaleString('en-IN')}
+                        {job.salaryRange.max > 0 && ` - ${job.salaryRange.max.toLocaleString('en-IN')}`}
+                      </span>
                     </div>
                   )}
                   {job.applicationsCount !== undefined && (

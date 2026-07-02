@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import api from '../../services/axios'
+import { applicationApi } from '../../services/applicationApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
@@ -14,6 +14,7 @@ import {
   Calendar, AlertCircle, Search,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { APPLICATION_STATUSES, STATUS_COLORS } from '../../lib/constants'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -25,22 +26,12 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
-const statuses = ['All', 'Applied', 'Reviewing', 'Shortlisted', 'Interview Scheduled', 'Rejected', 'Hired']
-const statusColors = {
-  Applied: 'primary',
-  Reviewing: 'warning',
-  Shortlisted: 'info',
-  'Interview Scheduled': 'info',
-  Rejected: 'danger',
-  Hired: 'success',
-}
-
 export default function MyApplications() {
   const [activeTab, setActiveTab] = useState('All')
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['my-applications-page'],
-    queryFn: () => api.get('/applications/my-applications').then((r) => r.data),
+    queryFn: () => applicationApi.getMyApplications().then((r) => r.data),
   })
 
   const applications = data?.data?.applications || []
@@ -58,7 +49,7 @@ export default function MyApplications() {
       <EmptyState
         icon={AlertCircle}
         title="Failed to load applications"
-        action={{ label: 'Retry', props: { onClick: () => window.location.reload() } }}
+        action={{ label: 'Retry', props: { onClick: () => refetch() } }}
       />
     )
   }
@@ -80,7 +71,7 @@ export default function MyApplications() {
       </motion.div>
 
       <motion.div variants={itemVariants} className="flex overflow-x-auto gap-1 pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
-        {statuses.map((status) => {
+        {APPLICATION_STATUSES.map((status) => {
           const count = status === 'All' ? applications.length : applications.filter((a) => a.status === status).length
           const isActive = activeTab === status
           return (
@@ -135,7 +126,7 @@ export default function MyApplications() {
                               <span className="text-sm text-[var(--text-secondary)]">{app.jobId?.company || 'Company'}</span>
                             </div>
                           </div>
-                          <Badge variant={statusColors[app.status] || 'default'} size="sm">
+                          <Badge variant={STATUS_COLORS[app.status] || 'default'} size="sm">
                             {app.status}
                           </Badge>
                         </div>
@@ -152,10 +143,7 @@ export default function MyApplications() {
                           </div>
                           {app.atsScore > 0 && (
                             <div className="flex items-center gap-1.5 text-xs">
-                              <Star className={cn(
-                                'h-3 w-3',
-                                app.atsScore >= 80 ? 'text-emerald-500' : app.atsScore >= 60 ? 'text-amber-500' : 'text-red-500'
-                              )} />
+                              <Star className={cn('h-3 w-3', app.atsScore >= 80 ? 'text-emerald-500' : app.atsScore >= 60 ? 'text-amber-500' : 'text-red-500')} />
                               <span className="font-medium">ATS {app.atsScore}</span>
                             </div>
                           )}

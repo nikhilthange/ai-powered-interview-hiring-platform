@@ -3,7 +3,7 @@ import Badge from '../ui/Badge'
 import { cn } from '../../lib/utils'
 import { MapPin, CheckCircle, Clock, ChevronDown, BookOpen } from 'lucide-react'
 
-export default function RoadmapView({ existingRoadmap, skills }) {
+export default function RoadmapView({ existingRoadmap }) {
   const [expanded, setExpanded] = useState(null)
   const roadmap = existingRoadmap
   const milestones = roadmap?.milestones || roadmap?.steps || []

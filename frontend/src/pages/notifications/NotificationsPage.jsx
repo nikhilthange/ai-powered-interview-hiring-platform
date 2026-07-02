@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import useNotifications from '../../hooks/useNotifications'
+import { useNotifications } from '../../hooks/useNotifications'
 
 import Button from '../../components/ui/Button'
 import EmptyState from '../../components/ui/EmptyState'

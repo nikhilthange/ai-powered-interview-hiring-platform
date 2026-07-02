@@ -41,6 +41,13 @@ export function formatNumber(num) {
   return num.toString()
 }
 
+export function formatFileSize(bytes) {
+  if (!bytes) return '0 B'
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
 export function getInitials(name) {
   if (!name) return 'U'
   return name
@@ -55,6 +62,14 @@ export function truncate(str, len = 100) {
   if (!str) return ''
   if (str.length <= len) return str
   return str.slice(0, len) + '...'
+}
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
+export function getMediaUrl(path) {
+  if (!path) return null
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  return `${API_URL}${path.startsWith('/') ? '' : '/'}${path}`
 }
 
 export function getGradeColor(score) {
@@ -89,11 +104,4 @@ export function calculateProfileCompletion(profile) {
     profile.avatarUrl,
   ]
   return Math.round((fields.filter(Boolean).length / fields.length) * 100)
-}
-
-export function getResumeUrl(resumeUrl) {
-  if (!resumeUrl) return null
-  if (resumeUrl.startsWith('http://') || resumeUrl.startsWith('https://')) return resumeUrl
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-  return `${API_URL}${resumeUrl.startsWith('/') ? '' : '/'}${resumeUrl}`
 }

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
-import api from '../services/axios'
+import { savedJobApi } from '../services/savedJobApi'
 import { Card, CardContent } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
@@ -11,7 +11,6 @@ import {
   Heart, GraduationCap, Building2,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -26,7 +25,7 @@ const itemVariants = {
 export default function SavedJobs() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['saved-jobs-page'],
-    queryFn: () => api.get('/saved-jobs').then((r) => r.data),
+    queryFn: () => savedJobApi.getSavedJobs().then((r) => r.data),
   })
 
   if (isLoading) return (
@@ -34,6 +33,14 @@ export default function SavedJobs() {
       <div className="skeleton-shimmer h-8 w-48 rounded-xl" />
       <SkeletonList count={4} />
     </div>
+  )
+
+  if (isError) return (
+    <EmptyState
+      icon={Bookmark}
+      title="Failed to load saved jobs"
+      action={{ label: 'Browse Jobs', props: { as: Link, to: '/jobs' } }}
+    />
   )
 
   const savedJobs = data?.data?.jobs || data?.jobs || []
@@ -90,10 +97,10 @@ export default function SavedJobs() {
                                 {job.location}
                               </Badge>
                             )}
-                            {job.salary && (
+                            {job.salaryRange?.min > 0 && (
                               <Badge variant="primary" size="xs">
                                 <DollarSign className="h-3 w-3" />
-                                {job.salary}
+                                ₹{job.salaryRange.min.toLocaleString('en-IN')}
                               </Badge>
                             )}
                             {job.jobType && <Badge variant="info" size="xs">{job.jobType}</Badge>}

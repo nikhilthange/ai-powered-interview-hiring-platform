@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
-
-const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Remote']
-const LEVELS = ['Junior', 'Mid', 'Senior']
+import Textarea from '../ui/Textarea'
+import Select from '../ui/Select'
+import { JOB_TYPES, EXPERIENCE_LEVELS } from '../../lib/constants'
 
 export default function JobForm({ initialData, onSubmit, loading }) {
   const [form, setForm] = useState({
@@ -58,72 +58,56 @@ export default function JobForm({ initialData, onSubmit, loading }) {
         />
       </div>
 
-      <div className="space-y-1">
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-          Description
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          rows={6}
-          value={form.description}
-          onChange={handleChange}
-          className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          required
-        />
-      </div>
+      <Textarea
+        id="description"
+        label="Description"
+        name="description"
+        rows={6}
+        value={form.description}
+        onChange={handleChange}
+        required
+      />
 
-      <div className="space-y-1">
-        <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">
-          Requirements (one per line)
-        </label>
-        <textarea
-          id="requirements"
-          name="requirements"
-          rows={4}
-          value={form.requirements}
-          onChange={handleChange}
-          className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="Node.js&#10;React&#10;5+ years experience"
-        />
-      </div>
+      <Textarea
+        id="requirements"
+        label="Requirements (one per line)"
+        name="requirements"
+        rows={4}
+        value={form.requirements}
+        onChange={handleChange}
+        placeholder="Node.js&#10;React&#10;5+ years experience"
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Job Type</label>
-          <select
-            name="jobType"
-            value={form.jobType}
-            onChange={handleChange}
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            {JOB_TYPES.map((t) => <option key={t}>{t}</option>)}
-          </select>
-        </div>
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Experience Level</label>
-          <select
-            name="experienceLevel"
-            value={form.experienceLevel}
-            onChange={handleChange}
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            {LEVELS.map((l) => <option key={l}>{l}</option>)}
-          </select>
-        </div>
+        <Select
+          id="jobType"
+          label="Job Type"
+          name="jobType"
+          value={form.jobType}
+          onChange={handleChange}
+        >
+          {JOB_TYPES.map((t) => <option key={t}>{t}</option>)}
+        </Select>
+        <Select
+          id="experienceLevel"
+          label="Experience Level"
+          name="experienceLevel"
+          value={form.experienceLevel}
+          onChange={handleChange}
+        >
+          {EXPERIENCE_LEVELS.map((l) => <option key={l}>{l}</option>)}
+        </Select>
         {initialData && (
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Status</label>
-            <select
-              name="status"
-              value={form.status}
-              onChange={handleChange}
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option>Active</option>
-              <option>Closed</option>
-            </select>
-          </div>
+          <Select
+            id="status"
+            label="Status"
+            name="status"
+            value={form.status}
+            onChange={handleChange}
+          >
+            <option>Active</option>
+            <option>Closed</option>
+          </Select>
         )}
       </div>
 

@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
 import { useQueries } from '@tanstack/react-query'
-import api from '../../services/axios'
+import { jobApi } from '../../services/jobApi'
+import { applicationApi } from '../../services/applicationApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
@@ -25,8 +26,8 @@ export default function RecruiterDashboard() {
 
   const results = useQueries({
     queries: [
-      { queryKey: ['recruiter-jobs'], queryFn: () => api.get('/jobs/my-jobs').then((r) => r.data) },
-      { queryKey: ['recruiter-applications'], queryFn: () => api.get('/applications/recruiter').then((r) => r.data) },
+      { queryKey: ['recruiter-jobs'], queryFn: () => jobApi.getMyJobs().then((r) => r.data) },
+      { queryKey: ['recruiter-applications'], queryFn: () => applicationApi.getMyApplications().then((r) => r.data) },
     ],
   })
 
@@ -88,17 +89,11 @@ export default function RecruiterDashboard() {
                     <span className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">{metric.label}</span>
                     <div className={cn(
                       'rounded-xl p-2 transition-all group-hover:scale-110',
-                      metric.color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-950' :
-                      metric.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-950' :
-                      metric.color === 'purple' ? 'bg-purple-50 dark:bg-purple-950' :
-                      'bg-amber-50 dark:bg-amber-950'
+                      `${metric.color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-950' : ''}${metric.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-950' : ''}${metric.color === 'purple' ? 'bg-purple-50 dark:bg-purple-950' : ''}${metric.color === 'amber' ? 'bg-amber-50 dark:bg-amber-950' : ''}`
                     )}>
                       <Icon className={cn(
                         'h-4 w-4',
-                        metric.color === 'indigo' ? 'text-indigo-600' :
-                        metric.color === 'emerald' ? 'text-emerald-600' :
-                        metric.color === 'purple' ? 'text-purple-600' :
-                        'text-amber-600'
+                        `${metric.color === 'indigo' ? 'text-indigo-600' : ''}${metric.color === 'emerald' ? 'text-emerald-600' : ''}${metric.color === 'purple' ? 'text-purple-600' : ''}${metric.color === 'amber' ? 'text-amber-600' : ''}`
                       )} />
                     </div>
                   </div>
@@ -132,9 +127,7 @@ export default function RecruiterDashboard() {
                 <div className="text-center py-8">
                   <FileText className="mx-auto h-10 w-10 text-[var(--text-tertiary)] mb-3" />
                   <p className="text-sm text-[var(--text-secondary)]">No jobs posted yet</p>
-                  <Link to="/recruiter/jobs/create">
-                    <Button size="sm" className="mt-3">Post Your First Job</Button>
-                  </Link>
+                  <Link to="/recruiter/jobs/create"><Button size="sm" className="mt-3">Post Your First Job</Button></Link>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -145,7 +138,7 @@ export default function RecruiterDashboard() {
                           <p className="text-sm font-medium text-[var(--text-primary)] truncate">{job.title}</p>
                           <p className="text-xs text-[var(--text-secondary)]">{job.applications?.length || 0} applicants</p>
                         </div>
-                        <Badge variant={job.status === 'active' ? 'success' : 'default'} size="xs">
+                        <Badge variant={job.status === 'Active' ? 'success' : 'default'} size="xs">
                           {job.status || 'Draft'}
                         </Badge>
                       </div>

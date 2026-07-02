@@ -1,14 +1,16 @@
 import { motion } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
 import { useQueries } from '@tanstack/react-query'
-import api from '../../services/axios'
 import { jobApi } from '../../services/jobApi'
+import { applicationApi } from '../../services/applicationApi'
+import { savedJobApi } from '../../services/savedJobApi'
+import { interviewApi } from '../../services/interviewApi'
+import { profileApi } from '../../services/profileApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import { SkeletonMetrics, SkeletonList } from '../../components/ui/Skeleton'
-
-import useNotifications from '../../hooks/useNotifications'
+import { useNotifications } from '../../hooks/useNotifications'
 import {
   Briefcase, FileText, Bookmark, TrendingUp, ArrowRight, Zap,
   Target, GraduationCap, Clock,
@@ -21,10 +23,7 @@ import { cn, calculateProfileCompletion, getGradeColor, getGradeLabel, formatDat
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
 }
 
 const itemVariants = {
@@ -40,19 +39,19 @@ export default function CandidateDashboard() {
     queries: [
       {
         queryKey: ['profile'],
-        queryFn: () => api.get('/profiles').then((r) => r.data?.data?.profile),
+        queryFn: () => profileApi.getMyProfile().then((r) => r.data?.data?.profile),
       },
       {
         queryKey: ['my-applications'],
-        queryFn: () => api.get('/applications/my-applications').then((r) => r.data),
+        queryFn: () => applicationApi.getMyApplications().then((r) => r.data),
       },
       {
         queryKey: ['saved-jobs'],
-        queryFn: () => api.get('/saved-jobs').then((r) => r.data),
+        queryFn: () => savedJobApi.getSavedJobs().then((r) => r.data),
       },
       {
         queryKey: ['mock-sessions'],
-        queryFn: () => api.get('/interviews/session/list/mine').then((r) => r.data?.data?.sessions || []),
+        queryFn: () => interviewApi.getMySessions(),
       },
       {
         queryKey: ['recommended-jobs'],
@@ -87,9 +86,12 @@ export default function CandidateDashboard() {
           <Eye className="h-8 w-8 text-[var(--color-error)]" />
         </div>
         <p className="text-lg font-medium text-[var(--text-primary)]">Unable to load dashboard</p>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">Something went wrong. Please try refreshing the page.</p>
-        <button onClick={() => window.location.reload()} className="mt-6 rounded-xl bg-[var(--color-primary-500)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-primary-600)] shadow-sm shadow-[var(--color-primary-500)]/20 transition-all">
-          Refresh Page
+        <p className="mt-1 text-sm text-[var(--text-secondary)]">Something went wrong. Please try again.</p>
+        <button
+          onClick={() => results.forEach((q) => q.refetch())}
+          className="mt-6 rounded-xl bg-[var(--color-primary-500)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-primary-600)] shadow-sm shadow-[var(--color-primary-500)]/20 transition-all"
+        >
+          Retry
         </button>
       </div>
     )
@@ -99,8 +101,8 @@ export default function CandidateDashboard() {
   const apps = appsQuery.data?.data?.applications || []
   const appsCount = appsQuery.data?.results || apps.length
   const savedCount = savedQuery.data?.results || 0
-  const sessions = sessionsQuery.data || []
-  const recommendedJobs = jobsQuery.data || []
+  const sessions = Array.isArray(sessionsQuery.data) ? sessionsQuery.data : []
+  const recommendedJobs = Array.isArray(jobsQuery.data) ? jobsQuery.data : []
 
   const name = profile.fullName || user?.email?.split('@')[0] || 'User'
   const profileCompletion = calculateProfileCompletion(profile)
@@ -113,45 +115,14 @@ export default function CandidateDashboard() {
   const latestApps = apps.slice(0, 5)
 
   const metrics = [
-    {
-      label: 'Applications',
-      value: appsCount,
-      icon: FileText,
-      href: '/my-applications',
-      color: 'primary',
-    },
-    {
-      label: 'Saved Jobs',
-      value: savedCount,
-      icon: Bookmark,
-      href: '/saved-jobs',
-      color: 'warning',
-    },
-    {
-      label: 'Profile',
-      value: `${profileCompletion}%`,
-      icon: Award,
-      progress: profileCompletion,
-      href: '/profile',
-      color: 'amber',
-    },
-    {
-      label: 'AI Score',
-      value: avgScore !== null ? `${avgScore}%` : '—',
-      icon: Target,
-      subtitle: avgScore !== null ? `Avg of ${completedSessions.length} sessions` : 'No data yet',
-      href: '/mock-interview',
-      color: avgScore !== null ? (avgScore >= 70 ? 'success' : 'amber') : 'default',
-    },
+    { label: 'Applications', value: appsCount, icon: FileText, href: '/my-applications', color: 'primary' },
+    { label: 'Saved Jobs', value: savedCount, icon: Bookmark, href: '/saved-jobs', color: 'warning' },
+    { label: 'Profile', value: `${profileCompletion}%`, icon: Award, progress: profileCompletion, href: '/profile', color: 'amber' },
+    { label: 'AI Score', value: avgScore !== null ? `${avgScore}%` : '—', icon: Target, subtitle: avgScore !== null ? `Avg of ${completedSessions.length} sessions` : 'No data yet', href: '/mock-interview', color: avgScore !== null ? (avgScore >= 70 ? 'success' : 'amber') : 'default' },
   ]
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
-    >
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-600 p-6 sm:p-8">
           <div className="absolute inset-0 overflow-hidden">
@@ -164,12 +135,8 @@ export default function CandidateDashboard() {
               <p className="text-sm font-medium text-white/70 mb-1">
                 {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'}
               </p>
-              <h1 className="text-2xl font-bold text-white">
-                {name.split(' ')[0]}
-              </h1>
-              <p className="text-sm text-white/60 mt-1">
-                {profile.bio || "Let's find your next opportunity"}
-              </p>
+              <h1 className="text-2xl font-bold text-white">{name.split(' ')[0]}</h1>
+              <p className="text-sm text-white/60 mt-1">{profile.bio || "Let's find your next opportunity"}</p>
             </div>
             <div className="flex items-center gap-3">
               <Link to="/jobs">
@@ -191,10 +158,7 @@ export default function CandidateDashboard() {
         </div>
       </motion.div>
 
-      <motion.div
-        variants={itemVariants}
-        className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4"
-      >
+      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {metrics.map((metric) => {
           const Icon = metric.icon
           const colorMap = {
@@ -211,27 +175,17 @@ export default function CandidateDashboard() {
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">{metric.label}</span>
-                    <div className={cn(
-                      'rounded-xl p-2 transition-all duration-200 group-hover:scale-110 group-hover:shadow-sm',
-                      colors.bg
-                    )}>
+                    <div className={cn('rounded-xl p-2 transition-all duration-200 group-hover:scale-110 group-hover:shadow-sm', colors.bg)}>
                       <Icon className={cn('h-4 w-4', colors.text)} />
                     </div>
                   </div>
-                  <p className="text-2xl font-bold text-[var(--text-primary)]">
-                    {metric.value}
-                  </p>
+                  <p className="text-2xl font-bold text-[var(--text-primary)]">{metric.value}</p>
                   {metric.progress !== undefined && (
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-1000"
-                        style={{ width: `${metric.progress}%` }}
-                      />
+                      <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-1000" style={{ width: `${metric.progress}%` }} />
                     </div>
                   )}
-                  {metric.subtitle && (
-                    <p className="text-xs text-[var(--text-tertiary)] mt-1">{metric.subtitle}</p>
-                  )}
+                  {metric.subtitle && <p className="text-xs text-[var(--text-tertiary)] mt-1">{metric.subtitle}</p>}
                 </CardContent>
               </Card>
             </Link>
@@ -239,10 +193,7 @@ export default function CandidateDashboard() {
         })}
       </motion.div>
 
-      <motion.div
-        variants={itemVariants}
-        className="grid gap-6 lg:grid-cols-3"
-      >
+      <motion.div variants={itemVariants} className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           {recommendedJobs.length > 0 && (
             <Card>
@@ -258,17 +209,13 @@ export default function CandidateDashboard() {
                     </div>
                   </div>
                   <Link to="/jobs" className="group flex items-center gap-1 text-sm font-medium text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors">
-                    View all
-                    <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                    View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {recommendedJobs.slice(0, 4).map((job) => (
                     <Link key={job._id} to={`/jobs/${job._id}`}>
-                      <motion.div
-                        whileHover={{ y: -2 }}
-                        className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 transition-all hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30 hover:shadow-md"
-                      >
+                      <motion.div whileHover={{ y: -2 }} className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 transition-all hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30 hover:shadow-md">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 mb-1">
@@ -276,9 +223,7 @@ export default function CandidateDashboard() {
                                 {job.title?.charAt(0) || 'J'}
                               </span>
                               <div>
-                                <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-                                  {job.title}
-                                </p>
+                                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{job.title}</p>
                                 <p className="text-xs text-[var(--text-secondary)]">{job.company || 'Company'}</p>
                               </div>
                             </div>
@@ -286,12 +231,8 @@ export default function CandidateDashboard() {
                           <ChevronRight className="h-4 w-4 shrink-0 text-[var(--text-tertiary)] mt-1" />
                         </div>
                         <div className="flex flex-wrap items-center gap-2 mt-3">
-                          {job.jobType && (
-                            <Badge variant="primary" size="xs">{job.jobType}</Badge>
-                          )}
-                          {job.experienceLevel && (
-                            <Badge variant="default" size="xs">{job.experienceLevel}</Badge>
-                          )}
+                          {job.jobType && <Badge variant="primary" size="xs">{job.jobType}</Badge>}
+                          {job.experienceLevel && <Badge variant="default" size="xs">{job.experienceLevel}</Badge>}
                         </div>
                       </motion.div>
                     </Link>
@@ -315,51 +256,32 @@ export default function CandidateDashboard() {
                     </div>
                   </div>
                   <Link to="/my-applications" className="group flex items-center gap-1 text-sm font-medium text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors">
-                    View all
-                    <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                    View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </div>
                 <div className="space-y-2">
                   {latestApps.map((app) => {
                     const statusColors = {
-                      Applied: 'primary',
-                      Reviewing: 'warning',
-                      Shortlisted: 'info',
-                      'Interview Scheduled': 'info',
-                      Rejected: 'danger',
-                      Hired: 'success',
+                      Applied: 'primary', Reviewing: 'warning', Shortlisted: 'info',
+                      'Interview Scheduled': 'info', Rejected: 'danger', Hired: 'success',
                     }
                     return (
                       <Link key={app._id} to="/my-applications">
-                        <motion.div
-                          whileHover={{ x: 2 }}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 transition-all hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30"
-                        >
+                        <motion.div whileHover={{ x: 2 }} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 transition-all hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30">
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-                              {app.jobId?.title || 'Application'}
-                            </p>
+                            <p className="text-sm font-medium text-[var(--text-primary)] truncate">{app.jobId?.title || 'Application'}</p>
                             <div className="flex items-center gap-2 mt-0.5">
                               <Clock className="h-3 w-3 text-[var(--text-tertiary)]" />
-                              <p className="text-xs text-[var(--text-secondary)]">
-                                {formatDateRelative(app.createdAt)}
-                              </p>
+                              <p className="text-xs text-[var(--text-secondary)]">{formatDateRelative(app.createdAt)}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             {app.atsScore > 0 && (
-                              <span className={cn(
-                                'text-xs font-semibold',
-                                app.atsScore >= 80 ? 'text-emerald-600 dark:text-emerald-400' :
-                                app.atsScore >= 60 ? 'text-amber-600 dark:text-amber-400' :
-                                'text-red-600 dark:text-red-400'
-                              )}>
+                              <span className={cn('text-xs font-semibold', app.atsScore >= 80 ? 'text-emerald-600 dark:text-emerald-400' : app.atsScore >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400')}>
                                 ATS {app.atsScore}
                               </span>
                             )}
-                            <Badge variant={statusColors[app.status] || 'default'} size="xs">
-                              {app.status}
-                            </Badge>
+                            <Badge variant={statusColors[app.status] || 'default'} size="xs">{app.status}</Badge>
                           </div>
                         </motion.div>
                       </Link>
@@ -387,9 +309,7 @@ export default function CandidateDashboard() {
                 <div className="text-center py-6">
                   <GraduationCap className="mx-auto h-10 w-10 text-[var(--text-tertiary)] mb-3" />
                   <p className="text-sm text-[var(--text-secondary)]">No interviews completed yet</p>
-                  <Link to="/mock-interview">
-                    <Button size="sm" className="mt-4">Start Mock Interview</Button>
-                  </Link>
+                  <Link to="/mock-interview"><Button size="sm" className="mt-4">Start Mock Interview</Button></Link>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -400,17 +320,10 @@ export default function CandidateDashboard() {
                   {avgScore !== null && (
                     <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-[var(--bg-tertiary)]">
                       <span className="text-sm text-[var(--text-secondary)]">Average score</span>
-                      <span className={cn('text-lg font-bold', getGradeColor(avgScore))}>
-                        {getGradeLabel(avgScore)} ({avgScore}%)
-                      </span>
+                      <span className={cn('text-lg font-bold', getGradeColor(avgScore))}>{getGradeLabel(avgScore)} ({avgScore}%)</span>
                     </div>
                   )}
-                  <Link to="/career-roadmap">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <BarChart3 className="h-4 w-4" />
-                      Career Roadmap
-                    </Button>
-                  </Link>
+                  <Link to="/career-roadmap"><Button variant="outline" size="sm" className="w-full"><BarChart3 className="h-4 w-4" /> Career Roadmap</Button></Link>
                 </div>
               )}
             </CardContent>
@@ -437,10 +350,7 @@ export default function CandidateDashboard() {
                   const Icon = action.icon
                   return (
                     <Link key={action.to} to={action.to}>
-                      <motion.div
-                        whileHover={{ x: 3 }}
-                        className="flex items-center gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3.5 transition-all hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30 group"
-                      >
+                      <motion.div whileHover={{ x: 3 }} className="flex items-center gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3.5 transition-all hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30 group">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 dark:from-indigo-950 dark:to-indigo-900 dark:text-indigo-400">
                           <Icon className="h-[18px] w-[18px]" />
                         </div>
@@ -459,10 +369,7 @@ export default function CandidateDashboard() {
 
           {unreadCount > 0 && (
             <Link to="/notifications">
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                className="rounded-2xl border bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border-indigo-200 dark:border-indigo-800/50 p-4"
-              >
+              <motion.div whileHover={{ scale: 1.01 }} className="rounded-2xl border bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border-indigo-200 dark:border-indigo-800/50 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/50">
                     <Bell className="h-5 w-5 text-indigo-600" />

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { chatApi } from '../../services/chatApi'
 import ChatMessage from './ChatMessage'
-import { Loader2 } from 'lucide-react'
+import { Loader2, MessageCircle } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 
 export default function ChatMessages({ roomId }) {
@@ -9,7 +9,7 @@ export default function ChatMessages({ roomId }) {
 
   const { data, isLoading } = useQuery({
     queryKey: ['chat-messages', roomId],
-    queryFn: () => chatApi.getMessages(roomId).then((r) => r.data?.data?.messages || r.data?.messages || []),
+    queryFn: () => chatApi.getRoomMessages(roomId).then((r) => r.data?.data?.messages || r.data?.messages || []),
   })
 
   useEffect(() => {
@@ -47,5 +47,3 @@ export default function ChatMessages({ roomId }) {
     </div>
   )
 }
-
-import { MessageCircle } from 'lucide-react'

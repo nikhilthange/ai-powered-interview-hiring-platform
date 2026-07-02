@@ -1,24 +1,19 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext'
+import { useLayout } from '../../context/LayoutContext'
 import NotificationBell from '../notifications/NotificationBell'
+import { useClickOutside } from '../../hooks/useClickOutside'
 import { Menu, LogOut, User, CreditCard, Shield, Moon, Sun, Search } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
-export default function Navbar({ onMenuClick }) {
+export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const { toggleSidebar } = useLayout()
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setProfileOpen(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
+  const ref = useClickOutside(() => setProfileOpen(false))
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -33,7 +28,7 @@ export default function Navbar({ onMenuClick }) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-[var(--bg-primary)]/80 backdrop-blur-xl border-[var(--border-color)] px-4 lg:px-6">
       <button
-        onClick={onMenuClick}
+        onClick={toggleSidebar}
         className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors"
         aria-label="Toggle sidebar"
       >

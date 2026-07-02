@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Bell } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { Link } from 'react-router-dom'
-import useNotifications from '../../hooks/useNotifications'
+import { useNotifications } from '../../hooks/useNotifications'
 import { cn } from '../../lib/utils'
 import { formatDateRelative } from '../../lib/utils'
 

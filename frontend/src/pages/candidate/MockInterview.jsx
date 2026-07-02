@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { interviewApi } from '../../services/interviewApi'
 import { Card, CardContent } from '../../components/ui/Card'
@@ -31,15 +31,12 @@ export default function MockInterview() {
   const [answers, setAnswers] = useState([])
   const [input, setInput] = useState('')
   const [isRecording, setIsRecording] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(120)
   const [sessionEnded, setSessionEnded] = useState(false)
   const [feedback, setFeedback] = useState(null)
   const [isThinking, setIsThinking] = useState(false)
-  const timerRef = useRef(null)
-  const messagesEndRef = useRef(null)
 
   const startMutation = useMutation({
-    mutationFn: interviewApi.startSession,
+    mutationFn: interviewApi.createSession,
     onSuccess: (res) => {
       const data = res.data?.data || res.data
       setSessionId(data._id || data.sessionId)
@@ -71,6 +68,7 @@ export default function MockInterview() {
     if (!sessionId && questions.length === 0 && !startMutation.isPending) {
       startMutation.mutate({ jobRole: 'general', experience: 'mid' })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleSubmitAnswer = useCallback(() => {
@@ -243,9 +241,7 @@ export default function MockInterview() {
           <Badge variant="primary" size="sm">
             Q {currentQ + 1}/{questions.length}
           </Badge>
-          <Badge variant="default" size="sm">
-            {timeLeft}s
-          </Badge>
+
         </div>
       </motion.div>
 

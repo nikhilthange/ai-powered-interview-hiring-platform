@@ -1,17 +1,10 @@
 import { useRef } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-
-function getAvatarUrl(url) {
-  if (!url) return null
-  if (url.startsWith('http://') || url.startsWith('https://')) return url
-  return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`
-}
+import { getMediaUrl } from '../../lib/utils'
 
 export default function AvatarUpload({ currentUrl, onUpload, loading }) {
   const inputRef = useRef(null)
-  const avatarUrl = getAvatarUrl(currentUrl)
+  const avatarUrl = getMediaUrl(currentUrl)
 
   return (
     <div className="flex items-center gap-5">

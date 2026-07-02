@@ -1,54 +1,45 @@
 import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'
 import { Card, CardContent } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
-
 import { SkeletonCard } from '../components/ui/Skeleton'
 import EmptyState from '../components/ui/EmptyState'
 import { Link } from 'react-router-dom'
 import { cn } from '../lib/utils'
+import { useDebounce } from '../hooks/useDebounce'
 import {
   Search, MapPin, Briefcase,
   SlidersHorizontal, Check, Bookmark, DollarSign,
   Share2, GraduationCap,
 } from 'lucide-react'
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+}
+
 export default function Jobs() {
-  const [jobs, setJobs] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState({})
-  const [selectedJob, setSelectedJob] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
+  const debouncedSearch = useDebounce(search, 300)
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        setLoading(true)
-        const res = await jobApi.getAllJobs()
-        setJobs(res.data?.data?.jobs || [])
-      } catch (err) {
-        setError(err?.response?.data?.message || 'Failed to load jobs')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchJobs()
-  }, [])
-
-  const filteredJobs = jobs.filter((job) => {
-    const q = search.toLowerCase()
-    if (q && !job.title?.toLowerCase().includes(q) && !job.company?.toLowerCase().includes(q) && !job.location?.toLowerCase().includes(q)) return false
-    if (filters.type && job.jobType !== filters.type) return false
-    if (filters.level && job.experienceLevel !== filters.level) return false
-    if (filters.location && !job.location?.toLowerCase().includes(filters.location.toLowerCase())) return false
-    return true
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['jobs', debouncedSearch, filters],
+    queryFn: () => jobApi.getJobs({ search: debouncedSearch, ...filters }).then((r) => r.data),
   })
 
-  if (loading) {
+  const jobs = data?.data?.jobs || []
+
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -67,13 +58,13 @@ export default function Jobs() {
     )
   }
 
-  if (error) {
+  if (isError) {
     return (
       <EmptyState
         icon={Briefcase}
         title="Failed to load jobs"
-        description={error}
-        action={{ label: 'Try Again', props: { onClick: () => window.location.reload() } }}
+        description={error?.response?.data?.message || 'Failed to load jobs'}
+        action={{ label: 'Try Again', props: { onClick: () => refetch() } }}
       />
     )
   }
@@ -83,16 +74,16 @@ export default function Jobs() {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
       className="space-y-6"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Find Jobs</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
-            {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} available
+            {jobs.length} job{jobs.length !== 1 ? 's' : ''} available
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -198,27 +189,21 @@ export default function Jobs() {
         </div>
 
         <div className="flex-1 min-w-0 space-y-3">
-          {filteredJobs.length === 0 ? (
+          {jobs.length === 0 ? (
             <EmptyState
               icon={Search}
               title="No jobs found"
               description="Try adjusting your search or filters"
             />
           ) : (
-            filteredJobs.map((job) => (
+            jobs.map((job) => (
               <motion.div
                 key={job._id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                variants={itemVariants}
                 whileHover={{ y: -2 }}
               >
                 <Link to={`/jobs/${job._id}`}>
-                  <div className={cn(
-                    'rounded-2xl border bg-[var(--bg-primary)] p-5 transition-all',
-                    selectedJob?._id === job._id
-                      ? 'border-indigo-300 dark:border-indigo-600 shadow-md'
-                      : 'border-[var(--border-color)] shadow-sm hover:shadow-md hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30'
-                  )}>
+                  <div className="rounded-2xl border bg-[var(--bg-primary)] p-5 transition-all border-[var(--border-color)] shadow-sm hover:shadow-md hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30">
                     <div className="flex items-start gap-4">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 dark:from-indigo-950 dark:to-indigo-900 dark:text-indigo-400 font-bold text-lg">
                         {job.company?.charAt(0) || job.title?.charAt(0) || 'J'}
@@ -229,7 +214,6 @@ export default function Jobs() {
                             <h3 className="font-semibold text-[var(--text-primary)]">{job.title}</h3>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-sm text-[var(--text-secondary)]">{job.company || 'Company'}</span>
-                              <Check className="h-3.5 w-3.5 text-emerald-500" />
                             </div>
                           </div>
                           {job.aiMatchScore && (
@@ -253,15 +237,13 @@ export default function Jobs() {
                               {job.location}
                             </Badge>
                           )}
-                          {job.salary && (
+                          {job.salaryRange?.min > 0 && (
                             <Badge variant="primary" size="xs">
                               <DollarSign className="h-3 w-3" />
-                              {job.salary}
+                              ₹{job.salaryRange.min.toLocaleString('en-IN')}
                             </Badge>
                           )}
-                          {job.jobType && (
-                            <Badge variant="info" size="xs">{job.jobType}</Badge>
-                          )}
+                          {job.jobType && <Badge variant="info" size="xs">{job.jobType}</Badge>}
                           {job.experienceLevel && (
                             <Badge variant="warning" size="xs">
                               <GraduationCap className="h-3 w-3" />

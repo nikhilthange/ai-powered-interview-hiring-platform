@@ -9,4 +9,7 @@ export const chatApi = {
     api.get(`/chats/rooms/${roomId}/messages`, { params: { page, limit } }),
 
   getUnreadCount: () => api.get('/chats/rooms/unread-count'),
+
+  sendMessage: (roomId, content) =>
+    api.post(`/chats/rooms/${roomId}/messages`, { content }),
 }

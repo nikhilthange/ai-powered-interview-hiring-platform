@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent } from '../components/ui/Card'
-
 import { SkeletonList } from '../components/ui/Skeleton'
 import EmptyState from '../components/ui/EmptyState'
 import ChatRoomList from '../components/chat/ChatRoomList'
@@ -19,18 +18,12 @@ const containerVariants = {
   visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0 },
-}
-
 export default function ChatPage() {
   const [selectedRoom, setSelectedRoom] = useState(null)
-  const [showMobileList, setShowMobileList] = useState(true)
 
   const { data: roomsData, isLoading } = useQuery({
     queryKey: ['chat-rooms'],
-    queryFn: () => chatApi.getRooms().then((r) => r.data?.data?.rooms || []),
+    queryFn: () => chatApi.getMyRooms().then((r) => r.data?.data?.rooms || []),
   })
 
   const rooms = Array.isArray(roomsData) ? roomsData : []
@@ -74,7 +67,7 @@ export default function ChatPage() {
                   <ChatRoomList
                     rooms={rooms}
                     selectedRoom={selectedRoom}
-                    onSelect={(room) => { setSelectedRoom(room); setShowMobileList(false) }}
+                    onSelect={(room) => setSelectedRoom(room)}
                   />
                 )}
               </div>

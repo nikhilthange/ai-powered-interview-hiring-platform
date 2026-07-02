@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
-import api from '../services/axios'
+import { interviewApi } from '../services/interviewApi'
 import { Card, CardContent } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
@@ -25,9 +25,9 @@ const itemVariants = {
 }
 
 export default function MyInterviews() {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['my-interviews'],
-    queryFn: () => api.get('/interviews/session/list/mine').then((r) => r.data?.data?.sessions || r.data?.sessions || []),
+    queryFn: () => interviewApi.getMySessions(),
   })
 
   if (isLoading) return (
@@ -37,7 +37,7 @@ export default function MyInterviews() {
     </div>
   )
 
-  const sessions = data || []
+  const sessions = Array.isArray(data) ? data : []
 
   return (
     <motion.div

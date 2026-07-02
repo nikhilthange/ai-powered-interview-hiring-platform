@@ -11,12 +11,8 @@ import AvatarUpload from '../../components/profile/AvatarUpload'
 import SkillBadge from '../../components/profile/SkillBadge'
 import RoadmapView from '../../components/profile/RoadmapView'
 import Button from '../../components/ui/Button'
-
-import {
-  Upload, FileText, AlertCircle, Plus,
-  Briefcase,
-  Award,
-} from 'lucide-react'
+import { getMediaUrl } from '../../lib/utils'
+import { Upload, FileText, AlertCircle, Plus, Briefcase, Award } from 'lucide-react'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -26,14 +22,6 @@ const containerVariants = {
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
-}
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-
-function getResumeUrl(resumeUrl) {
-  if (!resumeUrl) return null
-  if (resumeUrl.startsWith('http://') || resumeUrl.startsWith('https://')) return resumeUrl
-  return `${API_URL}${resumeUrl.startsWith('/') ? '' : '/'}${resumeUrl}`
 }
 
 export default function CandidateProfile() {
@@ -113,10 +101,7 @@ export default function CandidateProfile() {
             <AlertCircle className="mx-auto h-10 w-10 text-[var(--color-error)] mb-3" />
             <p className="text-lg font-medium text-[var(--text-primary)]">Failed to load profile</p>
             <p className="text-sm text-[var(--text-secondary)] mt-1">{error?.response?.data?.message || 'Please try again.'}</p>
-            <Button
-              onClick={() => queryClient.invalidateQueries({ queryKey: ['profile'] })}
-              className="mt-4"
-            >
+            <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['profile'] })} className="mt-4">
               Try Again
             </Button>
           </CardContent>
@@ -126,15 +111,10 @@ export default function CandidateProfile() {
   }
 
   const profile = data?.data?.profile
-  const resumeUrl = getResumeUrl(profile?.resumeUrl)
+  const resumeUrl = getMediaUrl(profile?.resumeUrl)
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="max-w-4xl mx-auto space-y-6"
-    >
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-4xl mx-auto space-y-6">
       <motion.div variants={itemVariants}>
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">My Profile</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">Manage your personal information and career details</p>
@@ -143,18 +123,9 @@ export default function CandidateProfile() {
       <motion.div variants={itemVariants}>
         <Card>
           <CardContent className="p-6 sm:p-8">
-            <AvatarUpload
-              currentUrl={profile?.avatarUrl}
-              onUpload={(file) => avatarMutation.mutate(file)}
-              loading={avatarMutation.isPending}
-            />
+            <AvatarUpload currentUrl={profile?.avatarUrl} onUpload={(file) => avatarMutation.mutate(file)} loading={avatarMutation.isPending} />
             <div className="mt-6">
-              <ProfileForm
-                profile={profile}
-                onSubmit={(formData) => updateMutation.mutate(formData)}
-                loading={updateMutation.isPending}
-                isRecruiter={false}
-              />
+              <ProfileForm profile={profile} onSubmit={(formData) => updateMutation.mutate(formData)} loading={updateMutation.isPending} isRecruiter={false} />
             </div>
           </CardContent>
         </Card>
@@ -178,9 +149,7 @@ export default function CandidateProfile() {
                   <FileText className="h-8 w-8 text-indigo-500" />
                   <div>
                     <p className="text-sm font-medium text-[var(--text-primary)]">Current Resume</p>
-                    <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:text-indigo-500 transition-colors">
-                      View / Download
-                    </a>
+                    <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:text-indigo-500 transition-colors">View / Download</a>
                   </div>
                 </div>
                 <label className="cursor-pointer rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
@@ -191,9 +160,7 @@ export default function CandidateProfile() {
             ) : (
               <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[var(--border-color)] p-10 text-center hover:border-indigo-300 hover:bg-[var(--bg-tertiary)] transition-all">
                 <Upload className="mx-auto h-8 w-8 text-[var(--text-tertiary)] mb-3" />
-                <p className="text-sm font-medium text-[var(--text-primary)]">
-                  Upload your resume <span className="text-indigo-600">here</span>
-                </p>
+                <p className="text-sm font-medium text-[var(--text-primary)]">Upload your resume <span className="text-indigo-600">here</span></p>
                 <p className="mt-1 text-xs text-[var(--text-tertiary)]">PDF or DOCX (max 5 MB)</p>
                 <input type="file" accept=".pdf,.docx,.doc" onChange={handleResumeUpload} className="hidden" />
               </label>
@@ -220,7 +187,6 @@ export default function CandidateProfile() {
                 <p className="text-xs text-[var(--text-tertiary)]">Add skills to improve job matching</p>
               </div>
             </div>
-
             {profile?.skills?.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {profile.skills.map((skill) => (
@@ -228,11 +194,9 @@ export default function CandidateProfile() {
                 ))}
               </div>
             )}
-
             {(!profile?.skills || profile.skills.length === 0) && (
               <p className="text-sm text-[var(--text-secondary)] mb-4">No skills added yet.</p>
             )}
-
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -242,15 +206,10 @@ export default function CandidateProfile() {
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())}
                 className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
-              <Button
-                onClick={handleAddSkill}
-                disabled={!newSkill.trim() || updateMutation.isPending}
-                size="sm"
-              >
+              <Button onClick={handleAddSkill} disabled={!newSkill.trim() || updateMutation.isPending} size="sm">
                 <Plus className="h-4 w-4" /> Add
               </Button>
             </div>
-
             {profile?.experienceYears > 0 && (
               <div className="flex items-center gap-2 mt-4 text-sm text-[var(--text-secondary)]">
                 <Briefcase className="h-4 w-4" />
@@ -264,10 +223,7 @@ export default function CandidateProfile() {
       <motion.div variants={itemVariants}>
         <Card>
           <CardContent className="p-6">
-            <RoadmapView
-              existingRoadmap={profile?.careerRoadmap}
-              skills={profile?.skills}
-            />
+            <RoadmapView existingRoadmap={profile?.careerRoadmap} skills={profile?.skills} />
           </CardContent>
         </Card>
       </motion.div>

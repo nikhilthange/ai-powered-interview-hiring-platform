@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import Button from '../ui/Button'
+import { AlertCircle } from 'lucide-react'
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -18,9 +19,14 @@ export default class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
-          <h2 className="text-2xl font-bold text-gray-900">Something went wrong</h2>
-          <p className="text-gray-600">{this.state.error?.message}</p>
+        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-error-bg)]">
+            <AlertCircle className="h-8 w-8 text-[var(--color-error)]" />
+          </div>
+          <h2 className="text-2xl font-bold text-[var(--text-primary)]">Something went wrong</h2>
+          <p className="text-sm text-[var(--text-secondary)] text-center max-w-md">
+            {this.state.error?.message || 'An unexpected error occurred. Please try again.'}
+          </p>
           <Button
             onClick={() => {
               this.setState({ hasError: false, error: null })

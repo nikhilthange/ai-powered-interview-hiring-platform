@@ -8,7 +8,7 @@ export default function ChatInput({ roomId }) {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (content) => chatApi.sendMessage(roomId, content),
+    mutationFn: () => chatApi.sendMessage(roomId, { content: text.trim() }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat-messages', roomId] })
       queryClient.invalidateQueries({ queryKey: ['chat-rooms'] })
@@ -19,7 +19,7 @@ export default function ChatInput({ roomId }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!text.trim()) return
-    mutation.mutate({ content: text.trim() })
+    mutation.mutate()
   }
 
   return (

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MapPin, Briefcase, Clock, IndianRupee, Building2, ChevronRight } from 'lucide-react'
+import { MapPin, Briefcase, Clock, IndianRupee, Building2 } from 'lucide-react'
 import Badge from '../ui/Badge'
 import { Card, CardContent } from '../ui/Card'
 import { formatDateRelative } from '../../lib/utils'

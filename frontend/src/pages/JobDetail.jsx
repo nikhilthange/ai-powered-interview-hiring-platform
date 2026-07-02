@@ -1,234 +1,281 @@
-import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from '../hooks/useAuth'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'
-import { savedJobApi } from '../services/savedJobApi'
-import { SkeletonPage } from '../components/ui/Skeleton'
-import Button from '../components/ui/Button'
-import Badge from '../components/ui/Badge'
 import { Card, CardContent } from '../components/ui/Card'
-import { MapPin, Briefcase, Clock, ArrowLeft, Bookmark, BookmarkCheck, IndianRupee, Building2, Share2, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react'
-import { formatDate, formatCurrency, formatDateRelative, cn } from '../lib/utils'
+import Badge from '../components/ui/Badge'
+import Button from '../components/ui/Button'
+import { useToast } from '../components/ui/Toast'
+import { SkeletonPage } from '../components/ui/Skeleton'
+import { cn } from '../lib/utils'
+import {
+  MapPin, Briefcase, DollarSign,
+  Share2, Bookmark, ArrowLeft, CheckCircle,
+  GraduationCap,
+} from 'lucide-react'
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+}
 
 export default function JobDetail() {
   const { id } = useParams()
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const { isAuthenticated } = useAuth()
+  const { toast } = useToast()
+  const [saved, setSaved] = useState(false)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['job', id],
-    queryFn: () => jobApi.getJob(id).then((r) => r.data),
-  })
-
-  const { data: savedData } = useQuery({
-    queryKey: ['saved-job-check', id],
-    queryFn: () => savedJobApi.isJobSaved(id).then((r) => r.data),
-    enabled: isAuthenticated,
-  })
-
-  const saveMutation = useMutation({
-    mutationFn: () => savedJobApi.saveJob(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-job-check', id] })
-      queryClient.invalidateQueries({ queryKey: ['saved-jobs'] })
-    },
-  })
-
-  const unSaveMutation = useMutation({
-    mutationFn: () => savedJobApi.unsaveJob(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-job-check', id] })
-      queryClient.invalidateQueries({ queryKey: ['saved-jobs'] })
-    },
+    queryFn: () => jobApi.getJobById(id).then((r) => r.data),
   })
 
   if (isLoading) return <SkeletonPage />
 
-  const job = data?.data?.job
-  if (!job) return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <AlertCircle className="h-12 w-12 text-[var(--text-tertiary)] mb-4" />
-      <p className="text-lg font-medium text-[var(--text-primary)]">Job not found</p>
-      <Link to="/jobs" className="mt-4 text-sm font-medium text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)]">
-        Back to jobs
-      </Link>
-    </div>
-  )
+  if (isError) {
+    return (
+      <div className="max-w-3xl mx-auto py-20 text-center">
+        <p className="text-lg font-medium text-[var(--text-primary)]">Job not found</p>
+        <Link to="/jobs" className="text-sm text-indigo-600 mt-2 inline-block">
+          Back to jobs
+        </Link>
+      </div>
+    )
+  }
 
-  const isClosed = job.status === 'Closed'
-  const isSaved = savedData?.data?.isSaved || false
+  const job = data?.data?.job || data?.data || data
 
   return (
-    <div className="page-section">
-      <Link
-        to="/jobs"
-        className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-6"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to jobs
-      </Link>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-4xl mx-auto space-y-6"
+    >
+      <motion.div variants={itemVariants}>
+        <Link to="/jobs" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          <ArrowLeft className="h-4 w-4" /> Back to jobs
+        </Link>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardContent className="p-6 sm:p-8">
+            <div className="flex items-start gap-5">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold text-2xl">
+                {job.company?.charAt(0) || job.title?.charAt(0) || 'J'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold text-[var(--text-primary)]">{job.title}</h1>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-base text-[var(--text-secondary)]">{job.company || 'Company'}</span>
+                      <CheckCircle className="h-4 w-4 text-emerald-500" />
+                      <span className="text-xs text-emerald-600 font-medium">Verified</span>
+                    </div>
+                  </div>
+                  {job.aiMatchScore && (
+                    <div className="flex flex-col items-center shrink-0">
+                      <div className={cn(
+                        'flex h-14 w-14 items-center justify-center rounded-xl text-sm font-bold',
+                        job.aiMatchScore >= 80 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' :
+                        job.aiMatchScore >= 60 ? 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' :
+                        'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400'
+                      )}>
+                        {job.aiMatchScore}%
+                      </div>
+                      <span className="text-[10px] text-[var(--text-tertiary)] mt-1">AI Match</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 mt-4">
+                  {job.location && (
+                    <Badge variant="default" size="md">
+                      <MapPin className="h-3.5 w-3.5" />
+                      {job.location}
+                    </Badge>
+                  )}
+                  {job.salary && (
+                    <Badge variant="primary" size="md">
+                      <DollarSign className="h-3.5 w-3.5" />
+                      {job.salary}
+                    </Badge>
+                  )}
+                  {job.jobType && (
+                    <Badge variant="info" size="md">{job.jobType}</Badge>
+                  )}
+                  {job.experienceLevel && (
+                    <Badge variant="warning" size="md">
+                      <GraduationCap className="h-3.5 w-3.5" />
+                      {job.experienceLevel}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 mt-6">
+                  <Link to={`/jobs/${id}/apply`}>
+                    <Button size="lg">
+                      <Briefcase className="h-4 w-4" />
+                      Apply Now
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => { setSaved(!saved); toast.success(saved ? 'Job removed from saved' : 'Job saved') }}
+                  >
+                    <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} />
+                    {saved ? 'Saved' : 'Save'}
+                  </Button>
+                  <Button variant="ghost" size="lg">
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardContent className="p-6 sm:p-8">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-primary-50)] to-[var(--color-primary-100)] text-[var(--color-primary-600)] dark:from-[var(--color-primary-950)] dark:to-[var(--color-primary-900)] dark:text-[var(--color-primary-400)] text-xl font-bold">
-                    {job.company?.charAt(0) || job.title?.charAt(0) || 'J'}
-                  </span>
-                  <div>
-                    <h1 className="text-2xl font-bold text-[var(--text-primary)]">{job.title}</h1>
-                    {job.company && (
-                      <p className="text-sm text-[var(--text-secondary)] mt-1 flex items-center gap-1.5">
-                        <Building2 className="h-4 w-4" />
-                        {job.company}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-[var(--text-secondary)]">
-                      <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" />{job.location}</span>
-                      <span className="flex items-center gap-1.5"><Briefcase className="h-4 w-4" />{job.jobType}</span>
-                      <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" />{job.experienceLevel}</span>
-                      <span className="text-[var(--text-tertiary)]">Posted {formatDateRelative(job.createdAt)}</span>
-                    </div>
+          {job.description && (
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="font-semibold text-[var(--text-primary)] mb-3">Description</h2>
+                  <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
+                    {job.description}
                   </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {isAuthenticated && (
-                    <button
-                      onClick={() => isSaved ? unSaveMutation.mutate() : saveMutation.mutate()}
-                      className={cn(
-                        'rounded-xl p-2.5 transition-colors border',
-                        isSaved
-                          ? 'text-[var(--color-primary-600)] bg-[var(--color-primary-50)] border-[var(--color-primary-200)] dark:bg-[var(--color-primary-950)] dark:border-[var(--color-primary-800)]'
-                          : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] border-[var(--border-color)]'
-                      )}
-                      title={isSaved ? 'Unsave job' : 'Save job'}
-                      disabled={saveMutation.isPending || unSaveMutation.isPending}
-                      aria-label={isSaved ? 'Unsave job' : 'Save job'}
-                    >
-                      {isSaved ? <BookmarkCheck className="h-5 w-5" /> : <Bookmark className="h-5 w-5" />}
-                    </button>
-                  )}
-                  {isClosed && (
-                    <Badge variant="danger" size="md">Closed</Badge>
-                  )}
-                </div>
-              </div>
-
-              {job.salaryRange?.min > 0 && (
-                <div className="mt-6 rounded-xl bg-gradient-to-r from-emerald-50 to-emerald-100/50 dark:from-emerald-950 dark:to-emerald-900/50 border border-emerald-200/50 dark:border-emerald-800/50 px-5 py-4">
-                  <div className="flex items-center gap-2">
-                    <IndianRupee className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                    <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-                      {formatCurrency(job.salaryRange.min)}
-                      {job.salaryRange.max > 0 && ` - ${formatCurrency(job.salaryRange.max)}`}
-                      <span className="font-normal text-emerald-600 dark:text-emerald-400"> /year</span>
-                    </p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 sm:p-8">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Description</h2>
-              <p className="text-sm text-[var(--text-secondary)] whitespace-pre-line leading-relaxed">{job.description}</p>
-            </CardContent>
-          </Card>
-
-          {job.requirements?.length > 0 && (
-            <Card>
-              <CardContent className="p-6 sm:p-8">
-                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Requirements</h2>
-                <ul className="space-y-3">
-                  {job.requirements.map((req, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
-                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-primary-500)]" />
-                      {req}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
           )}
 
-          {job.benefits?.length > 0 && (
-            <Card>
-              <CardContent className="p-6 sm:p-8">
-                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Benefits</h2>
-                <div className="flex flex-wrap gap-2">
-                  {job.benefits.map((benefit) => (
-                    <Badge key={benefit} variant="success" size="md">{benefit}</Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {job.responsibilities?.length > 0 && (
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="font-semibold text-[var(--text-primary)] mb-3">Responsibilities</h2>
+                  <ul className="space-y-2">
+                    {job.responsibilities.map((r, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {job.requirements?.length > 0 && (
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="font-semibold text-[var(--text-primary)] mb-3">Requirements</h2>
+                  <ul className="space-y-2">
+                    {job.requirements.map((req, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                        {req}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </motion.div>
           )}
         </div>
 
         <div className="space-y-6">
-          <Card className="sticky top-24">
-            <CardContent className="p-6 space-y-4">
-              <Button
-                className="w-full"
-                size="lg"
-                disabled={isClosed}
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    navigate('/login', { state: { from: { pathname: `/jobs/${id}` } } })
-                  } else {
-                    navigate(`/jobs/${id}/apply`)
-                  }
-                }}
-              >
-                {isClosed ? 'Position Closed' : 'Apply Now'}
-              </Button>
-
-              {isAuthenticated && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => isSaved ? unSaveMutation.mutate() : saveMutation.mutate()}
-                  disabled={saveMutation.isPending || unSaveMutation.isPending}
-                >
-                  {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-                  {isSaved ? 'Saved' : 'Save Job'}
-                </Button>
-              )}
-
-              <div className="border-t border-[var(--border-color)] pt-4 space-y-3">
-                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Job Details</h3>
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-[var(--text-tertiary)]">Type</span>
-                    <Badge variant={job.jobType === 'Remote' ? 'success' : 'primary'} size="xs">{job.jobType}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-[var(--text-tertiary)]">Level</span>
-                    <span className="font-medium text-[var(--text-primary)]">{job.experienceLevel}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-[var(--text-tertiary)]">Location</span>
-                    <span className="font-medium text-[var(--text-primary)]">{job.location}</span>
-                  </div>
-                  {job.salaryRange?.min > 0 && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-[var(--text-tertiary)]">Salary</span>
-                      <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                        {formatCurrency(job.salaryRange.min)}
-                        {job.salaryRange.max > 0 && ` - ${formatCurrency(job.salaryRange.max)}`}
-                      </span>
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="font-semibold text-[var(--text-primary)] mb-4">Job Details</h2>
+                <div className="space-y-4">
+                  {job.experienceLevel && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[var(--text-secondary)]">Experience</span>
+                      <span className="text-sm font-medium text-[var(--text-primary)]">{job.experienceLevel}</span>
+                    </div>
+                  )}
+                  {job.jobType && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[var(--text-secondary)]">Type</span>
+                      <span className="text-sm font-medium text-[var(--text-primary)]">{job.jobType}</span>
+                    </div>
+                  )}
+                  {job.location && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[var(--text-secondary)]">Location</span>
+                      <span className="text-sm font-medium text-[var(--text-primary)]">{job.location}</span>
+                    </div>
+                  )}
+                  {job.salary && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[var(--text-secondary)]">Salary</span>
+                      <span className="text-sm font-medium text-[var(--text-primary)]">{job.salary}</span>
+                    </div>
+                  )}
+                  {job.applicationsCount !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[var(--text-secondary)]">Applicants</span>
+                      <span className="text-sm font-medium text-[var(--text-primary)]">{job.applicationsCount}</span>
                     </div>
                   )}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {job.skills?.length > 0 && (
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="font-semibold text-[var(--text-primary)] mb-4">Required Skills</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {job.skills.map((skill) => (
+                      <Badge key={skill} variant="primary" size="md">{skill}</Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="font-semibold text-[var(--text-primary)] mb-4">About the Company</h2>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold text-lg">
+                    {job.company?.charAt(0) || 'C'}
+                  </div>
+                  <div>
+                    <p className="font-medium text-[var(--text-primary)]">{job.company || 'Company'}</p>
+                    <p className="text-xs text-[var(--text-tertiary)]">{job.industry || 'Technology'}</p>
+                  </div>
+                </div>
+                {job.companyDescription && (
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                    {job.companyDescription}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

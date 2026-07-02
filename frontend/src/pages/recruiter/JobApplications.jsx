@@ -1,177 +1,154 @@
+import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { applicationApi } from '../../services/applicationApi'
-import { SkeletonPage } from '../../components/ui/Skeleton'
-import { useToast } from '../../components/ui/Toast'
-import ScheduleInterviewModal from '../../components/interviews/ScheduleInterviewModal'
-import { ArrowLeft, ExternalLink, AlertCircle, Calendar } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import api from '../../services/axios'
+import { Card, CardContent } from '../../components/ui/Card'
+import Badge from '../../components/ui/Badge'
+import Button from '../../components/ui/Button'
+import { SkeletonList } from '../../components/ui/Skeleton'
+import EmptyState from '../../components/ui/EmptyState'
+import { cn } from '../../lib/utils'
+import { ArrowLeft, Users, Star, Clock, FileText, CheckCircle, MessageCircle } from 'lucide-react'
 
-const statusColors = {
-  Applied: 'bg-blue-100 text-blue-700',
-  Reviewing: 'bg-yellow-100 text-yellow-700',
-  Shortlisted: 'bg-purple-100 text-purple-700',
-  'Interview Scheduled': 'bg-indigo-100 text-indigo-700',
-  Rejected: 'bg-red-100 text-red-700',
-  Hired: 'bg-green-100 text-green-700',
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
 }
 
-const statuses = ['Applied', 'Reviewing', 'Shortlisted', 'Interview Scheduled', 'Rejected', 'Hired']
-
-function getResumeUrl(resumeUrl) {
-  if (!resumeUrl) return null
-  if (resumeUrl.startsWith('http://') || resumeUrl.startsWith('https://')) return resumeUrl
-  return resumeUrl
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0 },
 }
 
-export default function JobApplications() {
+const statuses = ['All', 'Applied', 'Reviewing', 'Shortlisted', 'Interview Scheduled', 'Rejected', 'Hired']
+
+export default function RecruiterJobApplications() {
   const { jobId } = useParams()
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
-  const [schedulingApp, setSchedulingApp] = useState(null)
+  const [activeTab, setActiveTab] = useState('All')
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['job-applications', jobId],
-    queryFn: () => applicationApi.getJobApplications(jobId).then((r) => r.data),
+    queryFn: () => api.get(`/applications/${jobId}`).then((r) => r.data),
   })
 
-  const statusMutation = useMutation({
-    mutationFn: ({ id, status }) => applicationApi.updateApplicationStatus(id, status),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['job-applications', jobId] })
-      toast.success('Status Updated', `Application moved to "${variables.status}".`)
-    },
-    onError: (err) => {
-      toast.error('Failed to Update', err?.response?.data?.message || 'Could not update status.')
-    },
-  })
-
-  const handleStatusChange = (id, currentStatus, newStatus) => {
-    if (newStatus === 'Rejected' && !window.confirm('Mark this application as Rejected? This cannot be undone.')) {
-      return
-    }
-    statusMutation.mutate({ id, status: newStatus })
-  }
-
-  if (isLoading) return <SkeletonPage />
-  if (isError) {
-    return (
-      <div className="space-y-6">
-        <Link to="/recruiter/my-jobs" className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
-          <ArrowLeft className="h-4 w-4" /> Back to my jobs
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Applications</h1>
-        <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center">
-          <AlertCircle className="mx-auto h-8 w-8 text-red-400" />
-          <p className="mt-2 text-red-700">{error?.response?.data?.message || 'Failed to load applications.'}</p>
-          <button onClick={() => queryClient.invalidateQueries({ queryKey: ['job-applications', jobId] })} className="mt-4 text-sm font-medium text-red-600 hover:text-red-500">
-            Try Again
-          </button>
-        </div>
-      </div>
-    )
-  }
+  if (isLoading) return (
+    <div className="space-y-6">
+      <SkeletonList count={5} />
+    </div>
+  )
 
   const applications = data?.data?.applications || []
-  const sorted = [...applications].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  const filtered = activeTab === 'All' ? applications : applications.filter((a) => a.status === activeTab)
 
   return (
-    <div className="space-y-6">
-      <Link to="/recruiter/my-jobs" className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
-        <ArrowLeft className="h-4 w-4" /> Back to my jobs
-      </Link>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      <motion.div variants={itemVariants}>
+        <Link to="/recruiter/my-jobs" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4">
+          <ArrowLeft className="h-4 w-4" /> Back to my jobs
+        </Link>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Applications</h1>
+        <p className="text-sm text-[var(--text-secondary)] mt-1">{applications.length} total applications</p>
+      </motion.div>
 
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Applications</h1>
-        <span className="text-sm text-gray-500">{sorted.length} total</span>
-      </div>
+      <motion.div variants={itemVariants} className="flex overflow-x-auto gap-1 pb-2">
+        {statuses.map((status) => {
+          const count = status === 'All' ? applications.length : applications.filter((a) => a.status === status).length
+          return (
+            <button
+              key={status}
+              onClick={() => setActiveTab(status)}
+              className={cn(
+                'whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition-all shrink-0',
+                activeTab === status
+                  ? 'bg-[var(--color-primary-500)] text-white shadow-sm'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+              )}
+            >
+              {status}
+              <span className={cn(
+                'ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold',
+                activeTab === status ? 'bg-white/20 text-white' : 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]'
+              )}>
+                {count}
+              </span>
+            </button>
+          )
+        })}
+      </motion.div>
 
-      {sorted.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-12 text-center">
-          <AlertCircle className="mx-auto h-10 w-10 text-gray-400" />
-          <p className="mt-3 text-gray-500">No applications received yet.</p>
-        </div>
+      {filtered.length === 0 ? (
+        <motion.div variants={itemVariants}>
+          <EmptyState icon={Users} title="No applications found" />
+        </motion.div>
       ) : (
-        <div className="space-y-4">
-          {sorted.map((app) => {
-            const candidateName = app.candidateId?.name || app.candidateId?.email?.split('@')[0] || 'Unknown'
-            const resumeUrl = getResumeUrl(app.resumeUrl)
-            const isUpdating = statusMutation.isPending && statusMutation.variables?.id === app._id
-
-            return (
-              <div key={app._id} className="rounded-lg border border-gray-200 bg-white p-6">
-                <div className="flex items-start justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900">{candidateName}</p>
-                      <span className="text-sm text-gray-400">{app.candidateId?.email}</span>
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-3">
+          {filtered.map((app) => (
+            <motion.div key={app._id} variants={itemVariants}>
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-semibold text-lg">
+                      {app.candidateId?.name?.charAt(0) || 'U'}
                     </div>
-                    <p className="mt-0.5 text-xs text-gray-400">
-                      Applied {new Date(app.createdAt).toLocaleDateString()}
-                    </p>
-                    <div className="mt-2 flex items-center gap-4 text-sm">
-                      {app.atsScore > 0 && (
-                        <span className="text-gray-600">
-                          ATS: <span className="font-semibold text-gray-900">{app.atsScore}</span>/100
-                        </span>
-                      )}
-                      {app.matchPercent > 0 && (
-                        <span className="text-gray-600">
-                          Match: <span className="font-semibold text-gray-900">{app.matchPercent}%</span>
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-2 flex items-center gap-2">
-                      <Link
-                        to={`/applications/${app._id}/analysis`}
-                        className="text-xs font-medium text-indigo-600 hover:text-indigo-500"
-                      >
-                        View Analysis
-                      </Link>
-                      {resumeUrl && (
-                        <a
-                          href={resumeUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-0.5 text-xs font-medium text-indigo-600 hover:text-indigo-500"
-                        >
-                          Resume <ExternalLink className="h-3 w-3" />
-                        </a>
-                      )}
-                      {app.status === 'Interview Scheduled' && (
-                        <button
-                          onClick={() => setSchedulingApp(app)}
-                          className="inline-flex items-center gap-0.5 text-xs font-medium text-green-600 hover:text-green-500"
-                        >
-                          <Calendar className="h-3 w-3" /> Schedule Interview
-                        </button>
-                      )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="font-semibold text-[var(--text-primary)]">{app.candidateId?.name || 'Anonymous'}</h3>
+                          <p className="text-sm text-[var(--text-secondary)]">{app.candidateId?.email}</p>
+                        </div>
+                        <Badge variant={app.status === 'Applied' ? 'primary' : app.status === 'Shortlisted' ? 'success' : app.status === 'Rejected' ? 'danger' : 'default'} size="sm">
+                          {app.status}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 mt-3">
+                        {app.candidateId?.skills?.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {app.candidateId.skills.slice(0, 3).map((skill) => (
+                              <Badge key={skill} variant="primary" size="xs">{skill}</Badge>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
+                          <Clock className="h-3 w-3" />
+                          {new Date(app.createdAt).toLocaleDateString()}
+                        </div>
+                        {app.atsScore > 0 && (
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <Star className="h-3 w-3 text-amber-500" />
+                            <span className="font-medium">ATS {app.atsScore}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-3">
+                        <Button size="xs" variant="outline">
+                          <FileText className="h-3 w-3" />
+                          View Resume
+                        </Button>
+                        <Button size="xs" variant="outline">
+                          <MessageCircle className="h-3 w-3" />
+                          Message
+                        </Button>
+                        {app.status !== 'Rejected' && (
+                          <Button size="xs" variant="primary">
+                            <CheckCircle className="h-3 w-3" />
+                            Shortlist
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0 ml-4">
-                    <select
-                      value={app.status}
-                      onChange={(e) => handleStatusChange(app._id, app.status, e.target.value)}
-                      disabled={isUpdating}
-                      className={`rounded-lg px-3 py-1.5 text-sm font-medium border ${statusColors[app.status] || 'bg-gray-100 text-gray-700'} focus:outline-none disabled:opacity-50`}
-                    >
-                      {statuses.map((s) => <option key={s}>{s}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
       )}
-
-      {schedulingApp && (
-        <ScheduleInterviewModal
-          open={!!schedulingApp}
-          onClose={() => setSchedulingApp(null)}
-          application={schedulingApp}
-        />
-      )}
-    </div>
+    </motion.div>
   )
 }

@@ -1,49 +1,47 @@
-import { useState, useRef } from 'react'
-import { Upload, User } from 'lucide-react'
-import Button from '../ui/Button'
+import { useRef } from 'react'
+import { Camera, Loader2 } from 'lucide-react'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
+function getAvatarUrl(url) {
+  if (!url) return null
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`
+}
 
 export default function AvatarUpload({ currentUrl, onUpload, loading }) {
-  const [preview, setPreview] = useState(null)
   const inputRef = useRef(null)
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setPreview(URL.createObjectURL(file))
-    onUpload(file)
-  }
+  const avatarUrl = getAvatarUrl(currentUrl)
 
   return (
-    <div className="flex items-center gap-6">
-      <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gray-200">
-        {preview || currentUrl ? (
-          <img
-            src={preview || currentUrl}
-            alt="Avatar"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <User className="h-10 w-10 text-gray-400" />
-        )}
-      </div>
-      <div>
+    <div className="flex items-center gap-5">
+      <div className="relative">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 ring-2 ring-indigo-200 dark:ring-indigo-700 overflow-hidden">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+          ) : (
+            <Camera className="h-8 w-8 text-indigo-500 dark:text-indigo-400" />
+          )}
+        </div>
+        <button
+          onClick={() => inputRef.current?.click()}
+          disabled={loading}
+          className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-white shadow-md hover:bg-indigo-600 transition-colors disabled:opacity-50"
+          aria-label="Upload photo"
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+        </button>
         <input
           ref={inputRef}
           type="file"
           accept="image/*"
-          onChange={handleFileChange}
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f) }}
           className="hidden"
         />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          loading={loading}
-          onClick={() => inputRef.current?.click()}
-        >
-          <Upload className="h-4 w-4" />
-          Upload Photo
-        </Button>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-[var(--text-primary)]">Profile Photo</p>
+        <p className="text-xs text-[var(--text-tertiary)]">JPG, PNG or WEBP (max 2 MB)</p>
       </div>
     </div>
   )

@@ -1,195 +1,173 @@
+import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import { subscriptionApi } from '../../services/subscriptionApi'
+import { Card, CardContent } from '../../components/ui/Card'
+import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
-import { ArrowLeft, Check, Zap, Crown } from 'lucide-react'
+import { cn } from '../../lib/utils'
+import { CheckCircle, Zap, Star, Crown, ArrowRight, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-const PLANS = [
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+}
+
+const plans = [
   {
-    id: 'Free',
     name: 'Free',
-    price: 0,
-    currency: 'INR',
+    price: '$0',
+    period: 'forever',
+    description: 'Get started with basic features',
     features: [
-      'Basic job search',
-      'Apply to 5 jobs/month',
-      'Basic profile',
+      'Basic resume analysis',
+      '5 job applications/month',
+      '1 mock interview/month',
+      'Basic skill gap analysis',
       'Email support',
     ],
-    icon: Check,
+    cta: 'Get Started',
+    popular: false,
+    color: 'from-gray-500 to-gray-600',
   },
   {
-    id: 'Pro',
     name: 'Pro',
-    price: 1500,
-    currency: 'INR',
+    price: '$19',
+    period: 'per month',
+    description: 'For serious job seekers',
     features: [
+      'Advanced resume analysis',
       'Unlimited job applications',
-      'AI Resume Analysis',
-      'Skill Gap Analysis',
-      'Mock Interview (5/mo)',
+      'Unlimited mock interviews',
+      'Detailed skill gap analysis',
+      'Career roadmap generation',
       'Priority email support',
+      'ATS score tracking',
     ],
-    icon: Zap,
+    cta: 'Start Free Trial',
     popular: true,
+    color: 'from-indigo-500 to-purple-600',
   },
   {
-    id: 'Premium',
-    name: 'Premium',
-    price: 3900,
-    currency: 'INR',
+    name: 'Enterprise',
+    price: '$49',
+    period: 'per month',
+    description: 'For career professionals',
     features: [
       'Everything in Pro',
-      'Unlimited Mock Interviews',
-      'Career Roadmap',
-      'Real-time Chat with recruiters',
-      'Priority phone & email support',
+      'AI-powered interview coaching',
+      'Personalized career roadmap',
+      '1-on-1 career counseling',
+      'Resume review by experts',
+      'Priority chat support',
+      'Certificate of completion',
     ],
-    icon: Crown,
+    cta: 'Contact Sales',
+    popular: false,
+    color: 'from-amber-500 to-orange-600',
   },
 ]
 
-function loadRazorpayScript() {
-  return new Promise((resolve) => {
-    if (window.Razorpay) return resolve(true)
-    const script = document.createElement('script')
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-    script.onload = () => resolve(true)
-    script.onerror = () => resolve(false)
-    document.body.appendChild(script)
-  })
-}
-
 export default function PlansPage() {
-  const [loadingPlan, setLoadingPlan] = useState(null)
-
-  const orderMutation = useMutation({
-    mutationFn: (planId) => subscriptionApi.createOrder(planId).then((r) => r.data),
-  })
-
-  const verifyMutation = useMutation({
-    mutationFn: (data) => subscriptionApi.verifyPayment(data).then((r) => r.data),
-  })
-
-  const handleSubscribe = async (planId) => {
-    setLoadingPlan(planId)
-
-    try {
-      const ready = await loadRazorpayScript()
-      if (!ready) {
-        alert('Failed to load payment gateway. Please try again.')
-        setLoadingPlan(null)
-        return
-      }
-
-      const orderRes = await orderMutation.mutateAsync(planId)
-      const { orderId, amount, currency, keyId } = orderRes.data
-
-      const options = {
-        key: keyId,
-        amount,
-        currency,
-        name: 'AI-Powered Interview',
-        description: `${planId} Plan Subscription`,
-        order_id: orderId,
-        handler: async (response) => {
-          await verifyMutation.mutateAsync({
-            razorpayOrderId: response.razorpay_order_id,
-            razorpayPaymentId: response.razorpay_payment_id,
-            razorpaySignature: response.razorpay_signature,
-            planId,
-          })
-        },
-        modal: {
-          ondismiss: () => setLoadingPlan(null),
-        },
-        theme: { color: '#4f46e5' },
-      }
-
-      const rzp = new window.Razorpay(options)
-      rzp.on('payment.failed', () => setLoadingPlan(null))
-      rzp.open()
-    } catch {
-      setLoadingPlan(null)
-    }
-  }
+  const [billing, setBilling] = useState('monthly')
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
-        <ArrowLeft className="h-4 w-4" /> Back to dashboard
-      </Link>
-
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Choose Your Plan</h1>
-        <p className="mt-2 text-gray-500">Upgrade to unlock AI-powered features and boost your career.</p>
-      </div>
-
-      {verifyMutation.isSuccess && (
-        <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-center text-sm text-green-700">
-          {verifyMutation.data?.message || 'Payment successful! Your plan has been upgraded.'}
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-6xl mx-auto space-y-8"
+    >
+      <motion.div variants={itemVariants} className="text-center">
+        <h1 className="text-3xl font-bold text-[var(--text-primary)]">Pricing Plans</h1>
+        <p className="text-[var(--text-secondary)] mt-2 max-w-lg mx-auto">
+          Choose the perfect plan to accelerate your career journey
+        </p>
+        <div className="inline-flex items-center gap-1 mt-6 p-1 rounded-xl bg-[var(--bg-tertiary)]">
+          <button
+            onClick={() => setBilling('monthly')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium rounded-lg transition-all',
+              billing === 'monthly' ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)]'
+            )}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBilling('annual')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium rounded-lg transition-all',
+              billing === 'annual' ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)]'
+            )}
+          >
+            Annual <Badge variant="success" size="xs">Save 20%</Badge>
+          </button>
         </div>
-      )}
+      </motion.div>
 
-      {verifyMutation.isError && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700">
-          {verifyMutation.error?.response?.data?.message || 'Payment verification failed.'}
-        </div>
-      )}
-
-      <div className="grid gap-6 md:grid-cols-3">
-        {PLANS.map((plan) => {
-          const Icon = plan.icon
-          const isLoading = loadingPlan === plan.id && orderMutation.isPending
-
-          return (
-            <div
-              key={plan.id}
-              className={`relative rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md ${
-                plan.popular ? 'border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-200'
-              }`}
-            >
-              {plan.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
+      <motion.div variants={itemVariants} className="grid gap-6 lg:grid-cols-3">
+        {plans.map((plan) => (
+          <Card key={plan.name} className={cn(
+            'relative',
+            plan.popular && 'ring-2 ring-indigo-500 shadow-lg scale-[1.02]'
+          )}>
+            {plan.popular && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <Badge variant="primary" size="md">
+                  <Star className="h-3 w-3" />
                   Most Popular
-                </span>
-              )}
-
-              <div className="mb-4 flex items-center gap-2">
-                <Icon className={`h-6 w-6 ${plan.popular ? 'text-indigo-600' : 'text-gray-600'}`} />
-                <h2 className="text-xl font-bold text-gray-900">{plan.name}</h2>
+                </Badge>
+              </div>
+            )}
+            <CardContent className="p-6 space-y-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br', plan.color, 'text-white')}>
+                    {plan.name === 'Free' ? <Zap className="h-5 w-5" /> : plan.name === 'Pro' ? <Sparkles className="h-5 w-5" /> : <Crown className="h-5 w-5" />}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)]">{plan.name}</h3>
+                    <p className="text-xs text-[var(--text-tertiary)]">{plan.description}</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">
-                  {plan.price === 0 ? 'Free' : `₹${plan.price.toLocaleString()}`}
+              <div>
+                <span className="text-4xl font-bold text-[var(--text-primary)]">
+                  {billing === 'annual' && plan.price !== '$0' ? `$${Math.round(parseInt(plan.price.slice(1)) * 12 * 0.8)}` : plan.price}
                 </span>
-                {plan.price > 0 && <span className="text-sm text-gray-500">/month</span>}
+                <span className="text-sm text-[var(--text-tertiary)] ml-1">/{plan.period}</span>
               </div>
 
-              <ul className="mb-6 space-y-3">
-                {plan.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-                    {f}
+              <ul className="space-y-3">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                    <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                    {feature}
                   </li>
                 ))}
               </ul>
 
-              {plan.id !== 'Free' && (
-                <Button
-                  className="w-full"
-                  onClick={() => handleSubscribe(plan.id)}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Processing...' : `Subscribe to ${plan.name}`}
-                </Button>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </div>
+              <Button
+                className={cn(
+                  'w-full',
+                  plan.popular ? '' : 'variant-outline'
+                )}
+                variant={plan.popular ? 'primary' : 'outline'}
+                as={Link}
+                to="/subscription"
+              >
+                {plan.cta}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </motion.div>
+    </motion.div>
   )
 }

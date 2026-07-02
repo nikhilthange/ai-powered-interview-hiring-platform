@@ -1,21 +1,20 @@
-import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { cn } from '../../lib/utils'
-import { chatApi } from '../../services/chatApi'
 import {
   LayoutDashboard, Briefcase, FileText, Bookmark, MessageCircle,
-  GraduationCap, FileSearch, Target, BarChart3,
-  Users, X, Calendar,
+  GraduationCap, Search, Target, BarChart3,
+  Users, X, Calendar, ChevronLeft, Bell,
+  User, CreditCard, LogOut,
 } from 'lucide-react'
 
 const candidateLinks = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/jobs', label: 'Find Jobs', icon: Briefcase },
+  { to: '/jobs', label: 'Find Jobs', icon: Search },
   { to: '/my-applications', label: 'Applications', icon: FileText },
   { to: '/my-interviews', label: 'Interviews', icon: Calendar },
   { to: '/saved-jobs', label: 'Saved Jobs', icon: Bookmark },
-  { to: '/resume-analyzer', label: 'Resume AI', icon: FileSearch },
+  { to: '/resume-analyzer', label: 'Resume AI', icon: Search },
   { to: '/skill-gap-analysis', label: 'Skill Gap', icon: Target },
   { to: '/mock-interview', label: 'Mock Interview', icon: GraduationCap },
   { to: '/career-roadmap', label: 'Career Roadmap', icon: BarChart3 },
@@ -35,8 +34,8 @@ const adminLinks = [
   { to: '/admin/users', label: 'Users', icon: Users },
 ]
 
-export default function Sidebar({ open, onClose }) {
-  const { user } = useAuth()
+export default function Sidebar({ open, onClose, collapsed, onToggle }) {
+  const { user, logout } = useAuth()
   const location = useLocation()
 
   const getLinks = () => {
@@ -50,25 +49,17 @@ export default function Sidebar({ open, onClose }) {
 
   const links = getLinks()
 
-  const [unreadCount, setUnreadCount] = useState(0)
-
-  useEffect(() => {
-    const fetchUnread = async () => {
-      try {
-        const res = await chatApi.getUnreadCount()
-        setUnreadCount(res.data.data.count)
-      } catch {}
-    }
-    fetchUnread()
-    const interval = setInterval(fetchUnread, 30000)
-    return () => clearInterval(interval)
-  }, [])
+  const bottomLinks = [
+    { to: user?.role === 'recruiter' ? '/recruiter/profile' : '/profile', label: 'Profile', icon: User },
+    { to: '/plans', label: 'Billing', icon: CreditCard },
+    { to: '/notifications', label: 'Notifications', icon: Bell },
+  ]
 
   return (
     <>
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -76,24 +67,42 @@ export default function Sidebar({ open, onClose }) {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-[var(--bg-primary)] border-[var(--border-color)] transition-transform duration-300 lg:static lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 flex flex-col border-r bg-[var(--bg-primary)]/95 backdrop-blur-xl border-[var(--border-color)] transition-all duration-300 lg:static lg:translate-x-0',
+          collapsed ? 'w-[72px]' : 'w-64',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
         aria-label="Sidebar navigation"
       >
-        <div className="flex h-16 items-center justify-between border-b border-[var(--border-color)] px-5">
+        <div className={cn(
+          'flex h-16 items-center border-b border-[var(--border-color)]',
+          collapsed ? 'justify-center px-0' : 'justify-between px-5'
+        )}>
           <Link to="/" className="flex items-center gap-2.5" onClick={onClose}>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--color-primary-500)] to-[var(--color-primary-700)] text-white text-sm font-bold shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold shadow-sm shadow-indigo-500/20">
               AI
             </div>
-            <span className="font-semibold text-[var(--text-primary)]">AI Interview</span>
+            {!collapsed && (
+              <span className="font-semibold text-[var(--text-primary)]">HireMate</span>
+            )}
           </Link>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors" aria-label="Close sidebar">
-            <X className="h-5 w-5" />
+          <button
+            onClick={onToggle}
+            className={cn(
+              'rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] transition-colors',
+              collapsed && 'hidden lg:block mx-auto'
+            )}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
           </button>
+          {!collapsed && (
+            <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors" aria-label="Close sidebar">
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {links.map((link) => {
             const Icon = link.icon
             const isActive = location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to + '/'))
@@ -103,33 +112,69 @@ export default function Sidebar({ open, onClose }) {
                 to={link.to}
                 onClick={onClose}
                 className={cn(
-                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150',
+                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  collapsed && 'justify-center px-2',
                   isActive
-                    ? 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-[var(--color-primary-950)] dark:text-[var(--color-primary-300)]'
+                    ? 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-indigo-500/10 dark:text-indigo-400 shadow-sm'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
                 )}
                 aria-current={isActive ? 'page' : undefined}
+                title={collapsed ? link.label : undefined}
               >
-                <Icon className="h-5 w-5 shrink-0" />
-                <span>{link.label}</span>
-                {link.label === 'Messages' && unreadCount > 0 && (
-                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
+                <Icon className={cn('shrink-0', collapsed ? 'h-5 w-5' : 'h-5 w-5')} />
+                {!collapsed && <span>{link.label}</span>}
+                {isActive && !collapsed && (
+                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--color-primary-500)]" />
                 )}
               </Link>
             )
           })}
         </nav>
 
-        <div className="border-t border-[var(--border-color)] p-3">
-          {user && (
+        <div className="border-t border-[var(--border-color)] p-3 space-y-1">
+          {bottomLinks.map((link) => {
+            const Icon = link.icon
+            const isActive = location.pathname === link.to
+            return (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={onClose}
+                className={cn(
+                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  collapsed && 'justify-center px-2',
+                  isActive
+                    ? 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-indigo-500/10 dark:text-indigo-400'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+                )}
+                title={collapsed ? link.label : undefined}
+              >
+                <Icon className="h-5 w-5 shrink-0" />
+                {!collapsed && <span>{link.label}</span>}
+              </Link>
+            )
+          })}
+          <button
+            onClick={logout}
+            className={cn(
+              'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30',
+              collapsed && 'justify-center px-2'
+            )}
+            title={collapsed ? 'Logout' : undefined}
+          >
+            <LogOut className="h-5 w-5 shrink-0" />
+            {!collapsed && <span>Logout</span>}
+          </button>
+        </div>
+
+        {!collapsed && user && (
+          <div className="border-t border-[var(--border-color)] p-3">
             <Link
               to={user?.role === 'recruiter' ? '/recruiter/profile' : '/profile'}
               onClick={onClose}
               className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[var(--color-primary-500)] to-[var(--color-primary-700)] text-white font-semibold text-xs shadow-sm">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold text-xs shadow-sm">
                 {(user?.name?.charAt(0) || 'U').toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
@@ -137,8 +182,8 @@ export default function Sidebar({ open, onClose }) {
                 <p className="truncate text-xs text-[var(--text-tertiary)] capitalize">{user?.role}</p>
               </div>
             </Link>
-          )}
-        </div>
+          </div>
+        )}
       </aside>
     </>
   )

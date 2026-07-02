@@ -1,54 +1,48 @@
-import { useAuth } from '../../hooks/useAuth'
 import { cn } from '../../lib/utils'
-import { MessageCircle, Loader2 } from 'lucide-react'
 
-export default function ChatRoomList({ rooms, activeRoomId, onSelect, loading }) {
-  const { user } = useAuth()
-
-  const getOtherParticipant = (room) => {
-    if (!room) return { email: 'Unknown' }
-    return user?._id === room.candidateId?._id
-      ? room.recruiterId || { email: 'Recruiter' }
-      : room.candidateId || { email: 'Candidate' }
-  }
-
+export default function ChatRoomList({ rooms, selectedRoom, onSelect }) {
   return (
-    <div className="border-r border-[var(--border-color)] bg-[var(--bg-primary)]">
-      <div className="border-b border-[var(--border-color)] px-4 py-3.5">
-        <h2 className="text-sm font-semibold text-[var(--text-primary)]">Messages</h2>
-      </div>
-      <div className="overflow-y-auto h-[calc(100vh-13rem)]">
-        {loading ? (
-          <div className="flex items-center justify-center p-8">
-            <Loader2 className="h-5 w-5 animate-spin text-[var(--text-tertiary)]" />
-          </div>
-        ) : rooms?.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8 text-center">
-            <MessageCircle className="h-8 w-8 text-[var(--text-tertiary)]" />
-            <p className="mt-2 text-sm text-[var(--text-secondary)]">No conversations yet</p>
-          </div>
-        ) : (
-          rooms?.map((room) => {
-            const other = getOtherParticipant(room)
-            const isActive = room._id === activeRoomId
-            return (
-              <button
-                key={room._id}
-                onClick={() => onSelect(room)}
-                className={cn(
-                  'w-full border-b border-[var(--border-color)] px-4 py-3.5 text-left transition-colors',
-                  isActive ? 'bg-[var(--color-primary-50)] dark:bg-[var(--color-primary-950)]' : 'hover:bg-[var(--bg-tertiary)]'
-                )}
-              >
-                <p className="text-sm font-medium text-[var(--text-primary)]">{other.email}</p>
-                <p className="mt-0.5 text-xs text-[var(--text-tertiary)] truncate">
-                  {room.lastMessage || 'No messages yet'}
+    <div className="divide-y divide-[var(--border-color)]">
+      {rooms.map((room) => {
+        const isSelected = selectedRoom?._id === room._id
+        const unread = room.unreadCount || 0
+        return (
+          <button
+            key={room._id}
+            onClick={() => onSelect(room)}
+            className={cn(
+              'w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors',
+              isSelected ? 'bg-indigo-50 dark:bg-indigo-950/30' : 'hover:bg-[var(--bg-tertiary)]'
+            )}
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-semibold text-sm">
+              {room.name?.charAt(0) || room.participants?.[0]?.name?.charAt(0) || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <p className={cn('text-sm truncate', unread > 0 ? 'font-semibold text-[var(--text-primary)]' : 'text-[var(--text-primary)]')}>
+                  {room.name || room.participants?.[0]?.name || 'User'}
                 </p>
-              </button>
-            )
-          })
-        )}
-      </div>
+                {room.lastMessage?.createdAt && (
+                  <span className="text-[10px] text-[var(--text-tertiary)] shrink-0 ml-2">
+                    {new Date(room.lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center justify-between mt-0.5">
+                <p className="text-xs text-[var(--text-secondary)] truncate">
+                  {room.lastMessage?.content || (room.lastMessage?.text) || 'No messages yet'}
+                </p>
+                {unread > 0 && (
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-indigo-500 px-1.5 text-[10px] font-bold text-white ml-2">
+                    {unread > 9 ? '9+' : unread}
+                  </span>
+                )}
+              </div>
+            </div>
+          </button>
+        )
+      })}
     </div>
   )
 }

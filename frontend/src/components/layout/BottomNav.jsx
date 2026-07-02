@@ -2,11 +2,11 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import useNotifications from '../../hooks/useNotifications'
 import { cn } from '../../lib/utils'
-import { LayoutDashboard, Briefcase, Sparkles, Bell, User } from 'lucide-react'
+import { LayoutDashboard, Sparkles, Bell, User, Search } from 'lucide-react'
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/jobs', label: 'Jobs', icon: Briefcase },
+  { to: '/jobs', label: 'Jobs', icon: Search },
   { to: '/resume-analyzer', label: 'AI', icon: Sparkles },
   { to: '/notifications', label: 'Alerts', icon: Bell },
   { to: '/profile', label: 'Profile', icon: User },

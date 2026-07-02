@@ -8,6 +8,7 @@ const authPaths = ['/login', '/register', '/forgot-password', '/reset-password',
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
   const location = useLocation()
   const isAuthPage = authPaths.includes(location.pathname)
 
@@ -21,10 +22,15 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-secondary)]">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex flex-1 flex-col min-w-0">
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        collapsed={collapsed}
+        onToggle={() => setCollapsed(!collapsed)}
+      />
+      <div className="flex flex-1 flex-col min-w-0 transition-all duration-300">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-auto p-4 lg:p-6 pb-20 lg:pb-6 page-section">
+        <main className="flex-1 overflow-auto p-4 lg:p-6 pb-20 lg:pb-6">
           <div className="mx-auto max-w-7xl">
             <Outlet />
           </div>

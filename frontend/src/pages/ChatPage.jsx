@@ -62,7 +62,7 @@ export default function ChatPage() {
         setMessages((prev) =>
           prev.map((m) =>
             m.senderId !== activeRoom?.candidateId?._id &&
-            m.senderId !== activeRoom?.recruiterId?._id
+              m.senderId !== activeRoom?.recruiterId?._id
               ? m
               : { ...m, isRead: true }
           )
@@ -130,7 +130,7 @@ export default function ChatPage() {
             {messagesError ? (
               <div className="flex flex-1 items-center justify-center">
                 <div className="text-center p-8">
-                  <AlertCircle className="mx-auto h-8 w-8 text-red-400" />
+                  <AlertCircle className="mx-auto h-8 w-8 text-red-405" />
                   <p className="mt-2 text-sm text-gray-600">Failed to load messages.</p>
                   <button onClick={() => refetchMessages()} className="mt-2 text-sm font-medium text-red-600 hover:text-red-500">
                     Try Again
@@ -145,11 +145,10 @@ export default function ChatPage() {
                       {activeRoom.candidateId?.email?.split('@')[0] || activeRoom.recruiterId?.email?.split('@')[0] || 'Chat'}
                     </span>
                     <span
-                      className={`h-2 w-2 rounded-full ${
-                        isUserOnline(activeRoom.candidateId?._id || activeRoom.recruiterId?._id)
+                      className={`h-2 w-2 rounded-full ${isUserOnline(activeRoom.candidateId?._id || activeRoom.recruiterId?._id)
                           ? 'bg-green-500'
                           : 'bg-gray-300'
-                      }`}
+                        }`}
                     />
                     <span className="text-xs text-gray-400">
                       {isUserOnline(activeRoom.candidateId?._id || activeRoom.recruiterId?._id)

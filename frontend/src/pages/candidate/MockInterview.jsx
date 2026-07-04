@@ -122,7 +122,7 @@ export default function MockInterview() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900">
             <Award className="h-8 w-8 text-emerald-500" />
           </div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Interview Complete</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Interview Complete</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">Great effort! Here's your performance summary.</p>
         </motion.div>
 
@@ -272,7 +272,7 @@ export default function MockInterview() {
                   Question {currentQ + 1}
                 </span>
               </div>
-              <p className="text-xl font-semibold text-[var(--text-primary)] leading-relaxed">
+              <p className="text-base sm:text-xl font-semibold text-[var(--text-primary)] leading-relaxed break-words">
                 {question?.text || question?.question || 'Loading question...'}
               </p>
             </CardContent>

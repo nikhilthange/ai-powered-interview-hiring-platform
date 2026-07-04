@@ -40,7 +40,7 @@ export default function VerifyEmail() {
       </div>
       <div className="w-full max-w-md relative">
         <Card>
-          <CardContent className="p-8 text-center">
+          <CardContent className="p-5 sm:p-8 text-center">
             {status === 'loading' && (
               <motion.div
                 initial={{ opacity: 0 }}

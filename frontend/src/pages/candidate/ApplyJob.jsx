@@ -72,8 +72,8 @@ export default function ApplyJob() {
       </div>
 
       <Card>
-        <CardContent className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <CardContent className="p-5 sm:p-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Cover Letter (Optional)</label>
               <textarea

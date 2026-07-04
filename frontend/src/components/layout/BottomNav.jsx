@@ -58,7 +58,7 @@ export default function BottomNav() {
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-0.5 right-1/2 translate-x-5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-error)] px-1 text-[9px] font-bold text-white leading-none"
+                  className="absolute -top-0.5 right-1/2 translate-x-4 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-error)] px-1 text-[9px] font-bold text-white leading-none"
                 >
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </motion.span>

@@ -42,9 +42,9 @@ export default function Jobs() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="skeleton-shimmer h-8 w-48 rounded-xl" />
-          <div className="skeleton-shimmer h-10 w-32 rounded-xl" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="skeleton-shimmer h-7 sm:h-8 w-36 sm:w-48 rounded-xl" />
+          <div className="skeleton-shimmer h-9 sm:h-10 w-28 sm:w-32 rounded-xl" />
         </div>
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-3">
@@ -81,14 +81,14 @@ export default function Jobs() {
       animate="visible"
       className="space-y-6"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Find Jobs</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] truncate">Find Jobs</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
             {jobs.length} job{jobs.length !== 1 ? 's' : ''} available
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"

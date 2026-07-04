@@ -150,10 +150,10 @@ export default function CandidateDashboard() {
           </div>
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-white/70 mb-1">
+              <p className="text-xs sm:text-sm font-medium text-white/70 mb-1">
                 {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'}
               </p>
-              <h1 className="text-2xl font-bold text-white">{name.split(' ')[0]}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-white break-words">{name.split(' ')[0]}</h1>
               <p className="text-sm text-white/60 mt-1">{profile.bio || "Let's find your next opportunity"}</p>
             </div>
             <div className="flex items-center gap-3">

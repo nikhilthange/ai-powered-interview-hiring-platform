@@ -42,10 +42,10 @@ function LayoutContent() {
       <div className="flex flex-1 flex-col min-w-0 transition-all duration-300">
         {!isLanding && <Navbar />}
         <main className={cn(
-          'flex-1 overflow-auto',
+          'flex-1 overflow-x-hidden overflow-y-auto',
           isLanding ? '' : 'p-3 sm:p-4 lg:p-6 pb-20 lg:pb-6'
         )}>
-          <div className={cn(isLanding ? '' : 'mx-auto max-w-7xl')}>
+          <div className={cn(isLanding ? 'w-full' : 'mx-auto w-full max-w-7xl')}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}

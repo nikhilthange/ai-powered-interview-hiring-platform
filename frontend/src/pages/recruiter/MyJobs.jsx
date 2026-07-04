@@ -43,7 +43,7 @@ export default function MyJobs() {
     >
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">My Jobs</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">My Jobs</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">{jobs.length} job{jobs.length !== 1 ? 's' : ''} posted</p>
         </div>
         <Link to="/recruiter/jobs/create">

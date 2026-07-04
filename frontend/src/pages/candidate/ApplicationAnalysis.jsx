@@ -40,7 +40,7 @@ export default function ApplicationAnalysis() {
         <Link to="/my-applications" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4">
           <ArrowLeft className="h-4 w-4" /> Back to applications
         </Link>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Application Analysis</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Application Analysis</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">Detailed breakdown of your application performance</p>
       </motion.div>
 

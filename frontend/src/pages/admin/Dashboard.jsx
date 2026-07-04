@@ -56,7 +56,7 @@ export default function AdminDashboard() {
           <div className="relative">
             <div className="flex items-center gap-3 mb-2">
               <Shield className="h-6 w-6 text-white/80" />
-              <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">Admin Dashboard</h1>
             </div>
             <p className="text-sm text-white/60">Platform overview and management</p>
           </div>

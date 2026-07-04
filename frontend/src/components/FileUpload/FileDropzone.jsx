@@ -46,7 +46,7 @@ export default function FileDropzone({ onFile, accept, label, icon: Icon = Uploa
           onDragLeave={handleDragLeave}
           onClick={() => inputRef.current?.click()}
           className={cn(
-            'cursor-pointer flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center transition-all duration-200',
+            'cursor-pointer flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 sm:p-12 text-center transition-all duration-200',
             dragOver
               ? `border-${accentColor}-500 bg-${accentColor}-50 dark:bg-${accentColor}-950/50 scale-[1.01]`
               : 'border-[var(--border-color)] hover:border-indigo-300 hover:bg-[var(--bg-tertiary)]'
@@ -54,9 +54,9 @@ export default function FileDropzone({ onFile, accept, label, icon: Icon = Uploa
         >
           <motion.div
             animate={dragOver ? { y: -5, scale: 1.1 } : {}}
-            className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900"
+            className="mb-4 sm:mb-5 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900"
           >
-            <Icon className="h-8 w-8 text-indigo-500" />
+            <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-500" />
           </motion.div>
           <p className="text-sm font-medium text-[var(--text-primary)]">
             Drop your file here, or <span className="text-indigo-600">browse files</span>

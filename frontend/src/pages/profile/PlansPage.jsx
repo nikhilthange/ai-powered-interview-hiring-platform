@@ -94,7 +94,7 @@ export default function PlansPage() {
         >
           <Sparkles className="h-7 w-7 text-indigo-600" />
         </motion.div>
-        <h1 className="text-3xl font-bold text-[var(--text-primary)]">Pricing Plans</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">Pricing Plans</h1>
         <p className="text-[var(--text-secondary)] mt-2 max-w-lg mx-auto">
           Choose the perfect plan to accelerate your career journey
         </p>
@@ -120,13 +120,13 @@ export default function PlansPage() {
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid gap-6 lg:grid-cols-3">
+      <motion.div variants={itemVariants} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan) => {
           const Icon = plan.icon
           return (
             <Card key={plan.name} className={cn(
               'relative flex flex-col',
-              plan.popular && 'ring-2 ring-indigo-500 shadow-lg scale-[1.02] z-10'
+              plan.popular && 'ring-2 ring-indigo-500 shadow-lg sm:scale-[1.02] z-10'
             )}>
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -165,15 +165,15 @@ export default function PlansPage() {
                   ))}
                 </ul>
 
-                <Button
-                  className="w-full"
-                  variant={plan.popular ? 'gradient' : 'outline'}
-                >
-                  <Link to="/subscription" className="flex items-center gap-2">
+                <Link to="/subscription" className="block w-full">
+                  <Button
+                    className="w-full"
+                    variant={plan.popular ? 'gradient' : 'outline'}
+                  >
                     {plan.cta}
                     <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           )

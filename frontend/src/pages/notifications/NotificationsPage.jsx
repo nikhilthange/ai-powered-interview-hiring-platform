@@ -44,16 +44,16 @@ export default function NotificationsPage() {
       animate="visible"
       className="max-w-3xl mx-auto space-y-6"
     >
-      <motion.div variants={itemVariants} className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Notifications</h1>
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Notifications</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
             {notifications.length} notification{notifications.length !== 1 ? 's' : ''}
             {unreadCount > 0 && ` (${unreadCount} unread)`}
           </p>
         </div>
         {unreadCount > 0 && (
-          <Button variant="outline" size="sm" onClick={markAllAsRead}>
+          <Button variant="outline" size="sm" onClick={markAllAsRead} className="shrink-0">
             <CheckCheck className="h-4 w-4" />
             Mark All Read
           </Button>

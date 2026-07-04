@@ -81,7 +81,7 @@ export default function RecruiterProfile() {
             <Building2 className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Recruiter Profile</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Recruiter Profile</h1>
             <p className="text-sm text-[var(--text-secondary)]">Manage your company profile and preferences</p>
           </div>
         </div>

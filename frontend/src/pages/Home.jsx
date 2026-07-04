@@ -139,14 +139,14 @@ export default function Home() {
               AI-Powered Career Platform
               <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse-slow" />
             </motion.div>
-            <h1 className="text-4xl sm:text-6xl font-bold text-[var(--text-primary)] tracking-tight leading-tight">
+            <h1 className="text-[clamp(1.75rem,5vw,3.75rem)] font-bold text-[var(--text-primary)] tracking-tight leading-tight">
               Land Your Dream Job with{' '}
               <span className="text-gradient-premium">AI</span>
             </h1>
-            <p className="mt-6 text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-6 text-sm sm:text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto">
               AI-powered resume analysis, skill gap detection, mock interviews, and career roadmaps — all in one platform.
             </p>
-            <div className="flex items-center justify-center gap-4 mt-8">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-8">
               {isAuthenticated ? (
                 <Link to="/dashboard">
                   <Button size="xl">
@@ -174,7 +174,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="flex items-center justify-center gap-6 mt-10 text-sm text-[var(--text-tertiary)]"
+              className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-10 text-xs sm:text-sm text-[var(--text-tertiary)]"
             >
               <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-amber-500" /> No credit card required</span>
               <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-emerald-500" /> Free forever plan</span>
@@ -187,8 +187,8 @@ export default function Home() {
       {/* Features Grid */}
       <div className="max-w-6xl mx-auto px-4 py-20">
         <motion.div variants={itemVariants} className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-[var(--text-primary)]">Everything you need to succeed</h2>
-          <p className="mt-3 text-[var(--text-secondary)] max-w-xl mx-auto">Intelligent tools to accelerate your career journey</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">Everything you need to succeed</h2>
+          <p className="mt-3 text-sm sm:text-base text-[var(--text-secondary)] max-w-xl mx-auto">Intelligent tools to accelerate your career journey</p>
         </motion.div>
         <motion.div variants={itemVariants} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => {
@@ -214,8 +214,7 @@ export default function Home() {
       {/* Testimonials */}
       <div className="max-w-6xl mx-auto px-4 py-20">
         <motion.div variants={itemVariants} className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-[var(--text-primary)]">Loved by professionals</h2>
-          <p className="mt-3 text-[var(--text-secondary)] max-w-xl mx-auto">Hear from those who've transformed their careers</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">Loved by professionals</h2>
         </motion.div>
         <motion.div variants={itemVariants} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((t) => (
@@ -268,8 +267,8 @@ export default function Home() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-gradient-to-r from-indigo-500/5 to-purple-500/5 blur-3xl" />
         </div>
         <motion.div variants={itemVariants} className="relative">
-          <h2 className="text-3xl font-bold text-[var(--text-primary)]">Ready to accelerate your career?</h2>
-          <p className="mt-3 text-lg text-[var(--text-secondary)] max-w-lg mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">Ready to accelerate your career?</h2>
+          <p className="mt-3 text-sm sm:text-lg text-[var(--text-secondary)] max-w-lg mx-auto">
             Join thousands of professionals who landed their dream jobs with AI-powered tools.
           </p>
           <div className="flex items-center justify-center gap-4 mt-8">

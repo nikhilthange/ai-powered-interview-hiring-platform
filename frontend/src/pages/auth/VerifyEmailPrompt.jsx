@@ -20,7 +20,7 @@ export default function VerifyEmailPrompt() {
         className="w-full max-w-md relative"
       >
         <Card>
-          <CardContent className="p-8 text-center">
+          <CardContent className="p-5 sm:p-8 text-center">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}

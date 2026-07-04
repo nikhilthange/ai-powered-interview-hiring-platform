@@ -67,7 +67,7 @@ export default function RecruiterDashboard() {
               <p className="text-sm font-medium text-white/70 mb-1">
                 {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'}
               </p>
-              <h1 className="text-2xl font-bold text-white">{user?.name || 'Recruiter'}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-white break-words">{user?.name || 'Recruiter'}</h1>
               <p className="text-sm text-white/60 mt-1">Manage your job listings and find top talent</p>
             </div>
             <Link to="/recruiter/jobs/create">

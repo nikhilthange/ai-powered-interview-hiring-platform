@@ -40,7 +40,7 @@ export default function NotFound() {
         </motion.div>
       </div>
 
-      <h1 className="text-2xl font-bold text-[var(--text-primary)]">Page not found</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Page not found</h1>
       <p className="text-sm text-[var(--text-secondary)] mt-2 max-w-sm leading-relaxed">
         The page you're looking for doesn't exist or has been moved. Let's get you back on track.
       </p>

@@ -57,7 +57,7 @@ export default function CreateJob() {
         <Link to="/recruiter/my-jobs" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4">
           <ArrowLeft className="h-4 w-4" /> Back to my jobs
         </Link>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Post a Job</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Post a Job</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">Create a new job listing to find the perfect candidate</p>
       </div>
 
@@ -68,7 +68,7 @@ export default function CreateJob() {
               <Input label="Job Title" placeholder="e.g. Senior Frontend Developer" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
               <Input label="Company" placeholder="e.g. Acme Inc." value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} required />
               <Input label="Location" placeholder="e.g. San Francisco, CA" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-              <Input label="Salary" placeholder="e.g. $100k - $150k" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} />
+              <Input label="Salary (₹)" placeholder="e.g. 1000000 - 1500000" type="number" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">

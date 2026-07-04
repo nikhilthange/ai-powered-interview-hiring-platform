@@ -20,11 +20,11 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape') setProfileOpen(false)
+      if (e.key === 'Escape') { setProfileOpen(false); setSearchOpen(false) }
     }
-    if (profileOpen) document.addEventListener('keydown', handleEscape)
+    if (profileOpen || searchOpen) document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
-  }, [profileOpen])
+  }, [profileOpen, searchOpen])
 
   useEffect(() => {
     const handler = (e) => {
@@ -57,7 +57,7 @@ export default function Navbar() {
       </Link>
 
       {isAuthenticated && (
-        <div className="hidden md:flex items-center flex-1 max-w-md">
+        <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-md">
           <div className="relative w-full group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" />
             <input
@@ -65,10 +65,10 @@ export default function Navbar() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search jobs, skills, companies..."
-              className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] pl-10 pr-4 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
+              placeholder="Search jobs, skills..."
+              className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] pl-9 pr-8 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
             />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 rounded-md border border-[var(--border-color)] bg-[var(--bg-primary)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)] font-mono">
+            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 rounded-md border border-[var(--border-color)] bg-[var(--bg-primary)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)] font-mono">
               ⌘K
             </kbd>
           </div>
@@ -86,6 +86,21 @@ export default function Navbar() {
           >
             <Search className="h-5 w-5" />
           </button>
+        )}
+        {isAuthenticated && searchOpen && (
+          <div className="absolute left-0 right-0 top-16 z-50 p-3 bg-[var(--bg-primary)] border-b border-[var(--border-color)] md:hidden">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search jobs, skills..."
+                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
+                autoFocus
+              />
+            </div>
+          </div>
         )}
 
         {isAuthenticated && (
@@ -134,7 +149,7 @@ export default function Navbar() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className="absolute right-0 mt-2 w-56 rounded-2xl border bg-[var(--bg-primary)]/95 backdrop-blur-xl border-[var(--border-color)] shadow-lg shadow-black/5 py-2"
+                  className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-2xl border bg-[var(--bg-primary)]/95 backdrop-blur-xl border-[var(--border-color)] shadow-lg shadow-black/5 py-2"
                   role="menu"
                 >
                   <div className="px-5 py-3 border-b border-[var(--border-color)]">

@@ -27,7 +27,7 @@ export default function SubscriptionPage() {
         <Link to="/plans" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-2">
           <ChevronRight className="h-4 w-4 rotate-180" /> Back to plans
         </Link>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Subscription</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Subscription</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">Manage your subscription and billing details</p>
       </motion.div>
 

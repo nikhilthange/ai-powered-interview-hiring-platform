@@ -71,7 +71,7 @@ export default function Login() {
             </div>
             <span className="text-xl font-bold text-[var(--text-primary)]">HireMate</span>
           </motion.div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Welcome back</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Welcome back</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">Sign in to your account to continue</p>
         </motion.div>
 

@@ -83,7 +83,7 @@ export default function Register() {
             </div>
             <span className="text-xl font-bold text-[var(--text-primary)]">HireMate</span>
           </motion.div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Create an account</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Create an account</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">Start your career journey with AI-powered tools</p>
         </motion.div>
 
@@ -168,7 +168,7 @@ export default function Register() {
 
                 <div>
                   <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">I am a</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 min-w-0">
                     {[
                       { value: 'candidate', label: 'Job Seeker' },
                       { value: 'recruiter', label: 'Recruiter' },

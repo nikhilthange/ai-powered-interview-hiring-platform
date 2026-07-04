@@ -52,11 +52,11 @@ export default function RecruiterJobApplications() {
         <Link to="/recruiter/my-jobs" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4">
           <ArrowLeft className="h-4 w-4" /> Back to my jobs
         </Link>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Applications</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Applications</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">{applications.length} total applications</p>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="flex overflow-x-auto gap-1 pb-2">
+      <motion.div variants={itemVariants} className="flex overflow-x-auto gap-1 pb-2 -mx-3 sm:-mx-4 px-3 sm:px-4 lg:mx-0 lg:px-0 scrollbar-none">
         {statuses.map((status) => {
           const count = status === 'All' ? applications.length : applications.filter((a) => a.status === status).length
           return (

@@ -64,7 +64,7 @@ export default function ResetPassword() {
               <Sparkles className="h-6 w-6" />
             </div>
           </motion.div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Set new password</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Set new password</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">Enter your new password below</p>
         </motion.div>
         <motion.div variants={itemVariants}>

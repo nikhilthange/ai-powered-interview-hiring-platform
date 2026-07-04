@@ -116,7 +116,7 @@ export default function CandidateProfile() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-4xl mx-auto space-y-6">
       <motion.div variants={itemVariants}>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">My Profile</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">My Profile</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">Manage your personal information and career details</p>
       </motion.div>
 
@@ -144,15 +144,15 @@ export default function CandidateProfile() {
               </div>
             </div>
             {resumeUrl ? (
-              <div className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-8 w-8 text-indigo-500" />
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">Current Resume</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <FileText className="h-8 w-8 text-indigo-500 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">Current Resume</p>
                     <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:text-indigo-500 transition-colors">View / Download</a>
                   </div>
                 </div>
-                <label className="cursor-pointer rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                <label className="cursor-pointer rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-center">
                   Replace
                   <input type="file" accept=".pdf,.docx,.doc" onChange={handleResumeUpload} className="hidden" />
                 </label>
@@ -198,17 +198,19 @@ export default function CandidateProfile() {
               <p className="text-sm text-[var(--text-secondary)] mb-4">No skills added yet.</p>
             )}
             <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Add a skill..."
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())}
-                className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              />
-              <Button onClick={handleAddSkill} disabled={!newSkill.trim() || updateMutation.isPending} size="sm">
-                <Plus className="h-4 w-4" /> Add
-              </Button>
+              <div className="flex items-center gap-2 min-w-0 w-full">
+                <input
+                  type="text"
+                  placeholder="Add a skill..."
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())}
+                  className="flex-1 min-w-0 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                />
+                <Button onClick={handleAddSkill} disabled={!newSkill.trim() || updateMutation.isPending} size="sm" className="shrink-0">
+                  <Plus className="h-4 w-4" /> Add
+                </Button>
+              </div>
             </div>
             {profile?.experienceYears > 0 && (
               <div className="flex items-center gap-2 mt-4 text-sm text-[var(--text-secondary)]">

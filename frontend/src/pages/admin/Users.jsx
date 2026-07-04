@@ -41,7 +41,7 @@ export default function AdminUsers() {
       className="space-y-6"
     >
       <motion.div variants={itemVariants}>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Users</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Users</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">{users.length} total users</p>
       </motion.div>
 

@@ -62,7 +62,7 @@ export default function SavedJobs() {
               <Bookmark className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Saved Jobs</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Saved Jobs</h1>
               <p className="text-sm text-[var(--text-secondary)] mt-0.5">
                 {jobs.length} saved job{jobs.length !== 1 ? 's' : ''}
               </p>

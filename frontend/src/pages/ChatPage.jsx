@@ -42,11 +42,11 @@ export default function ChatPage() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="h-[calc(100vh-8rem)]"
+      className="h-[calc(100dvh-8rem)] lg:h-[calc(100vh-8rem)]"
     >
       <div className="flex h-full gap-4">
         <div className={cn(
-          'w-full lg:w-80 shrink-0',
+          'w-full sm:w-72 lg:w-80 shrink-0',
           selectedRoom && 'hidden lg:block'
         )}>
           <Card className="h-full">

@@ -58,7 +58,7 @@ export default function ResumeAnalyzer() {
           <Sparkles className="h-4 w-4" /> Back to dashboard
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Resume Analyzer</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Resume Analyzer</h1>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
             Upload your resume and paste a job description to get an instant ATS score and detailed AI-powered feedback.
           </p>

@@ -63,14 +63,14 @@ export default function MyApplications() {
     >
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">My Applications</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">My Applications</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
             {applications.length} application{applications.length !== 1 ? 's' : ''} total
           </p>
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="flex overflow-x-auto gap-1 pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
+      <motion.div variants={itemVariants} className="flex overflow-x-auto gap-1 pb-2 -mx-3 sm:-mx-4 px-3 sm:px-4 lg:mx-0 lg:px-0 scrollbar-none">
         {APPLICATION_STATUSES.map((status) => {
           const count = status === 'All' ? applications.length : applications.filter((a) => a.status === status).length
           const isActive = activeTab === status

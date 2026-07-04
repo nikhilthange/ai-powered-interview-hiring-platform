@@ -82,14 +82,14 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
       >
         <div className={cn(
           'flex h-16 items-center border-b border-[var(--border-color)]',
-          collapsed ? 'justify-center px-0' : 'justify-between px-5'
+          collapsed ? 'justify-center px-0' : 'justify-between px-4 sm:px-5'
         )}>
-          <Link to="/" className="flex items-center gap-2.5" onClick={onClose}>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold shadow-sm shadow-indigo-500/20">
+          <Link to="/" className="flex items-center gap-2.5 min-w-0" onClick={onClose}>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold shadow-sm shadow-indigo-500/20">
               <Sparkles className="h-4 w-4" />
             </div>
             {!collapsed && (
-              <span className="font-semibold text-[var(--text-primary)]">HireMate</span>
+              <span className="font-semibold text-[var(--text-primary)] truncate">HireMate</span>
             )}
           </Link>
           <button

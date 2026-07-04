@@ -86,7 +86,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
         )}>
           <Link to="/" className="flex items-center gap-2.5 min-w-0" onClick={onClose}>
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold shadow-sm shadow-indigo-500/20">
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
             </div>
             {!collapsed && (
               <span className="font-semibold text-[var(--text-primary)] truncate">HireMate</span>
@@ -100,11 +100,11 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
             )}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
+            <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} aria-hidden="true" />
           </button>
           {!collapsed && (
             <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors" aria-label="Close sidebar">
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -128,7 +128,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
                 aria-current={isActive ? 'page' : undefined}
                 title={collapsed ? link.label : undefined}
               >
-                <Icon className={cn('shrink-0', collapsed ? 'h-5 w-5' : 'h-5 w-5')} />
+                <Icon className={cn('shrink-0', collapsed ? 'h-5 w-5' : 'h-5 w-5')} aria-hidden="true" />
                 {!collapsed && <span>{link.label}</span>}
                 {isActive && !collapsed && (
                   <motion.span
@@ -159,7 +159,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
                 )}
                 title={collapsed ? link.label : undefined}
               >
-                <Icon className="h-5 w-5 shrink-0" />
+                <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
                 {!collapsed && <span>{link.label}</span>}
               </Link>
             )
@@ -172,7 +172,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
             )}
             title={collapsed ? 'Logout' : undefined}
           >
-            <LogOut className="h-5 w-5 shrink-0" />
+            <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
             {!collapsed && <span>Logout</span>}
           </button>
         </div>

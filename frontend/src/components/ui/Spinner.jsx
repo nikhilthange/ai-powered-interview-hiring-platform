@@ -25,7 +25,7 @@ export default function Spinner({ className, size = 'md', icon = 'default', labe
   const IconComponent = icons[icon] || Loader2
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-4">
+    <div className="flex flex-col items-center justify-center gap-3 p-4" role="status" aria-live="polite" aria-label={label || 'Loading'}>
       <motion.div
         animate={rotations[icon] ? { rotate: 360 } : { scale: [1, 1.15, 1] }}
         transition={rotations[icon]
@@ -33,7 +33,7 @@ export default function Spinner({ className, size = 'md', icon = 'default', labe
           : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
         }
       >
-        <IconComponent className={cn('text-[var(--color-primary-500)]', sizes[size], className)} />
+        <IconComponent className={cn('text-[var(--color-primary-500)]', sizes[size], className)} aria-hidden="true" />
       </motion.div>
       {label && (
         <motion.p

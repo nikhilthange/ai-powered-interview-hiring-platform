@@ -81,11 +81,11 @@ export default function CandidateDashboard() {
 
   if (allFailed) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
+      <div className="flex flex-col items-center justify-center py-24 text-center" role="alert">
         <div className="relative mb-4">
           <div className="absolute inset-0 animate-ping rounded-2xl bg-red-100 dark:bg-red-950/30 opacity-30" />
           <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/50 dark:to-rose-950/50 ring-1 ring-red-200/50 dark:ring-red-800/30">
-            <Eye className="h-8 w-8 text-[var(--color-error)]" />
+            <Eye className="h-8 w-8 text-[var(--color-error)]" aria-hidden="true" />
           </div>
         </div>
         <p className="text-lg font-medium text-[var(--text-primary)]">Unable to load dashboard</p>
@@ -94,7 +94,7 @@ export default function CandidateDashboard() {
           onClick={() => results.forEach((q) => q.refetch())}
           className="mt-6"
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4" aria-hidden="true" />
           Retry
         </Button>
       </div>
@@ -159,14 +159,14 @@ export default function CandidateDashboard() {
             <div className="flex items-center gap-3">
               <Link to="/jobs">
                 <Button className="bg-white/10 text-white border border-white/20 hover:bg-white/20 backdrop-blur-sm shadow-none">
-                  <Briefcase className="h-4 w-4" />
+                  <Briefcase className="h-4 w-4" aria-hidden="true" />
                   Browse Jobs
                 </Button>
               </Link>
               {profileCompletion < 100 && (
                 <Link to="/profile">
                   <Button className="bg-white text-indigo-700 hover:bg-white/90 shadow-none">
-                    <Rocket className="h-4 w-4" />
+                    <Rocket className="h-4 w-4" aria-hidden="true" />
                     Complete Profile
                   </Button>
                 </Link>
@@ -194,7 +194,7 @@ export default function CandidateDashboard() {
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">{metric.label}</span>
                     <div className={cn('rounded-xl p-2 transition-all duration-200 group-hover:scale-110 group-hover:shadow-sm', colors.bg)}>
-                      <Icon className={cn('h-4 w-4', colors.text)} />
+                      <Icon className={cn('h-4 w-4', colors.text)} aria-hidden="true" />
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-[var(--text-primary)]">{metric.value}</p>
@@ -224,7 +224,7 @@ export default function CandidateDashboard() {
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2.5">
                     <div className="rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 p-2 dark:from-indigo-950/50 dark:to-indigo-900/50">
-                      <Sparkles className="h-5 w-5 text-indigo-600" />
+                      <Sparkles className="h-5 w-5 text-indigo-600" aria-hidden="true" />
                     </div>
                     <div>
                       <h2 className="font-semibold text-[var(--text-primary)]">Recommended Jobs</h2>
@@ -232,7 +232,7 @@ export default function CandidateDashboard() {
                     </div>
                   </div>
                   <Link to="/jobs" className="group flex items-center gap-1 text-sm font-medium text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors">
-                    View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                    View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                   </Link>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -251,7 +251,7 @@ export default function CandidateDashboard() {
                               </div>
                             </div>
                           </div>
-                          <ChevronRight className="h-4 w-4 shrink-0 text-[var(--text-tertiary)] mt-1" />
+                          <ChevronRight className="h-4 w-4 shrink-0 text-[var(--text-tertiary)] mt-1" aria-hidden="true" />
                         </div>
                         <div className="flex flex-wrap items-center gap-2 mt-3">
                           {job.jobType && <Badge variant="primary" size="xs">{job.jobType}</Badge>}
@@ -271,7 +271,7 @@ export default function CandidateDashboard() {
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2.5">
                     <div className="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 p-2 dark:from-blue-950/50 dark:to-blue-900/50">
-                      <Activity className="h-5 w-5 text-blue-600" />
+                      <Activity className="h-5 w-5 text-blue-600" aria-hidden="true" />
                     </div>
                     <div>
                       <h2 className="font-semibold text-[var(--text-primary)]">Recent Activity</h2>
@@ -279,7 +279,7 @@ export default function CandidateDashboard() {
                     </div>
                   </div>
                   <Link to="/my-applications" className="group flex items-center gap-1 text-sm font-medium text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors">
-                    View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                    View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                   </Link>
                 </div>
                 <div className="space-y-2">
@@ -294,7 +294,7 @@ export default function CandidateDashboard() {
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-[var(--text-primary)] truncate">{app.jobId?.title || 'Application'}</p>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <Clock className="h-3 w-3 text-[var(--text-tertiary)]" />
+                              <Clock className="h-3 w-3 text-[var(--text-tertiary)]" aria-hidden="true" />
                               <p className="text-xs text-[var(--text-secondary)]">{formatDateRelative(app.createdAt)}</p>
                             </div>
                           </div>
@@ -320,9 +320,9 @@ export default function CandidateDashboard() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-2.5 mb-5">
-                <div className="rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 p-2 dark:from-amber-950/50 dark:to-amber-900/50">
-                  <TrendingUp className="h-5 w-5 text-amber-600" />
-                </div>
+                    <div className="rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 p-2 dark:from-amber-950/50 dark:to-amber-900/50">
+                      <TrendingUp className="h-5 w-5 text-amber-600" aria-hidden="true" />
+                    </div>
                 <div>
                   <h2 className="font-semibold text-[var(--text-primary)]">Career Progress</h2>
                   <p className="text-xs text-[var(--text-tertiary)]">Mock interview results</p>
@@ -348,7 +348,7 @@ export default function CandidateDashboard() {
                       <span className={cn('text-lg font-bold', getGradeColor(avgScore))}>{getGradeLabel(avgScore)} ({avgScore}%)</span>
                     </div>
                   )}
-                  <Link to="/career-roadmap"><Button variant="outline" size="sm" className="w-full"><BarChart3 className="h-4 w-4" /> Career Roadmap</Button></Link>
+                  <Link to="/career-roadmap"><Button variant="outline" size="sm" className="w-full"><BarChart3 className="h-4 w-4" aria-hidden="true" /> Career Roadmap</Button></Link>
                 </div>
               )}
             </CardContent>
@@ -357,9 +357,9 @@ export default function CandidateDashboard() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-2.5 mb-5">
-                <div className="rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 p-2 dark:from-purple-950/50 dark:to-purple-900/50">
-                  <Zap className="h-5 w-5 text-purple-600" />
-                </div>
+                    <div className="rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 p-2 dark:from-purple-950/50 dark:to-purple-900/50">
+                      <Zap className="h-5 w-5 text-purple-600" aria-hidden="true" />
+                    </div>
                 <div>
                   <h2 className="font-semibold text-[var(--text-primary)]">Quick Actions</h2>
                   <p className="text-xs text-[var(--text-tertiary)]">Boost your career</p>
@@ -378,7 +378,7 @@ export default function CandidateDashboard() {
                           <span className="block text-sm font-medium text-[var(--text-primary)]">{action.label}</span>
                           <span className="block text-xs text-[var(--text-tertiary)]">{action.desc}</span>
                         </div>
-                        <ArrowRight className="h-4 w-4 shrink-0 text-[var(--text-tertiary)] group-hover:text-[var(--color-primary-500)] transition-colors" />
+                        <ArrowRight className="h-4 w-4 shrink-0 text-[var(--text-tertiary)] group-hover:text-[var(--color-primary-500)] transition-colors" aria-hidden="true" />
                       </motion.div>
                     </Link>
                   )
@@ -392,13 +392,13 @@ export default function CandidateDashboard() {
               <motion.div whileHover={{ scale: 1.01 }} className="rounded-2xl border bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border-indigo-200 dark:border-indigo-800/50 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/50">
-                    <Bell className="h-5 w-5 text-indigo-600" />
+                    <Bell className="h-5 w-5 text-indigo-600" aria-hidden="true" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)]">{unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}</p>
                     <p className="text-xs text-[var(--text-tertiary)]">Tap to view</p>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)]" />
+                  <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)]" aria-hidden="true" />
                 </div>
               </motion.div>
             </Link>

@@ -1,27 +1,59 @@
-import { useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useRef, useCallback } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import { X } from 'lucide-react'
 
+const focusableSelector = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
 export default function Modal({ open, onClose, title, children, className, size = 'md' }) {
   const overlayRef = useRef(null)
+  const contentRef = useRef(null)
+  const triggerRef = useRef(null)
+  const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
     if (open) {
+      triggerRef.current = document.activeElement
       document.body.style.overflow = 'hidden'
+      requestAnimationFrame(() => {
+        const firstFocusable = contentRef.current?.querySelector(focusableSelector)
+        firstFocusable?.focus()
+      })
     } else {
       document.body.style.overflow = ''
+      if (triggerRef.current && typeof triggerRef.current.focus === 'function') {
+        requestAnimationFrame(() => triggerRef.current.focus())
+      }
     }
     return () => { document.body.style.overflow = '' }
   }, [open])
 
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') onClose?.()
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') {
+      onClose?.()
+      return
     }
-    if (open) document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
-  }, [open, onClose])
+    if (e.key === 'Tab' && contentRef.current) {
+      const focusables = contentRef.current.querySelectorAll(focusableSelector)
+      if (focusables.length === 0) return
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+  }, [onClose])
+
+  useEffect(() => {
+    if (open) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open, handleKeyDown])
 
   const sizes = {
     sm: 'max-w-sm',
@@ -31,14 +63,18 @@ export default function Modal({ open, onClose, title, children, className, size 
     full: 'max-w-full',
   }
 
+  const motionConfig = prefersReducedMotion
+    ? { initial: {}, animate: {}, exit: {}, transition: {} }
+    : {}
+
   return (
     <AnimatePresence>
       {open && (
         <motion.div
           ref={overlayRef}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={prefersReducedMotion ? {} : { opacity: 0 }}
+          animate={prefersReducedMotion ? {} : { opacity: 1 }}
+          exit={prefersReducedMotion ? {} : { opacity: 0 }}
           transition={{ duration: 0.2 }}
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={(e) => { if (e.target === overlayRef.current) onClose?.() }}
@@ -47,15 +83,17 @@ export default function Modal({ open, onClose, title, children, className, size 
           aria-label={title || 'Dialog'}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            ref={contentRef}
+            initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.95, y: 10 }}
+            animate={prefersReducedMotion ? {} : { opacity: 1, scale: 1, y: 0 }}
+            exit={prefersReducedMotion ? {} : { opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             className={cn(
               'w-full rounded-2xl border bg-[var(--bg-primary)] border-[var(--border-color)] shadow-elevated',
               sizes[size],
               className
             )}
+            {...motionConfig}
           >
             {title && (
               <div className="flex items-center justify-between border-b border-[var(--border-color)] px-5 py-4 sm:px-6">
@@ -65,7 +103,7 @@ export default function Modal({ open, onClose, title, children, className, size 
                   className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                   aria-label="Close modal"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
             )}

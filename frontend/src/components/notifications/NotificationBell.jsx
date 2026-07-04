@@ -49,7 +49,7 @@ export default function NotificationBell() {
         aria-expanded={open}
         aria-haspopup="true"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-5 w-5" aria-hidden="true" />
         <AnimatePresence>
           {unreadCount > 0 && (
             <motion.span

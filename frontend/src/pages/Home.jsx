@@ -135,7 +135,7 @@ export default function Home() {
               transition={{ delay: 0.1 }}
               className="inline-flex items-center gap-2 rounded-full border border-indigo-200 dark:border-indigo-800 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50 px-4 py-1.5 text-sm text-indigo-700 dark:text-indigo-300 mb-6 shadow-sm"
             >
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
               AI-Powered Career Platform
               <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse-slow" />
             </motion.div>
@@ -159,7 +159,7 @@ export default function Home() {
                   <Link to="/register">
                     <Button size="xl">
                       Get Started Free
-                      <ArrowRight className="h-5 w-5" />
+                      <ArrowRight className="h-5 w-5" aria-hidden="true" />
                     </Button>
                   </Link>
                   <Link to="/login">
@@ -176,9 +176,9 @@ export default function Home() {
               transition={{ delay: 0.6 }}
               className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-10 text-xs sm:text-sm text-[var(--text-tertiary)]"
             >
-              <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-amber-500" /> No credit card required</span>
-              <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-emerald-500" /> Free forever plan</span>
-              <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-indigo-500" /> Powered by AI</span>
+              <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" /> No credit card required</span>
+              <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" /> Free forever plan</span>
+              <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-indigo-500" aria-hidden="true" /> Powered by AI</span>
             </motion.div>
           </motion.div>
         </div>
@@ -201,7 +201,7 @@ export default function Home() {
                 className="group rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-6 hover:shadow-lg hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30 transition-all cursor-default"
               >
                 <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br', feature.bg, 'group-hover:scale-110 transition-transform duration-200')}>
-                  <Icon className={cn('h-6 w-6', feature.iconColor)} />
+                    <Icon className={cn('h-6 w-6', feature.iconColor)} aria-hidden="true" />
                 </div>
                 <h3 className="mt-4 font-semibold text-[var(--text-primary)] group-hover:text-[var(--color-primary-600)] transition-colors">{feature.title}</h3>
                 <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">{feature.desc}</p>
@@ -225,7 +225,7 @@ export default function Home() {
             >
               <div className="flex items-center gap-1 mb-3">
                 {[...Array(t.rating)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden="true" />
                 ))}
               </div>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed">"{t.content}"</p>
@@ -276,7 +276,7 @@ export default function Home() {
               <Link to="/register">
                 <Button size="xl">
                   Get Started Free
-                  <ArrowRight className="h-5 w-5" />
+                  <ArrowRight className="h-5 w-5" aria-hidden="true" />
                 </Button>
               </Link>
             )}

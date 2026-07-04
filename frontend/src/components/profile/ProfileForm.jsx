@@ -32,7 +32,7 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
         { id: 'bio', label: 'Company Bio', placeholder: 'Tell us about your company...', multiline: true },
         { id: 'company', label: 'Company', placeholder: 'Acme Inc.' },
         { id: 'title', label: 'Your Title', placeholder: 'HR Manager' },
-        { id: 'phone', label: 'Phone', type: 'tel', placeholder: '+1 (555) 123-4567' },
+        { id: 'phone', label: 'Phone', type: 'tel', placeholder: '+91 01234 56789' },
         { id: 'location', label: 'Location', placeholder: 'San Francisco, CA' },
         { id: 'website', label: 'Website', type: 'url', placeholder: 'https://acme.com' },
       ]

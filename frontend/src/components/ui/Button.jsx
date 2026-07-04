@@ -28,6 +28,7 @@ const Button = forwardRef(function Button(
     <motion.button
       ref={ref}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       whileTap={{ scale: 0.97 }}
       whileHover={!disabled && !loading ? { scale: 1.01 } : undefined}
       className={cn(
@@ -39,9 +40,9 @@ const Button = forwardRef(function Button(
       {...props}
     >
       {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
       ) : Icon ? (
-        <Icon className="h-4 w-4" />
+        <Icon className="h-4 w-4" aria-hidden="true" />
       ) : null}
       {children}
     </motion.button>

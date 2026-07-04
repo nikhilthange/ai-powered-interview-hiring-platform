@@ -35,7 +35,7 @@ export default function Badge({ className, variant = 'default', size = 'sm', chi
           variant === 'primary' ? 'bg-indigo-500' :
           variant === 'warning' ? 'bg-amber-500' :
           variant === 'danger' ? 'bg-red-500' : 'bg-current'
-        )} />
+        )} aria-hidden="true" />
       )}
       {children}
     </span>

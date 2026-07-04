@@ -93,6 +93,11 @@ export function getGradeBg(score) {
   return 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
 }
 
+let idCounter = 0
+export function generateId(prefix = 'a11y') {
+  return `${prefix}-${++idCounter}`
+}
+
 export function calculateProfileCompletion(profile) {
   if (!profile) return 0
   const fields = [

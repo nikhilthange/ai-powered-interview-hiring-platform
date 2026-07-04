@@ -61,7 +61,7 @@ export default function ResetPassword() {
             className="flex items-center justify-center gap-2 mb-4"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20">
-              <Sparkles className="h-6 w-6" />
+              <Sparkles className="h-6 w-6" aria-hidden="true" />
             </div>
           </motion.div>
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Set new password</h1>
@@ -82,7 +82,7 @@ export default function ResetPassword() {
                     transition={{ type: 'spring', stiffness: 200 }}
                     className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/50 dark:to-green-950/50 ring-1 ring-emerald-200/50 dark:ring-emerald-800/30"
                   >
-                    <CheckCircle className="h-8 w-8 text-emerald-500" />
+                    <CheckCircle className="h-8 w-8 text-emerald-500" aria-hidden="true" />
                   </motion.div>
                   <p className="text-sm font-medium text-[var(--text-primary)]">Password reset successful!</p>
                   <p className="text-xs text-[var(--text-secondary)] mt-1">Redirecting to login...</p>
@@ -94,8 +94,10 @@ export default function ResetPassword() {
                       initial={{ opacity: 0, y: -10, height: 0 }}
                       animate={{ opacity: 1, y: 0, height: 'auto' }}
                       className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/50 p-3 text-sm text-red-700"
+                      role="alert"
+                      aria-live="assertive"
                     >
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                       <p>{error}</p>
                     </motion.div>
                   )}
@@ -106,6 +108,7 @@ export default function ResetPassword() {
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
                     prefix={<Lock className="h-4 w-4" />}
+                    autoComplete="new-password"
                     required
                   />
                   <Input
@@ -116,14 +119,15 @@ export default function ResetPassword() {
                     onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
                     prefix={<Lock className="h-4 w-4" />}
                     suffix={
-                      <button type="button" onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide passwords' : 'Show passwords'}>
+                        {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                       </button>
                     }
+                    autoComplete="new-password"
                     required
                   />
                   <Button type="submit" loading={loading} className="w-full">
-                    <Lock className="h-4 w-4" />
+                    <Lock className="h-4 w-4" aria-hidden="true" />
                     Reset Password
                   </Button>
                 </form>

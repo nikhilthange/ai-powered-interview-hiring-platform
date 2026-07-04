@@ -6,6 +6,21 @@ import BottomNav from './BottomNav'
 import { LayoutProvider, useLayout } from '../../context/LayoutContext'
 import { cn } from '../../lib/utils'
 
+function RouteAnnouncer() {
+  const location = useLocation()
+  const path = location.pathname === '/' ? 'home' : location.pathname.replace('/', '').replace(/-/g, ' ').replace(/\//g, ' ')
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      className="sr-only"
+    >
+      Navigated to {path}
+    </div>
+  )
+}
+
 const authPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/verify-email-prompt']
 
 const pageVariants = {
@@ -21,16 +36,21 @@ function LayoutContent() {
 
   if (isAuthPage) {
     return (
-      <main className="min-h-screen bg-[var(--bg-secondary)]">
-        <Outlet />
-      </main>
+      <>
+        <RouteAnnouncer />
+        <main id="main-content" role="region" aria-label="Authentication" className="min-h-screen bg-[var(--bg-secondary)]">
+          <Outlet />
+        </main>
+      </>
     )
   }
 
   const isLanding = location.pathname === '/'
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg-secondary)]">
+    <>
+      <RouteAnnouncer />
+      <div className="flex min-h-screen bg-[var(--bg-secondary)]">
       {!isLanding && (
         <Sidebar
           open={sidebarOpen}
@@ -41,7 +61,11 @@ function LayoutContent() {
       )}
       <div className="flex flex-1 flex-col min-w-0 transition-all duration-300">
         {!isLanding && <Navbar />}
-        <main className={cn(
+        <main
+          id="main-content"
+          role="region"
+          aria-label="Main content"
+          className={cn(
           'flex-1 overflow-x-hidden overflow-y-auto',
           isLanding ? '' : 'p-3 sm:p-4 lg:p-6 pb-20 lg:pb-6'
         )}>
@@ -62,6 +86,7 @@ function LayoutContent() {
       </div>
       {!isLanding && <BottomNav />}
     </div>
+    </>
   )
 }
 

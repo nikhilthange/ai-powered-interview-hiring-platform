@@ -52,7 +52,7 @@ export default function BottomNav() {
                   className="absolute -top-0.5 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-[var(--color-primary-500)]"
                 />
               )}
-              <Icon className={cn('h-5 w-5', active && 'text-[var(--color-primary-500)]')} />
+              <Icon className={cn('h-5 w-5', active && 'text-[var(--color-primary-500)]')} aria-hidden="true" />
               <span>{item.label}</span>
               {item.label === 'Alerts' && unreadCount > 0 && (
                 <motion.span

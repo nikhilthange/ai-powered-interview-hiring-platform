@@ -47,7 +47,12 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ toast: toastActions, addToast, removeToast }}>
       {children}
-      <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+      <div
+        className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+        role="region"
+        aria-label="Notifications"
+        aria-live="polite"
+      >
         <AnimatePresence mode="popLayout">
           {toasts.map((t) => {
             const Icon = icons[t.type] || Info
@@ -65,13 +70,13 @@ export function ToastProvider({ children }) {
                 )}
                 role="alert"
               >
-                <Icon className="mt-0.5 h-5 w-5 shrink-0" />
+                <Icon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
                 <div className="flex-1 min-w-0">
                   {t.title && <p className="font-medium text-sm">{t.title}</p>}
                   {t.message && <p className="text-sm opacity-90 mt-0.5">{t.message}</p>}
                 </div>
                 <button onClick={() => removeToast(t.id)} className="shrink-0 rounded-lg p-0.5 opacity-60 hover:opacity-100 transition-opacity" aria-label="Dismiss">
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" aria-hidden="true" />
                 </button>
               </motion.div>
             )

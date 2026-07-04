@@ -96,8 +96,10 @@ export default function Register() {
                     initial={{ opacity: 0, y: -10, height: 0 }}
                     animate={{ opacity: 1, y: 0, height: 'auto' }}
                     className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300"
+                    role="alert"
+                    aria-live="assertive"
                   >
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                     <p>{error}</p>
                   </motion.div>
                 )}
@@ -108,6 +110,7 @@ export default function Register() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   prefix={<User className="h-4 w-4" />}
+                  autoComplete="name"
                   required
                 />
 
@@ -118,6 +121,7 @@ export default function Register() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   prefix={<Mail className="h-4 w-4" />}
+                  autoComplete="email"
                   required
                 />
 
@@ -130,10 +134,11 @@ export default function Register() {
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
                     prefix={<Lock className="h-4 w-4" />}
                     suffix={
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="focus:outline-none">
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="focus:outline-none" aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                        {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                       </button>
                     }
+                    autoComplete="new-password"
                     required
                   />
                   {form.password && (
@@ -166,7 +171,7 @@ export default function Register() {
                   )}
                 </div>
 
-                <div>
+                <div role="radiogroup" aria-label="Account type">
                   <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">I am a</label>
                   <div className="grid grid-cols-2 gap-2 min-w-0">
                     {[
@@ -176,6 +181,8 @@ export default function Register() {
                       <button
                         key={option.value}
                         type="button"
+                        role="radio"
+                        aria-checked={form.role === option.value}
                         onClick={() => setForm({ ...form, role: option.value })}
                         className={cn(
                           'rounded-xl px-4 py-3 text-sm font-medium border transition-all',
@@ -191,7 +198,7 @@ export default function Register() {
                 </div>
 
                 <Button type="submit" loading={loading} className="w-full">
-                  <UserPlus className="h-4 w-4" />
+                  <UserPlus className="h-4 w-4" aria-hidden="true" />
                   Create Account
                 </Button>
               </form>

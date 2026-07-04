@@ -4,6 +4,7 @@ export function Skeleton({ className, ...props }) {
   return (
     <div
       className={cn('skeleton-shimmer rounded-xl', className)}
+      aria-hidden="true"
       {...props}
     />
   )
@@ -46,7 +47,7 @@ export function SkeletonTable({ rows = 5 }) {
 
 export function SkeletonPage() {
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn" role="status" aria-label="Loading page">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton className="h-4 w-24 rounded-lg" />

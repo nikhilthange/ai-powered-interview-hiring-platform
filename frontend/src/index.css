@@ -34,7 +34,7 @@
 
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
+  --text-tertiary: #64748b;
   --text-inverse: #ffffff;
 
   --border-color: #e2e8f0;
@@ -79,7 +79,7 @@
 
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
+  --text-tertiary: #94a3b8;
   --text-inverse: #0f172a;
 
   --border-color: rgba(255,255,255,0.08);
@@ -141,9 +141,22 @@ input[type="text"], input[type="email"], input[type="password"], input[type="sea
 .dark ::selection { background-color: rgba(99, 102, 241, 0.4); color: var(--text-primary); }
 
 *:focus-visible {
-  outline: 2px solid var(--color-primary-500);
+  outline: 3px solid var(--color-primary-500);
   outline-offset: 2px;
   border-radius: 6px;
+  transition: outline-offset 100ms ease;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 @keyframes fadeIn {
@@ -473,4 +486,13 @@ input[type="text"], input[type="email"], input[type="password"], input[type="sea
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  .motion-safe-animate {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+[data-reduce-motion="true"] .motion-reduce-hidden {
+  display: none;
 }

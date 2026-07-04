@@ -19,11 +19,32 @@ export default function Navbar() {
   const searchRef = useRef(null)
 
   useEffect(() => {
-    const handleEscape = (e) => {
+    const handleKeyDown = (e) => {
       if (e.key === 'Escape') { setProfileOpen(false); setSearchOpen(false) }
+      if (e.key === 'ArrowDown' && profileOpen) {
+        e.preventDefault()
+        const menu = ref.current?.querySelector('[role="menu"]')
+        const items = menu?.querySelectorAll('[role="menuitem"]')
+        if (items?.length) {
+          const currentIndex = Array.from(items).indexOf(document.activeElement)
+          const nextIndex = (currentIndex + 1) % items.length
+          items[nextIndex]?.focus()
+        }
+      }
+      if (e.key === 'ArrowUp' && profileOpen) {
+        e.preventDefault()
+        const menu = ref.current?.querySelector('[role="menu"]')
+        const items = menu?.querySelectorAll('[role="menuitem"]')
+        if (items?.length) {
+          const currentIndex = Array.from(items).indexOf(document.activeElement)
+          const prevIndex = (currentIndex - 1 + items.length) % items.length
+          items[prevIndex]?.focus()
+        }
+      }
     }
-    if (profileOpen || searchOpen) document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
+    if (profileOpen || searchOpen) document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileOpen, searchOpen])
 
   useEffect(() => {
@@ -46,29 +67,30 @@ export default function Navbar() {
         className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors"
         aria-label="Toggle sidebar"
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="h-5 w-5" aria-hidden="true" />
       </button>
 
-      <Link to="/" className="flex items-center gap-2.5 lg:hidden">
+      <Link to="/" className="flex items-center gap-2.5 lg:hidden" aria-label="HireMate Home">
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold shadow-sm">
-          <Sparkles className="h-4 w-4" />
+          <Sparkles className="h-4 w-4" aria-hidden="true" />
         </div>
         <span className="font-semibold text-[var(--text-primary)]">HireMate</span>
       </Link>
 
       {isAuthenticated && (
-        <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-md">
+        <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-md" role="search">
           <div className="relative w-full group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" aria-hidden="true" />
             <input
               ref={searchRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search jobs, skills..."
+              aria-label="Search jobs and skills"
               className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] pl-9 pr-8 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
             />
-            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 rounded-md border border-[var(--border-color)] bg-[var(--bg-primary)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)] font-mono">
+            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 rounded-md border border-[var(--border-color)] bg-[var(--bg-primary)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)] font-mono" aria-hidden="true">
               ⌘K
             </kbd>
           </div>
@@ -82,20 +104,22 @@ export default function Navbar() {
           <button
             onClick={() => setSearchOpen(!searchOpen)}
             className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] md:hidden transition-colors"
-            aria-label="Search"
+            aria-label="Toggle search"
+            aria-expanded={searchOpen}
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-5 w-5" aria-hidden="true" />
           </button>
         )}
         {isAuthenticated && searchOpen && (
-          <div className="absolute left-0 right-0 top-16 z-50 p-3 bg-[var(--bg-primary)] border-b border-[var(--border-color)] md:hidden">
+          <div className="absolute left-0 right-0 top-16 z-50 p-3 bg-[var(--bg-primary)] border-b border-[var(--border-color)] md:hidden" role="search">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" aria-hidden="true" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search jobs, skills..."
+                aria-label="Search jobs and skills"
                 className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
                 autoFocus
               />
@@ -117,7 +141,7 @@ export default function Navbar() {
               animate={{ rotate: 0, opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {theme === 'dark' ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
             </motion.div>
           </motion.button>
         )}
@@ -170,7 +194,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-5 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                       role="menuitem"
                     >
-                      <User className="h-4 w-4" />
+                      <User className="h-4 w-4" aria-hidden="true" />
                       Profile
                     </Link>
                     <Link
@@ -179,7 +203,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-5 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                       role="menuitem"
                     >
-                      <CreditCard className="h-4 w-4" />
+                      <CreditCard className="h-4 w-4" aria-hidden="true" />
                       Plans & Billing
                     </Link>
                     {user?.role === 'admin' && (
@@ -189,7 +213,7 @@ export default function Navbar() {
                         className="flex items-center gap-3 px-5 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                         role="menuitem"
                       >
-                        <Shield className="h-4 w-4" />
+                        <Shield className="h-4 w-4" aria-hidden="true" />
                         Admin Panel
                       </Link>
                     )}
@@ -200,7 +224,7 @@ export default function Navbar() {
                       className="flex w-full items-center gap-3 px-5 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                       role="menuitem"
                     >
-                      <LogOut className="h-4 w-4" />
+                      <LogOut className="h-4 w-4" aria-hidden="true" />
                       Sign Out
                     </button>
                   </div>

@@ -52,7 +52,7 @@ export default function ForgotPassword() {
             className="flex items-center justify-center gap-2 mb-4"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/20">
-              <Sparkles className="h-6 w-6" />
+              <Sparkles className="h-6 w-6" aria-hidden="true" />
             </div>
           </motion.div>
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">Reset password</h1>
@@ -76,7 +76,7 @@ export default function ForgotPassword() {
                     transition={{ type: 'spring', stiffness: 200 }}
                     className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/50 dark:to-green-950/50 ring-1 ring-emerald-200/50 dark:ring-emerald-800/30"
                   >
-                    <CheckCircle className="h-8 w-8 text-emerald-500" />
+                    <CheckCircle className="h-8 w-8 text-emerald-500" aria-hidden="true" />
                   </motion.div>
                   <p className="text-sm text-[var(--text-secondary)]">Email sent to <strong className="text-[var(--text-primary)]">{email}</strong></p>
                   <p className="text-xs text-[var(--text-tertiary)] mt-2">Check your inbox and follow the instructions.</p>
@@ -88,8 +88,10 @@ export default function ForgotPassword() {
                       initial={{ opacity: 0, y: -10, height: 0 }}
                       animate={{ opacity: 1, y: 0, height: 'auto' }}
                       className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/50 p-3 text-sm text-red-700"
+                      role="alert"
+                      aria-live="assertive"
                     >
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                       <p>{error}</p>
                     </motion.div>
                   )}
@@ -100,10 +102,11 @@ export default function ForgotPassword() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     prefix={<Mail className="h-4 w-4" />}
+                    autoComplete="email"
                     required
                   />
                   <Button type="submit" loading={loading} className="w-full">
-                    <Lock className="h-4 w-4" />
+                    <Lock className="h-4 w-4" aria-hidden="true" />
                     Send Reset Link
                   </Button>
                 </form>
@@ -114,7 +117,7 @@ export default function ForgotPassword() {
 
         <motion.div variants={itemVariants} className="text-center mt-6">
           <Link to="/login" className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 transition-colors">
-            <ArrowLeft className="h-4 w-4" /> Back to sign in
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to sign in
           </Link>
         </motion.div>
       </motion.div>

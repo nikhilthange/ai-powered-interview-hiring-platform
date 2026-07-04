@@ -34,7 +34,7 @@ export default function EmptyState({
         <Icon className={cn(
           gradient ? 'text-indigo-500' : 'text-[var(--text-tertiary)]',
           small ? 'h-6 w-6' : 'h-8 w-8'
-        )} />
+        )} aria-hidden="true" />
       </motion.div>
       <h3 className={cn('font-semibold text-[var(--text-primary)]', small ? 'text-base' : 'text-lg')}>{title}</h3>
       {description && (

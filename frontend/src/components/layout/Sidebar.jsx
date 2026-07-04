@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
 import { cn } from '../../lib/utils'
 import {
   LayoutDashboard, Briefcase, FileText, Bookmark, MessageCircle,
   GraduationCap, Search, Target, BarChart3,
   Users, X, Calendar, ChevronLeft, Bell,
-  User, CreditCard, LogOut,
+  User, CreditCard, LogOut, Sparkles,
 } from 'lucide-react'
 
 const candidateLinks = [
@@ -57,13 +58,19 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
 
   return (
     <>
-      {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+            onClick={onClose}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
 
       <aside
         className={cn(
@@ -79,7 +86,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
         )}>
           <Link to="/" className="flex items-center gap-2.5" onClick={onClose}>
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold shadow-sm shadow-indigo-500/20">
-              AI
+              <Sparkles className="h-4 w-4" />
             </div>
             {!collapsed && (
               <span className="font-semibold text-[var(--text-primary)]">HireMate</span>
@@ -102,7 +109,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-thin">
           {links.map((link) => {
             const Icon = link.icon
             const isActive = location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to + '/'))
@@ -124,7 +131,10 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
                 <Icon className={cn('shrink-0', collapsed ? 'h-5 w-5' : 'h-5 w-5')} />
                 {!collapsed && <span>{link.label}</span>}
                 {isActive && !collapsed && (
-                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--color-primary-500)]" />
+                  <motion.span
+                    layoutId="activeIndicator"
+                    className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--color-primary-500)]"
+                  />
                 )}
               </Link>
             )

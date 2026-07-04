@@ -32,7 +32,8 @@ const plans = [
     ],
     cta: 'Get Started',
     popular: false,
-    color: 'from-gray-500 to-gray-600',
+    gradient: 'from-slate-500 to-slate-600',
+    icon: Zap,
   },
   {
     name: 'Pro',
@@ -50,7 +51,8 @@ const plans = [
     ],
     cta: 'Start Free Trial',
     popular: true,
-    color: 'from-indigo-500 to-purple-600',
+    gradient: 'from-indigo-500 to-purple-600',
+    icon: Sparkles,
   },
   {
     name: 'Enterprise',
@@ -68,7 +70,8 @@ const plans = [
     ],
     cta: 'Contact Sales',
     popular: false,
-    color: 'from-amber-500 to-orange-600',
+    gradient: 'from-amber-500 to-orange-600',
+    icon: Crown,
   },
 ]
 
@@ -83,6 +86,14 @@ export default function PlansPage() {
       className="max-w-6xl mx-auto space-y-8"
     >
       <motion.div variants={itemVariants} className="text-center">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+          className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50 ring-1 ring-indigo-200/50 dark:ring-indigo-800/30"
+        >
+          <Sparkles className="h-7 w-7 text-indigo-600" />
+        </motion.div>
         <h1 className="text-3xl font-bold text-[var(--text-primary)]">Pricing Plans</h1>
         <p className="text-[var(--text-secondary)] mt-2 max-w-lg mx-auto">
           Choose the perfect plan to accelerate your career journey
@@ -104,69 +115,69 @@ export default function PlansPage() {
               billing === 'annual' ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)]'
             )}
           >
-            Annual <Badge variant="success" size="xs">Save 20%</Badge>
+            Annual <Badge variant="success" size="xs" pulse>Save 20%</Badge>
           </button>
         </div>
       </motion.div>
 
       <motion.div variants={itemVariants} className="grid gap-6 lg:grid-cols-3">
-        {plans.map((plan) => (
-          <Card key={plan.name} className={cn(
-            'relative',
-            plan.popular && 'ring-2 ring-indigo-500 shadow-lg scale-[1.02]'
-          )}>
-            {plan.popular && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge variant="primary" size="md">
-                  <Star className="h-3 w-3" />
-                  Most Popular
-                </Badge>
-              </div>
-            )}
-            <CardContent className="p-6 space-y-6">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br', plan.color, 'text-white')}>
-                    {plan.name === 'Free' ? <Zap className="h-5 w-5" /> : plan.name === 'Pro' ? <Sparkles className="h-5 w-5" /> : <Crown className="h-5 w-5" />}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-[var(--text-primary)]">{plan.name}</h3>
-                    <p className="text-xs text-[var(--text-tertiary)]">{plan.description}</p>
+        {plans.map((plan) => {
+          const Icon = plan.icon
+          return (
+            <Card key={plan.name} className={cn(
+              'relative flex flex-col',
+              plan.popular && 'ring-2 ring-indigo-500 shadow-lg scale-[1.02] z-10'
+            )}>
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <Badge variant="primary" size="md" pulse>
+                    <Star className="h-3 w-3" />
+                    Most Popular
+                  </Badge>
+                </div>
+              )}
+              <CardContent className="p-6 space-y-6 flex flex-col flex-1">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br', plan.gradient, 'text-white shadow-sm')}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-[var(--text-primary)]">{plan.name}</h3>
+                      <p className="text-xs text-[var(--text-tertiary)]">{plan.description}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <span className="text-4xl font-bold text-[var(--text-primary)]">
-                  {billing === 'annual' && plan.price !== '$0' ? `$${Math.round(parseInt(plan.price.slice(1)) * 12 * 0.8)}` : plan.price}
-                </span>
-                <span className="text-sm text-[var(--text-tertiary)] ml-1">/{plan.period}</span>
-              </div>
+                <div>
+                  <span className="text-4xl font-bold text-[var(--text-primary)]">
+                    {billing === 'annual' && plan.price !== '$0' ? `$${Math.round(parseInt(plan.price.slice(1)) * 12 * 0.8)}` : plan.price}
+                  </span>
+                  <span className="text-sm text-[var(--text-tertiary)] ml-1">/{plan.period}</span>
+                </div>
 
-              <ul className="space-y-3">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
-                    <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
+                <ul className="space-y-3 flex-1">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                      <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
 
-              <Button
-                className={cn(
-                  'w-full',
-                  plan.popular ? '' : 'variant-outline'
-                )}
-                variant={plan.popular ? 'primary' : 'outline'}
-                as={Link}
-                to="/subscription"
-              >
-                {plan.cta}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+                <Button
+                  className="w-full"
+                  variant={plan.popular ? 'gradient' : 'outline'}
+                >
+                  <Link to="/subscription" className="flex items-center gap-2">
+                    {plan.cta}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )
+        })}
       </motion.div>
     </motion.div>
   )

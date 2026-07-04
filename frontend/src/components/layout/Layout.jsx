@@ -1,10 +1,18 @@
 import { Outlet, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
 import BottomNav from './BottomNav'
 import { LayoutProvider, useLayout } from '../../context/LayoutContext'
+import { cn } from '../../lib/utils'
 
 const authPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/verify-email-prompt']
+
+const pageVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] } },
+  exit: { opacity: 0, y: -8, transition: { duration: 0.2 } },
+}
 
 function LayoutContent() {
   const { sidebarOpen, collapsed, closeSidebar, toggleCollapsed } = useLayout()
@@ -19,23 +27,40 @@ function LayoutContent() {
     )
   }
 
+  const isLanding = location.pathname === '/'
+
   return (
     <div className="flex min-h-screen bg-[var(--bg-secondary)]">
-      <Sidebar
-        open={sidebarOpen}
-        onClose={closeSidebar}
-        collapsed={collapsed}
-        onToggle={toggleCollapsed}
-      />
+      {!isLanding && (
+        <Sidebar
+          open={sidebarOpen}
+          onClose={closeSidebar}
+          collapsed={collapsed}
+          onToggle={toggleCollapsed}
+        />
+      )}
       <div className="flex flex-1 flex-col min-w-0 transition-all duration-300">
-        <Navbar />
-        <main className="flex-1 overflow-auto p-4 lg:p-6 pb-20 lg:pb-6">
-          <div className="mx-auto max-w-7xl">
-            <Outlet />
+        {!isLanding && <Navbar />}
+        <main className={cn(
+          'flex-1 overflow-auto',
+          isLanding ? '' : 'p-3 sm:p-4 lg:p-6 pb-20 lg:pb-6'
+        )}>
+          <div className={cn(isLanding ? '' : 'mx-auto max-w-7xl')}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </main>
       </div>
-      <BottomNav />
+      {!isLanding && <BottomNav />}
     </div>
   )
 }

@@ -12,8 +12,8 @@ import { cn } from '../lib/utils'
 import { useDebounce } from '../hooks/useDebounce'
 import {
   Search, MapPin, Briefcase,
-  SlidersHorizontal, Check, Bookmark, DollarSign,
-  Share2, GraduationCap,
+  Check, Bookmark, DollarSign,
+  GraduationCap, X, Filter,
 } from 'lucide-react'
 
 const containerVariants = {
@@ -63,7 +63,7 @@ export default function Jobs() {
       <EmptyState
         icon={Briefcase}
         title="Failed to load jobs"
-        description={error?.response?.data?.message || 'Failed to load jobs'}
+        description={error?.response?.data?.message || 'Something went wrong while loading jobs.'}
         action={{ label: 'Try Again', props: { onClick: () => refetch() } }}
       />
     )
@@ -71,6 +71,8 @@ export default function Jobs() {
 
   const jobTypes = [...new Set(jobs.map((j) => j.jobType).filter(Boolean))]
   const expLevels = [...new Set(jobs.map((j) => j.experienceLevel).filter(Boolean))]
+
+  const hasActiveFilters = Object.keys(filters).length > 0
 
   return (
     <motion.div
@@ -93,21 +95,32 @@ export default function Jobs() {
             onClick={() => setShowFilters(!showFilters)}
             className="lg:hidden"
           >
-            <SlidersHorizontal className="h-4 w-4" />
+            <Filter className="h-4 w-4" />
             Filters
+            {hasActiveFilters && (
+              <span className="flex h-2 w-2 rounded-full bg-indigo-500" />
+            )}
           </Button>
         </div>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-tertiary)]" />
+      <div className="relative group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" />
         <input
           type="text"
           placeholder="Search by title, company, or location..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-12 pr-4 py-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all shadow-sm"
+          className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-12 pr-12 py-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all shadow-sm"
         />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
@@ -121,7 +134,7 @@ export default function Jobs() {
                 <h3 className="font-semibold text-[var(--text-primary)] text-sm">Filters</h3>
                 <button
                   onClick={() => { setFilters({}); setShowFilters(false) }}
-                  className="text-xs text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)]"
+                  className="text-xs text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors"
                 >
                   Clear all
                 </button>
@@ -141,8 +154,12 @@ export default function Jobs() {
                           : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
                       )}
                     >
-                      {filters.type === type && <Check className="h-3.5 w-3.5" />}
-                      {(filters.type !== type) && <div className="h-3.5 w-3.5" />}
+                      <div className={cn(
+                        'h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
+                        filters.type === type ? 'border-indigo-500 bg-indigo-500' : 'border-[var(--border-color)]'
+                      )}>
+                        {filters.type === type && <Check className="h-3 w-3 text-white" />}
+                      </div>
                       {type}
                     </button>
                   ))}
@@ -163,8 +180,12 @@ export default function Jobs() {
                           : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
                       )}
                     >
-                      {filters.level === level && <Check className="h-3.5 w-3.5" />}
-                      {(filters.level !== level) && <div className="h-3.5 w-3.5" />}
+                      <div className={cn(
+                        'h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
+                        filters.level === level ? 'border-indigo-500 bg-indigo-500' : 'border-[var(--border-color)]'
+                      )}>
+                        {filters.level === level && <Check className="h-3 w-3 text-white" />}
+                      </div>
                       {level}
                     </button>
                   ))}
@@ -269,9 +290,6 @@ export default function Jobs() {
                           <Button variant="outline" size="sm">
                             <Bookmark className="h-3.5 w-3.5" />
                             Save
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Share2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       </div>

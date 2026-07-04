@@ -9,14 +9,14 @@ import { profileApi } from '../../services/profileApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
+import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonMetrics, SkeletonList } from '../../components/ui/Skeleton'
 import { useNotifications } from '../../hooks/useNotifications'
 import {
   Briefcase, FileText, Bookmark, TrendingUp, ArrowRight, Zap,
-  Target, GraduationCap, Clock,
-  ChevronRight, Award, Sparkles, Eye,
-  BarChart3, Bell,
-  Rocket, Activity,
+  Target, GraduationCap, Clock, Award, Sparkles,
+  BarChart3, Bell, Rocket, Activity, ChevronRight,
+  Eye,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { cn, calculateProfileCompletion, getGradeColor, getGradeLabel, formatDateRelative } from '../../lib/utils'
@@ -82,17 +82,21 @@ export default function CandidateDashboard() {
   if (allFailed) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-error-bg)] mb-4">
-          <Eye className="h-8 w-8 text-[var(--color-error)]" />
+        <div className="relative mb-4">
+          <div className="absolute inset-0 animate-ping rounded-2xl bg-red-100 dark:bg-red-950/30 opacity-30" />
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/50 dark:to-rose-950/50 ring-1 ring-red-200/50 dark:ring-red-800/30">
+            <Eye className="h-8 w-8 text-[var(--color-error)]" />
+          </div>
         </div>
         <p className="text-lg font-medium text-[var(--text-primary)]">Unable to load dashboard</p>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">Something went wrong. Please try again.</p>
-        <button
+        <Button
           onClick={() => results.forEach((q) => q.refetch())}
-          className="mt-6 rounded-xl bg-[var(--color-primary-500)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-primary-600)] shadow-sm shadow-[var(--color-primary-500)]/20 transition-all"
+          className="mt-6"
         >
+          <RefreshCw className="h-4 w-4" />
           Retry
-        </button>
+        </Button>
       </div>
     )
   }
@@ -118,7 +122,21 @@ export default function CandidateDashboard() {
     { label: 'Applications', value: appsCount, icon: FileText, href: '/my-applications', color: 'primary' },
     { label: 'Saved Jobs', value: savedCount, icon: Bookmark, href: '/saved-jobs', color: 'warning' },
     { label: 'Profile', value: `${profileCompletion}%`, icon: Award, progress: profileCompletion, href: '/profile', color: 'amber' },
-    { label: 'AI Score', value: avgScore !== null ? `${avgScore}%` : '—', icon: Target, subtitle: avgScore !== null ? `Avg of ${completedSessions.length} sessions` : 'No data yet', href: '/mock-interview', color: avgScore !== null ? (avgScore >= 70 ? 'success' : 'amber') : 'default' },
+    {
+      label: 'AI Score',
+      value: avgScore !== null ? `${avgScore}%` : '\u2014',
+      icon: Target,
+      subtitle: avgScore !== null ? `Avg of ${completedSessions.length} sessions` : 'No data yet',
+      href: '/mock-interview',
+      color: avgScore !== null ? (avgScore >= 70 ? 'success' : 'amber') : 'default',
+    },
+  ]
+
+  const actionLinks = [
+    { to: '/resume-analyzer', label: 'Analyze Resume', icon: FileText, desc: 'Get ATS score & feedback' },
+    { to: '/skill-gap-analysis', label: 'Skill Gap', icon: Target, desc: 'Identify missing skills' },
+    { to: '/mock-interview', label: 'Mock Interview', icon: GraduationCap, desc: 'Practice with AI' },
+    { to: '/saved-jobs', label: 'Saved Jobs', icon: Bookmark, desc: 'Review saved positions' },
   ]
 
   return (
@@ -128,7 +146,7 @@ export default function CandidateDashboard() {
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10" />
             <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/5" />
-            <div className="absolute top-1/2 right-1/4 h-32 w-32 rounded-full bg-white/5" />
+            <div className="absolute top-1/2 right-1/4 h-32 w-32 rounded-full bg-white/5 animate-float-slow" />
           </div>
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -182,7 +200,12 @@ export default function CandidateDashboard() {
                   <p className="text-2xl font-bold text-[var(--text-primary)]">{metric.value}</p>
                   {metric.progress !== undefined && (
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
-                      <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-1000" style={{ width: `${metric.progress}%` }} />
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${metric.progress}%` }}
+                        transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+                        className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500"
+                      />
                     </div>
                   )}
                   {metric.subtitle && <p className="text-xs text-[var(--text-tertiary)] mt-1">{metric.subtitle}</p>}
@@ -306,11 +329,13 @@ export default function CandidateDashboard() {
                 </div>
               </div>
               {completedSessions.length === 0 ? (
-                <div className="text-center py-6">
-                  <GraduationCap className="mx-auto h-10 w-10 text-[var(--text-tertiary)] mb-3" />
-                  <p className="text-sm text-[var(--text-secondary)]">No interviews completed yet</p>
-                  <Link to="/mock-interview"><Button size="sm" className="mt-4">Start Mock Interview</Button></Link>
-                </div>
+                <EmptyState
+                  icon={GraduationCap}
+                  title="No interviews completed yet"
+                  description="Practice makes perfect. Start a mock interview to see your progress."
+                  small
+                  action={{ label: 'Start Mock Interview', props: { size: 'sm', as: Link, to: '/mock-interview' } }}
+                />
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-[var(--bg-tertiary)]">
@@ -341,12 +366,7 @@ export default function CandidateDashboard() {
                 </div>
               </div>
               <div className="space-y-2">
-                {[
-                  { to: '/resume-analyzer', label: 'Analyze Resume', icon: FileText, desc: 'Get ATS score & feedback' },
-                  { to: '/skill-gap-analysis', label: 'Skill Gap', icon: Target, desc: 'Identify missing skills' },
-                  { to: '/mock-interview', label: 'Mock Interview', icon: GraduationCap, desc: 'Practice with AI' },
-                  { to: '/saved-jobs', label: 'Saved Jobs', icon: Bookmark, desc: 'Review saved positions' },
-                ].map((action) => {
+                {actionLinks.map((action) => {
                   const Icon = action.icon
                   return (
                     <Link key={action.to} to={action.to}>
@@ -386,5 +406,15 @@ export default function CandidateDashboard() {
         </div>
       </motion.div>
     </motion.div>
+  )
+}
+
+function RefreshCw(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <polyline points="23 4 23 10 17 10" />
+      <polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </svg>
   )
 }

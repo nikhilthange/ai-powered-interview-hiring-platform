@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
 import { useNotifications } from '../../hooks/useNotifications'
 import { cn } from '../../lib/utils'
@@ -45,12 +46,22 @@ export default function BottomNav() {
               aria-label={item.label}
               aria-current={active ? 'page' : undefined}
             >
+              {active && (
+                <motion.div
+                  layoutId="bottomNav"
+                  className="absolute -top-0.5 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-[var(--color-primary-500)]"
+                />
+              )}
               <Icon className={cn('h-5 w-5', active && 'text-[var(--color-primary-500)]')} />
               <span>{item.label}</span>
               {item.label === 'Alerts' && unreadCount > 0 && (
-                <span className="absolute -top-0.5 right-1/2 translate-x-5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-error)] px-1 text-[9px] font-bold text-white leading-none">
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-0.5 right-1/2 translate-x-5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-error)] px-1 text-[9px] font-bold text-white leading-none"
+                >
                   {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
+                </motion.span>
               )}
             </Link>
           )

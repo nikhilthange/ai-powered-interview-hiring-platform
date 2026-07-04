@@ -8,7 +8,7 @@ import { SkeletonList } from '../components/ui/Skeleton'
 import EmptyState from '../components/ui/EmptyState'
 import {
   Bookmark, MapPin, DollarSign, Briefcase,
-  Heart, GraduationCap, Building2,
+  GraduationCap, Building2, AlertCircle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -23,27 +23,30 @@ const itemVariants = {
 }
 
 export default function SavedJobs() {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['saved-jobs-page'],
     queryFn: () => savedJobApi.getSavedJobs().then((r) => r.data),
   })
 
+  const saved = data?.data?.savedJobs || data?.data || []
+  const jobs = saved.map((s) => s.jobId).filter(Boolean)
+
   if (isLoading) return (
     <div className="space-y-6">
       <div className="skeleton-shimmer h-8 w-48 rounded-xl" />
-      <SkeletonList count={4} />
+      <SkeletonList count={3} />
     </div>
   )
 
-  if (isError) return (
-    <EmptyState
-      icon={Bookmark}
-      title="Failed to load saved jobs"
-      action={{ label: 'Browse Jobs', props: { as: Link, to: '/jobs' } }}
-    />
-  )
-
-  const savedJobs = data?.data?.jobs || data?.jobs || []
+  if (isError) {
+    return (
+      <EmptyState
+        icon={AlertCircle}
+        title="Failed to load saved jobs"
+        action={{ label: 'Retry', props: { onClick: () => refetch() } }}
+      />
+    )
+  }
 
   return (
     <motion.div
@@ -52,12 +55,29 @@ export default function SavedJobs() {
       animate="visible"
       className="space-y-6"
     >
-      <motion.div variants={itemVariants}>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Saved Jobs</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">{savedJobs.length} saved job{savedJobs.length !== 1 ? 's' : ''}</p>
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50">
+              <Bookmark className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Saved Jobs</h1>
+              <p className="text-sm text-[var(--text-secondary)] mt-0.5">
+                {jobs.length} saved job{jobs.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+          </div>
+        </div>
+        <Link to="/jobs">
+          <Button variant="outline">
+            <Briefcase className="h-4 w-4" />
+            Browse Jobs
+          </Button>
+        </Link>
       </motion.div>
 
-      {savedJobs.length === 0 ? (
+      {jobs.length === 0 ? (
         <motion.div variants={itemVariants}>
           <EmptyState
             icon={Bookmark}
@@ -67,66 +87,50 @@ export default function SavedJobs() {
           />
         </motion.div>
       ) : (
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid gap-3">
-          {savedJobs.map((saved) => {
-            const job = saved.jobId || saved
-            return (
-              <motion.div key={saved._id || job._id} variants={itemVariants}>
-                <Link to={`/jobs/${job._id}`}>
-                  <Card className="hover:shadow-md transition-all">
-                    <CardContent className="p-5">
-                      <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold text-lg">
-                          {job.company?.charAt(0) || job.title?.charAt(0) || 'J'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <h3 className="font-semibold text-[var(--text-primary)]">{job.title}</h3>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <Building2 className="h-3.5 w-3.5 text-[var(--text-tertiary)]" />
-                                <span className="text-sm text-[var(--text-secondary)]">{job.company || 'Company'}</span>
-                              </div>
-                            </div>
-                            <Heart className="h-5 w-5 text-red-500 fill-red-500 shrink-0" />
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2 mt-3">
-                            {job.location && (
-                              <Badge variant="default" size="xs">
-                                <MapPin className="h-3 w-3" />
-                                {job.location}
-                              </Badge>
-                            )}
-                            {job.salaryRange?.min > 0 && (
-                              <Badge variant="primary" size="xs">
-                                <DollarSign className="h-3 w-3" />
-                                ₹{job.salaryRange.min.toLocaleString('en-IN')}
-                              </Badge>
-                            )}
-                            {job.jobType && <Badge variant="info" size="xs">{job.jobType}</Badge>}
-                            {job.experienceLevel && (
-                              <Badge variant="warning" size="xs">
-                                <GraduationCap className="h-3 w-3" />
-                                {job.experienceLevel}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 mt-3">
-                            <Link to={`/jobs/${job._id}/apply`}>
-                              <Button size="sm">
-                                <Briefcase className="h-3.5 w-3.5" />
-                                Apply Now
-                              </Button>
-                            </Link>
-                          </div>
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid gap-4 sm:grid-cols-2">
+          {jobs.map((job) => (
+            <motion.div key={job._id} variants={itemVariants} whileHover={{ y: -2 }}>
+              <Link to={`/jobs/${job._id}`}>
+                <Card hover className="h-full">
+                  <CardContent className="p-5">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
+                        {job.title?.charAt(0) || 'J'}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-[var(--text-primary)] truncate">{job.title}</h3>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <Building2 className="h-3.5 w-3.5 text-[var(--text-tertiary)]" />
+                          <span className="text-sm text-[var(--text-secondary)] truncate">{job.company || 'Company'}</span>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </motion.div>
-            )
-          })}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 mt-3">
+                      {job.location && (
+                        <Badge variant="default" size="xs">
+                          <MapPin className="h-3 w-3" />
+                          {job.location}
+                        </Badge>
+                      )}
+                      {job.salaryRange?.min > 0 && (
+                        <Badge variant="primary" size="xs">
+                          <DollarSign className="h-3 w-3" />
+                          ₹{job.salaryRange.min.toLocaleString('en-IN')}
+                        </Badge>
+                      )}
+                      {job.jobType && <Badge variant="info" size="xs">{job.jobType}</Badge>}
+                      {job.experienceLevel && (
+                        <Badge variant="warning" size="xs">
+                          <GraduationCap className="h-3 w-3" />
+                          {job.experienceLevel}
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
         </motion.div>
       )}
     </motion.div>

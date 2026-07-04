@@ -6,10 +6,12 @@ import { applicationApi } from '../../services/applicationApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
+import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonMetrics, SkeletonList } from '../../components/ui/Skeleton'
 import { Link } from 'react-router-dom'
 import { cn } from '../../lib/utils'
-import { Briefcase, Users, Eye, FileText, Plus, ArrowRight, Activity, Calendar } from 'lucide-react'
+import { Briefcase, Users, FileText, Plus, ArrowRight, Activity, TrendingUp, Bell, ChevronRight } from 'lucide-react'
+import { useNotifications } from '../../hooks/useNotifications'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -18,11 +20,12 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
 export default function RecruiterDashboard() {
   const { user } = useAuth()
+  const { unreadCount } = useNotifications()
 
   const results = useQueries({
     queries: [
@@ -43,6 +46,7 @@ export default function RecruiterDashboard() {
 
   const jobs = jobsQuery.data?.data?.jobs || []
   const apps = appsQuery.data?.data?.applications || []
+  const activeJobs = jobs.filter((j) => j.status === 'Active').length
 
   return (
     <motion.div
@@ -56,12 +60,15 @@ export default function RecruiterDashboard() {
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10" />
             <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/5" />
+            <div className="absolute top-1/2 right-1/4 h-32 w-32 rounded-full bg-white/5 animate-float-slow" />
           </div>
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-white/70 mb-1">Welcome back</p>
+              <p className="text-sm font-medium text-white/70 mb-1">
+                {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'}
+              </p>
               <h1 className="text-2xl font-bold text-white">{user?.name || 'Recruiter'}</h1>
-              <p className="text-sm text-white/60 mt-1">Manage your job listings and applications</p>
+              <p className="text-sm text-white/60 mt-1">Manage your job listings and find top talent</p>
             </div>
             <Link to="/recruiter/jobs/create">
               <Button className="bg-white text-indigo-700 hover:bg-white/90 shadow-none">
@@ -75,10 +82,10 @@ export default function RecruiterDashboard() {
 
       <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {[
-          { label: 'Active Jobs', value: jobs.length, icon: Briefcase, href: '/recruiter/my-jobs', color: 'indigo' },
+          { label: 'Active Jobs', value: activeJobs, icon: Briefcase, href: '/recruiter/my-jobs', color: 'indigo' },
           { label: 'Applications', value: apps.length, icon: Users, href: '/recruiter/my-jobs', color: 'emerald' },
-          { label: 'Interviews', value: 0, icon: Calendar, href: '/recruiter/interviews', color: 'purple' },
-          { label: 'Views', value: 0, icon: Eye, href: '/recruiter/my-jobs', color: 'amber' },
+          { label: 'Total Jobs', value: jobs.length, icon: FileText, href: '/recruiter/my-jobs', color: 'purple' },
+          { label: 'Pipeline', value: apps.filter((a) => a.status === 'Reviewing' || a.status === 'Shortlisted').length, icon: TrendingUp, href: '/recruiter/my-jobs', color: 'amber' },
         ].map((metric) => {
           const Icon = metric.icon
           return (
@@ -89,11 +96,17 @@ export default function RecruiterDashboard() {
                     <span className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">{metric.label}</span>
                     <div className={cn(
                       'rounded-xl p-2 transition-all group-hover:scale-110',
-                      `${metric.color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-950' : ''}${metric.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-950' : ''}${metric.color === 'purple' ? 'bg-purple-50 dark:bg-purple-950' : ''}${metric.color === 'amber' ? 'bg-amber-50 dark:bg-amber-950' : ''}`
+                      metric.color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-950' :
+                      metric.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-950' :
+                      metric.color === 'purple' ? 'bg-purple-50 dark:bg-purple-950' :
+                      'bg-amber-50 dark:bg-amber-950'
                     )}>
                       <Icon className={cn(
                         'h-4 w-4',
-                        `${metric.color === 'indigo' ? 'text-indigo-600' : ''}${metric.color === 'emerald' ? 'text-emerald-600' : ''}${metric.color === 'purple' ? 'text-purple-600' : ''}${metric.color === 'amber' ? 'text-amber-600' : ''}`
+                        metric.color === 'indigo' ? 'text-indigo-600' :
+                        metric.color === 'emerald' ? 'text-emerald-600' :
+                        metric.color === 'purple' ? 'text-purple-600' :
+                        'text-amber-600'
                       )} />
                     </div>
                   </div>
@@ -116,7 +129,7 @@ export default function RecruiterDashboard() {
                   </div>
                   <div>
                     <h2 className="font-semibold text-[var(--text-primary)]">Your Jobs</h2>
-                    <p className="text-xs text-[var(--text-tertiary)]">{jobs.length} active listings</p>
+                    <p className="text-xs text-[var(--text-tertiary)]">{activeJobs} active listings</p>
                   </div>
                 </div>
                 <Link to="/recruiter/my-jobs" className="group flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
@@ -124,24 +137,29 @@ export default function RecruiterDashboard() {
                 </Link>
               </div>
               {jobs.length === 0 ? (
-                <div className="text-center py-8">
-                  <FileText className="mx-auto h-10 w-10 text-[var(--text-tertiary)] mb-3" />
-                  <p className="text-sm text-[var(--text-secondary)]">No jobs posted yet</p>
-                  <Link to="/recruiter/jobs/create"><Button size="sm" className="mt-3">Post Your First Job</Button></Link>
-                </div>
+                <EmptyState
+                  icon={FileText}
+                  title="No jobs posted yet"
+                  description="Post your first job and start receiving applications from top talent."
+                  small
+                  action={{ label: 'Post Your First Job', props: { size: 'sm', as: Link, to: '/recruiter/jobs/create' } }}
+                />
               ) : (
                 <div className="space-y-2">
                   {jobs.slice(0, 4).map((job) => (
                     <Link key={job._id} to={`/recruiter/jobs/${job._id}/edit`}>
-                      <div className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3.5 hover:bg-[var(--bg-tertiary)] transition-colors">
+                      <motion.div whileHover={{ x: 2 }} className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3.5 hover:bg-[var(--bg-tertiary)] transition-colors">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-[var(--text-primary)] truncate">{job.title}</p>
-                          <p className="text-xs text-[var(--text-secondary)]">{job.applications?.length || 0} applicants</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Users className="h-3 w-3 text-[var(--text-tertiary)]" />
+                            <p className="text-xs text-[var(--text-secondary)]">{job.applications?.length || 0} applicants</p>
+                          </div>
                         </div>
-                        <Badge variant={job.status === 'Active' ? 'success' : 'default'} size="xs">
+                        <Badge variant={job.status === 'Active' ? 'success' : 'default'} size="xs" pulse={job.status === 'Active'}>
                           {job.status || 'Draft'}
                         </Badge>
-                      </div>
+                      </motion.div>
                     </Link>
                   ))}
                 </div>
@@ -163,14 +181,16 @@ export default function RecruiterDashboard() {
                 </div>
               </div>
               {apps.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="mx-auto h-10 w-10 text-[var(--text-tertiary)] mb-3" />
-                  <p className="text-sm text-[var(--text-secondary)]">No applications received yet</p>
-                </div>
+                <EmptyState
+                  icon={Users}
+                  title="No applications received yet"
+                  description="Applications will appear here once candidates start applying."
+                  small
+                />
               ) : (
                 <div className="space-y-2">
                   {apps.slice(0, 4).map((app) => (
-                    <div key={app._id} className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3.5">
+                    <motion.div key={app._id} whileHover={{ x: 2 }} className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3.5 hover:bg-[var(--bg-tertiary)] transition-colors">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 font-semibold text-xs">
                           {app.candidateId?.name?.charAt(0) || 'U'}
@@ -183,7 +203,7 @@ export default function RecruiterDashboard() {
                       <Badge variant={app.status === 'Applied' ? 'primary' : app.status === 'Shortlisted' ? 'success' : 'default'} size="xs">
                         {app.status}
                       </Badge>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
@@ -191,6 +211,25 @@ export default function RecruiterDashboard() {
           </Card>
         </motion.div>
       </div>
+
+      {unreadCount > 0 && (
+        <motion.div variants={itemVariants}>
+          <Link to="/notifications">
+            <motion.div whileHover={{ scale: 1.01 }} className="rounded-2xl border bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border-indigo-200 dark:border-indigo-800/50 p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/50">
+                  <Bell className="h-5 w-5 text-indigo-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}</p>
+                  <p className="text-xs text-[var(--text-tertiary)]">Tap to view</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)]" />
+              </div>
+            </motion.div>
+          </Link>
+        </motion.div>
+      )}
     </motion.div>
   )
 }

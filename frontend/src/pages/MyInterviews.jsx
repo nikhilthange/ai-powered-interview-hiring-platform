@@ -8,9 +8,9 @@ import { SkeletonList } from '../components/ui/Skeleton'
 import EmptyState from '../components/ui/EmptyState'
 import { cn } from '../lib/utils'
 import {
-  Clock, CheckCircle, Video,
+  Clock, Video,
   GraduationCap, BarChart3, Star,
-  Play, FileText,
+  Play, FileText, AlertCircle, Calendar,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -25,10 +25,12 @@ const itemVariants = {
 }
 
 export default function MyInterviews() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['my-interviews'],
     queryFn: () => interviewApi.getMySessions(),
   })
+
+  const sessions = Array.isArray(data) ? data : []
 
   if (isLoading) return (
     <div className="space-y-6">
@@ -37,7 +39,15 @@ export default function MyInterviews() {
     </div>
   )
 
-  const sessions = Array.isArray(data) ? data : []
+  if (isError) {
+    return (
+      <EmptyState
+        icon={AlertCircle}
+        title="Failed to load interviews"
+        action={{ label: 'Retry', props: { onClick: () => refetch() } }}
+      />
+    )
+  }
 
   return (
     <motion.div
@@ -49,12 +59,14 @@ export default function MyInterviews() {
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">My Interviews</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
+            {sessions.length} session{sessions.length !== 1 ? 's' : ''} total
+          </p>
         </div>
         <Link to="/mock-interview">
           <Button>
             <Play className="h-4 w-4" />
-            New Mock Interview
+            Start New Interview
           </Button>
         </Link>
       </motion.div>
@@ -63,84 +75,82 @@ export default function MyInterviews() {
         <motion.div variants={itemVariants}>
           <EmptyState
             icon={GraduationCap}
-            title="No interview sessions yet"
-            description="Start a mock interview to practice and improve your skills."
+            title="No interviews yet"
+            description="Practice makes perfect. Start your first mock interview to prepare for the real thing."
             action={{ label: 'Start Mock Interview', props: { as: Link, to: '/mock-interview' } }}
           />
         </motion.div>
       ) : (
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-3">
-          {sessions.map((session) => {
-            const isCompleted = session.status === 'completed'
-            const score = session.overallScore || session.score
-            return (
-              <motion.div key={session._id} variants={itemVariants}>
-                <Card className="hover:shadow-md transition-all">
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className={cn(
-                        'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl',
-                        isCompleted ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400'
-                      )}>
-                        {isCompleted ? <CheckCircle className="h-6 w-6" /> : <Video className="h-6 w-6" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h3 className="font-semibold text-[var(--text-primary)]">
-                              {session.jobRole || session.title || 'Mock Interview'}
-                            </h3>
-                            <p className="text-sm text-[var(--text-secondary)] mt-0.5">
-                              {session.experience || session.level || 'General'} level
-                            </p>
+          {sessions.map((session) => (
+            <motion.div key={session._id} variants={itemVariants}>
+              <Card hover>
+                <CardContent className="p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold">
+                      <Video className="h-6 w-6" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="font-semibold text-[var(--text-primary)]">
+                            {session.targetRole || session.jobTitle || 'Mock Interview'}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Calendar className="h-3.5 w-3.5 text-[var(--text-tertiary)]" />
+                            <span className="text-sm text-[var(--text-secondary)]">
+                              {new Date(session.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                            </span>
                           </div>
-                          <Badge variant={isCompleted ? 'success' : 'warning'} size="sm">
-                            {session.status || 'In Progress'}
-                          </Badge>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3 mt-3">
-                          {score && (
-                            <div className="flex items-center gap-1.5 text-sm">
-                              <Star className="h-4 w-4 text-amber-500" />
-                              <span className="font-medium text-[var(--text-primary)]">{score}%</span>
-                            </div>
-                          )}
-                          {session.createdAt && (
-                            <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
-                              <Clock className="h-3 w-3" />
-                              {new Date(session.createdAt).toLocaleDateString()}
-                            </div>
-                          )}
-                          {session.questionsCount && (
-                            <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
-                              <FileText className="h-3 w-3" />
-                              {session.questionsCount} questions
-                            </div>
-                          )}
+                        <Badge
+                          variant={session.status === 'completed' ? 'success' : session.status === 'in-progress' ? 'warning' : 'default'}
+                          size="sm"
+                          pulse={session.status === 'in-progress'}
+                        >
+                          {session.status === 'completed' ? 'Completed' : session.status === 'in-progress' ? 'In Progress' : session.status}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 mt-3">
+                        {session.overallScore && (
+                          <div className="flex items-center gap-1.5">
+                            <Star className="h-4 w-4 text-amber-500" />
+                            <span className={cn('text-sm font-semibold', session.overallScore >= 70 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
+                              {session.overallScore}%
+                            </span>
+                          </div>
+                        )}
+                        {session.questionCount && (
+                          <div className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)]">
+                            <FileText className="h-3.5 w-3.5" />
+                            {session.questionCount} questions
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5 text-sm text-[var(--text-tertiary)]">
+                          <Clock className="h-3.5 w-3.5" />
+                          {session.duration || 'N/A'}
                         </div>
-                        <div className="flex items-center gap-2 mt-4">
-                          {isCompleted && (
-                            <Button size="xs" variant="outline">
-                              <BarChart3 className="h-3 w-3" />
-                              View Results
-                            </Button>
-                          )}
-                          {!isCompleted && (
-                            <Link to="/mock-interview">
-                              <Button size="xs">
-                                <Play className="h-3 w-3" />
-                                Continue
-                              </Button>
-                            </Link>
-                          )}
-                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 mt-4">
+                        {session.status === 'completed' && (
+                          <Button size="xs" variant="outline">
+                            <BarChart3 className="h-3 w-3" />
+                            View Results
+                          </Button>
+                        )}
+                        {session.status === 'in-progress' && (
+                          <Button size="xs">
+                            <Play className="h-3 w-3" />
+                            Continue
+                          </Button>
+                        )}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )
-          })}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </motion.div>
       )}
     </motion.div>

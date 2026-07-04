@@ -15,7 +15,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
 export default function AdminDashboard() {
@@ -33,6 +33,12 @@ export default function AdminDashboard() {
   const users = results[0].data?.data?.users || []
   const jobs = results[1].data?.data?.jobs || []
 
+  const totalApps = jobs.reduce((s, j) => s + (j.applications?.length || 0), 0)
+  const activeUsers = users.filter((u) => u.isActive !== false).length
+  const recruiters = users.filter((u) => u.role === 'recruiter').length
+  const candidates = users.filter((u) => u.role === 'candidate').length
+
+
   return (
     <motion.div
       variants={containerVariants}
@@ -41,19 +47,28 @@ export default function AdminDashboard() {
       className="space-y-6"
     >
       <motion.div variants={itemVariants}>
-        <div className="flex items-center gap-3 mb-1">
-          <Shield className="h-6 w-6 text-indigo-500" />
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Admin Dashboard</h1>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-600 p-6 sm:p-8">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10" />
+            <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/5" />
+            <div className="absolute top-1/2 right-1/4 h-32 w-32 rounded-full bg-white/5 animate-float-slow" />
+          </div>
+          <div className="relative">
+            <div className="flex items-center gap-3 mb-2">
+              <Shield className="h-6 w-6 text-white/80" />
+              <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
+            </div>
+            <p className="text-sm text-white/60">Platform overview and management</p>
+          </div>
         </div>
-        <p className="text-sm text-[var(--text-secondary)]">Platform overview and management</p>
       </motion.div>
 
       <motion.div variants={itemVariants} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: 'Total Users', value: users.length, icon: Users, color: 'indigo' },
+          { label: 'Total Users', value: users.length, icon: Users, color: 'indigo', subtitle: `${candidates} candidates, ${recruiters} recruiters` },
           { label: 'Total Jobs', value: jobs.length, icon: Briefcase, color: 'emerald' },
-          { label: 'Applications', value: jobs.reduce((s, j) => s + (j.applications?.length || 0), 0), icon: FileText, color: 'purple' },
-          { label: 'Active Users', value: users.filter((u) => u.isActive !== false).length, icon: Activity, color: 'amber' },
+          { label: 'Applications', value: totalApps, icon: FileText, color: 'purple' },
+          { label: 'Active Users', value: activeUsers, icon: Activity, color: 'amber', subtitle: `${Math.round((activeUsers / (users.length || 1)) * 100)}% engagement` },
         ].map((metric) => {
           const Icon = metric.icon
           return (
@@ -78,6 +93,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <p className="text-2xl font-bold text-[var(--text-primary)]">{metric.value}</p>
+                {metric.subtitle && <p className="text-xs text-[var(--text-tertiary)] mt-1">{metric.subtitle}</p>}
               </CardContent>
             </Card>
           )
@@ -88,7 +104,10 @@ export default function AdminDashboard() {
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-              <h2 className="font-semibold text-[var(--text-primary)] mb-4">Recent Users</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-[var(--text-primary)]">Recent Users</h2>
+                <Badge variant="primary" size="xs">{users.length} total</Badge>
+              </div>
               <div className="space-y-2">
                 {users.slice(0, 5).map((u) => (
                   <div key={u._id} className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3">
@@ -101,9 +120,12 @@ export default function AdminDashboard() {
                         <p className="text-xs text-[var(--text-tertiary)]">{u.email}</p>
                       </div>
                     </div>
-                    <Badge variant={u.role === 'admin' ? 'danger' : u.role === 'recruiter' ? 'primary' : 'default'} size="xs">
-                      {u.role}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {u.isEmailVerified && <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />}
+                      <Badge variant={u.role === 'admin' ? 'danger' : u.role === 'recruiter' ? 'primary' : 'default'} size="xs">
+                        {u.role}
+                      </Badge>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -117,7 +139,10 @@ export default function AdminDashboard() {
         <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-              <h2 className="font-semibold text-[var(--text-primary)] mb-4">Recent Jobs</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-[var(--text-primary)]">Recent Jobs</h2>
+                <Badge variant="primary" size="xs">{jobs.length} total</Badge>
+              </div>
               <div className="space-y-2">
                 {jobs.slice(0, 5).map((j) => (
                   <div key={j._id} className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3">
@@ -125,7 +150,7 @@ export default function AdminDashboard() {
                       <p className="text-sm font-medium text-[var(--text-primary)] truncate">{j.title}</p>
                       <p className="text-xs text-[var(--text-tertiary)]">{j.applications?.length || 0} applicants</p>
                     </div>
-                    <Badge variant={j.status === 'active' ? 'success' : 'default'} size="xs">{j.status || 'Draft'}</Badge>
+                    <Badge variant={j.status === 'active' || j.status === 'Active' ? 'success' : 'default'} size="xs">{j.status || 'Draft'}</Badge>
                   </div>
                 ))}
               </div>
@@ -134,5 +159,14 @@ export default function AdminDashboard() {
         </motion.div>
       </div>
     </motion.div>
+  )
+}
+
+function CheckCircle(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
   )
 }

@@ -14,4 +14,7 @@ export const jobApi = {
   updateJob: (id, data) => api.patch(`/jobs/${id}`, data),
 
   deleteJob: (id) => api.delete(`/jobs/${id}`),
+
+  getJobsPaginated: ({ page = 1, limit = 10, search, ...filters } = {}) =>
+    api.get('/jobs', { params: { page, limit, search, ...filters } }),
 }

@@ -76,19 +76,19 @@ const initSocket = (server) => {
 
         io.to(roomId).emit('receive_message', payload);
 
-        const chatRoom = await ChatRoom.findById(roomId).populate('participants');
+        const chatRoom = await ChatRoom.findById(roomId);
         if (chatRoom) {
-          const otherUserId = chatRoom.participants.find(
-            (p) => p._id.toString() !== userId
-          );
+          const otherUserId = chatRoom.candidateId.toString() !== userId
+            ? chatRoom.candidateId
+            : chatRoom.recruiterId;
           if (otherUserId) {
             const notif = await Notification.create({
-              recipientId: otherUserId._id,
+              recipientId: otherUserId,
               type: 'chat_message',
               title: `New message from ${socket.user.name || 'User'}`,
               message: messageText.slice(0, 100)
             });
-            io.to(`notifications:${otherUserId._id}`).emit('notification', {
+            io.to(`notifications:${otherUserId}`).emit('notification', {
               _id: notif._id,
               type: notif.type,
               title: notif.title,

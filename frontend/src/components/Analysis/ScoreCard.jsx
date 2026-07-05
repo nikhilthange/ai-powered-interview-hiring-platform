@@ -1,6 +1,7 @@
+import { memo, useMemo } from 'react'
 import { Card, CardContent } from '../ui/Card'
 
-export default function ScoreCard({ score, label, subtitle, size = 'lg' }) {
+const ScoreCard = memo(function ScoreCard({ score, label, subtitle, size = 'lg' }) {
   const getScoreColor = (s) => {
     if (s >= 80) return { stroke: '#22c55e', text: 'text-emerald-600 dark:text-emerald-400' }
     if (s >= 60) return { stroke: '#f59e0b', text: 'text-amber-600 dark:text-amber-400' }
@@ -11,14 +12,17 @@ export default function ScoreCard({ score, label, subtitle, size = 'lg' }) {
   const radius = size === 'lg' ? 42 : 32
   const circumference = 2 * Math.PI * radius
   const offset = circumference - (circumference * score) / 100
-  const dim = size === 'lg' ? 'w-24 h-24' : 'w-20 h-20'
-  const textSize = size === 'lg' ? 'text-2xl' : 'text-xl'
+
+  const { dim, textSize } = useMemo(() => ({
+    dim: size === 'lg' ? 'w-24 h-24' : 'w-20 h-20',
+    textSize: size === 'lg' ? 'text-2xl' : 'text-xl',
+  }), [size])
 
   return (
     <Card>
       <CardContent className="p-6 text-center">
         <div className={`relative mx-auto mb-4 ${dim}`}>
-          <svg className="w-full h-full" viewBox="0 0 100 100">
+          <svg className="w-full h-full" viewBox="0 0 100 100" aria-hidden="true">
             <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--bg-tertiary)" strokeWidth="8" />
             <circle
               cx="50" cy="50" r={radius}
@@ -33,7 +37,7 @@ export default function ScoreCard({ score, label, subtitle, size = 'lg' }) {
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className={`${textSize} font-bold ${colors.text}`}>{score}</span>
+            <span className={`${textSize} font-bold ${colors.text}`} aria-hidden="true">{score}</span>
           </div>
         </div>
         <p className="text-sm text-[var(--text-secondary)]">{label}</p>
@@ -41,4 +45,6 @@ export default function ScoreCard({ score, label, subtitle, size = 'lg' }) {
       </CardContent>
     </Card>
   )
-}
+})
+
+export default ScoreCard

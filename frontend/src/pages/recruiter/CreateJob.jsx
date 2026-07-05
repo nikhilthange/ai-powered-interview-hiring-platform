@@ -15,40 +15,37 @@ export default function CreateJob() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [form, setForm] = useState({
-    title: '', company: '', location: '', description: '',
-    requirements: '', jobType: 'Full-time', experienceLevel: 'Mid-Level',
-    salary: '', skills: [], responsibilities: '',
+    title: '', location: '', description: '',
+    requirements: '', jobType: 'Full-time', experienceLevel: 'Junior',
+    salaryMin: '', salaryMax: '',
   })
-  const [newSkill, setNewSkill] = useState('')
 
   const mutation = useMutation({
     mutationFn: jobApi.createJob,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recruiter-jobs'] })
-      toast.success('Job Created', 'Your job has been posted successfully.')
+      toast.success('Job created successfully!')
       navigate('/recruiter/my-jobs')
     },
     onError: (err) => {
-      toast.error('Failed to Create', err?.response?.data?.message || 'Something went wrong.')
+      toast.error(err?.response?.data?.message || 'Failed to create job.')
     },
   })
 
   const handleSubmit = (e) => {
     e.preventDefault()
     mutation.mutate({
-      ...form,
-      skills: form.skills,
+      title: form.title,
+      description: form.description,
+      location: form.location,
+      jobType: form.jobType,
+      experienceLevel: form.experienceLevel,
       requirements: form.requirements.split('\n').filter(Boolean),
-      responsibilities: form.responsibilities.split('\n').filter(Boolean),
+      salaryRange: {
+        min: parseInt(form.salaryMin) || 0,
+        max: parseInt(form.salaryMax) || 0,
+      },
     })
-  }
-
-  const addSkill = () => {
-    const skill = newSkill.trim()
-    if (skill && !form.skills.includes(skill)) {
-      setForm({ ...form, skills: [...form.skills, skill] })
-      setNewSkill('')
-    }
   }
 
   return (
@@ -66,16 +63,16 @@ export default function CreateJob() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <Input label="Job Title" placeholder="e.g. Senior Frontend Developer" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-              <Input label="Company" placeholder="e.g. Acme Inc." value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} required />
               <Input label="Location" placeholder="e.g. San Francisco, CA" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-              <Input label="Salary (₹)" placeholder="e.g. 1000000 - 1500000" type="number" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} />
+              <Input label="Salary Min (₹)" placeholder="e.g. 50000" type="number" value={form.salaryMin} onChange={(e) => setForm({ ...form, salaryMin: e.target.value })} />
+              <Input label="Salary Max (₹)" placeholder="e.g. 150000" type="number" value={form.salaryMax} onChange={(e) => setForm({ ...form, salaryMax: e.target.value })} />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Job Type</label>
                 <select value={form.jobType} onChange={(e) => setForm({ ...form, jobType: e.target.value })} className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
-                  {['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'].map((t) => (
+                  {['Full-time', 'Part-time', 'Contract', 'Remote'].map((t) => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </select>
@@ -83,7 +80,7 @@ export default function CreateJob() {
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Experience Level</label>
                 <select value={form.experienceLevel} onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })} className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
-                  {['Entry-Level', 'Mid-Level', 'Senior', 'Lead', 'Manager'].map((l) => (
+                  {['Junior', 'Mid', 'Senior'].map((l) => (
                     <option key={l} value={l}>{l}</option>
                   ))}
                 </select>
@@ -98,31 +95,6 @@ export default function CreateJob() {
             <div>
               <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Requirements (one per line)</label>
               <textarea rows={4} placeholder={`• 5+ years of React experience\n• Experience with TypeScript\n• Strong communication skills`} value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-y" />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Responsibilities (one per line)</label>
-              <textarea rows={4} placeholder={`• Build and maintain React components\n• Collaborate with design team\n• Code review and testing`} value={form.responsibilities} onChange={(e) => setForm({ ...form, responsibilities: e.target.value })} className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-y" />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Skills</label>
-              <div className="flex items-center gap-2 mb-3">
-                <input type="text" placeholder="Add a skill..." value={newSkill} onChange={(e) => setNewSkill(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())} className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
-                <Button type="button" onClick={addSkill} disabled={!newSkill.trim()} size="sm"><Plus className="h-4 w-4" />Add</Button>
-              </div>
-              {form.skills.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {form.skills.map((skill) => (
-                    <span key={skill} className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 px-3 py-1.5 text-xs font-medium">
-                      {skill}
-                      <button type="button" onClick={() => setForm({ ...form, skills: form.skills.filter((s) => s !== skill) })}>
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
 
             {mutation.isError && (

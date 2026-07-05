@@ -1,26 +1,17 @@
-import { useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { chatApi } from '../../services/chatApi'
+import { memo, useState, useCallback } from 'react'
+import { useSocket } from '../../hooks/useSocket'
 import { Send, Paperclip } from 'lucide-react'
 
-export default function ChatInput({ roomId }) {
+const ChatInput = memo(function ChatInput({ roomId }) {
   const [text, setText] = useState('')
-  const queryClient = useQueryClient()
+  const socket = useSocket()
 
-  const mutation = useMutation({
-    mutationFn: () => chatApi.sendMessage(roomId, { content: text.trim() }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['chat-messages', roomId] })
-      queryClient.invalidateQueries({ queryKey: ['chat-rooms'] })
-      setText('')
-    },
-  })
-
-  const handleSubmit = (e) => {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault()
-    if (!text.trim()) return
-    mutation.mutate()
-  }
+    if (!text.trim() || !roomId) return
+    socket.sendMessage(roomId, text.trim())
+    setText('')
+  }, [text, roomId, socket])
 
   return (
     <form onSubmit={handleSubmit} className="flex items-end gap-2">
@@ -45,4 +36,6 @@ export default function ChatInput({ roomId }) {
       </button>
     </form>
   )
-}
+})
+
+export default ChatInput

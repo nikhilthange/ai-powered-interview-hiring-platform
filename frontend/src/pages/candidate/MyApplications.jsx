@@ -1,5 +1,5 @@
+import { memo, useState, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { applicationApi } from '../../services/applicationApi'
 import { Card, CardContent } from '../../components/ui/Card'
@@ -26,16 +26,85 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
+const ApplicationItem = memo(function ApplicationItem({ app }) {
+  return (
+    <motion.div variants={itemVariants}>
+      <Link to="/my-applications" className="block">
+        <Card className="hover:shadow-md transition-all">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold text-lg">
+                {app.jobId?.title?.charAt(0) || 'A'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold text-[var(--text-primary)]">{app.jobId?.title || 'Application'}</h3>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <Building2 className="h-3.5 w-3.5 text-[var(--text-tertiary)]" aria-hidden="true" />
+                      <span className="text-sm text-[var(--text-secondary)]">{app.jobId?.location || 'Company'}</span>
+                    </div>
+                  </div>
+                  <Badge variant={STATUS_COLORS[app.status] || 'default'} size="sm">
+                    {app.status}
+                  </Badge>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 mt-3">
+                  {app.jobId?.location && (
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
+                      <MapPin className="h-3 w-3" aria-hidden="true" />
+                      {app.jobId.location}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
+                    <Clock className="h-3 w-3" aria-hidden="true" />
+                    {new Date(app.createdAt).toLocaleDateString()}
+                  </div>
+                  {app.atsScore > 0 && (
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <Star className={cn('h-3 w-3', app.atsScore >= 80 ? 'text-emerald-500' : app.atsScore >= 60 ? 'text-amber-500' : 'text-red-500')} aria-hidden="true" />
+                      <span className="font-medium">ATS {app.atsScore}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-4">
+                  {app.status === 'Interview Scheduled' && (
+                    <Button size="xs" variant="primary">
+                      <Calendar className="h-3 w-3" aria-hidden="true" />
+                      View Interview
+                    </Button>
+                  )}
+                  <Button size="xs" variant="ghost">
+                    <Eye className="h-3 w-3" aria-hidden="true" />
+                    View Details
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    </motion.div>
+  )
+})
+
 export default function MyApplications() {
   const [activeTab, setActiveTab] = useState('All')
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['my-applications-page'],
     queryFn: () => applicationApi.getMyApplications().then((r) => r.data),
+    staleTime: 30000,
   })
 
-  const applications = data?.data?.applications || []
-  const filtered = activeTab === 'All' ? applications : applications.filter((a) => a.status === activeTab)
+  const applications = useMemo(() => data?.data?.applications || [], [data])
+
+  const filtered = useMemo(() =>
+    activeTab === 'All' ? applications : applications.filter((a) => a.status === activeTab),
+    [applications, activeTab]
+  )
+
+  const handleTabChange = useCallback((status) => setActiveTab(status), [])
 
   if (isLoading) return (
     <div className="space-y-6">
@@ -77,7 +146,7 @@ export default function MyApplications() {
           return (
             <button
               key={status}
-              onClick={() => setActiveTab(status)}
+              onClick={() => handleTabChange(status)}
               className={cn(
                 'whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition-all shrink-0',
                 isActive
@@ -109,63 +178,7 @@ export default function MyApplications() {
       ) : (
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-3">
           {filtered.map((app) => (
-            <motion.div key={app._id} variants={itemVariants}>
-              <Link to="/my-applications" className="block">
-                <Card className="hover:shadow-md transition-all">
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold text-lg">
-                        {app.jobId?.title?.charAt(0) || 'A'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h3 className="font-semibold text-[var(--text-primary)]">{app.jobId?.title || 'Application'}</h3>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <Building2 className="h-3.5 w-3.5 text-[var(--text-tertiary)]" />
-                              <span className="text-sm text-[var(--text-secondary)]">{app.jobId?.company || 'Company'}</span>
-                            </div>
-                          </div>
-                          <Badge variant={STATUS_COLORS[app.status] || 'default'} size="sm">
-                            {app.status}
-                          </Badge>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3 mt-3">
-                          {app.jobId?.location && (
-                            <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
-                              <MapPin className="h-3 w-3" />
-                              {app.jobId.location}
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
-                            <Clock className="h-3 w-3" />
-                            {new Date(app.createdAt).toLocaleDateString()}
-                          </div>
-                          {app.atsScore > 0 && (
-                            <div className="flex items-center gap-1.5 text-xs">
-                              <Star className={cn('h-3 w-3', app.atsScore >= 80 ? 'text-emerald-500' : app.atsScore >= 60 ? 'text-amber-500' : 'text-red-500')} />
-                              <span className="font-medium">ATS {app.atsScore}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-4">
-                          {app.status === 'Interview Scheduled' && (
-                            <Button size="xs" variant="primary">
-                              <Calendar className="h-3 w-3" />
-                              View Interview
-                            </Button>
-                          )}
-                          <Button size="xs" variant="ghost">
-                            <Eye className="h-3 w-3" />
-                            View Details
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
+            <ApplicationItem key={app._id} app={app} />
           ))}
         </motion.div>
       )}

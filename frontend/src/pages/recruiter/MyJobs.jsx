@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button'
 import { SkeletonList } from '../../components/ui/Skeleton'
 import EmptyState from '../../components/ui/EmptyState'
 import { Link } from 'react-router-dom'
-import { Briefcase, Users, Eye, Plus, Edit, MapPin } from 'lucide-react'
+import { Briefcase, Users, Plus, Edit, MapPin } from 'lucide-react'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -77,9 +77,9 @@ export default function MyJobs() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <h3 className="font-semibold text-[var(--text-primary)]">{job.title}</h3>
-                          <p className="text-sm text-[var(--text-secondary)] mt-0.5">{job.company || 'Company'}</p>
+                          <p className="text-sm text-[var(--text-secondary)] mt-0.5">{job.location || 'Location N/A'}</p>
                         </div>
-                        <Badge variant={job.status === 'active' ? 'success' : 'default'} size="sm">
+                        <Badge variant={job.status === 'Active' ? 'success' : 'default'} size="sm">
                           {job.status || 'Draft'}
                         </Badge>
                       </div>
@@ -92,11 +92,11 @@ export default function MyJobs() {
                         )}
                         <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
                           <Users className="h-3 w-3" />
-                          {job.applications?.length || 0} applicants
+                          0 applicants
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
                           <Eye className="h-3 w-3" />
-                          {job.views || 0} views
+                          0 views
                         </div>
                       </div>
                       <div className="flex items-center gap-2 mt-4">

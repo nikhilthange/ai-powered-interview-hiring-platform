@@ -78,31 +78,18 @@ export default function JobDetail() {
           <CardContent className="p-5 sm:p-8">
             <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
               <div className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold text-xl sm:text-2xl">
-                {job.company?.charAt(0) || job.title?.charAt(0) || 'J'}
+                {job.title?.charAt(0) || 'J'}
               </div>
               <div className="flex-1 min-w-0 w-full">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">{job.title}</h1>
-                    <div className="flex flex-wrap items-center gap-2 mt-1">
-                      <span className="text-sm sm:text-base text-[var(--text-secondary)]">{job.company || 'Company'}</span>
-                      <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                      <span className="text-xs text-emerald-600 font-medium">Verified</span>
-                    </div>
-                  </div>
-                  {job.aiMatchScore && (
-                    <div className="flex flex-col items-center shrink-0">
-                      <div className={cn(
-                        'flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl text-xs sm:text-sm font-bold',
-                        job.aiMatchScore >= 80 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' :
-                        job.aiMatchScore >= 60 ? 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' :
-                        'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400'
-                      )}>
-                        {job.aiMatchScore}%
+                    {job.recruiterId?.email && (
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <span className="text-sm sm:text-base text-[var(--text-secondary)]">{job.recruiterId.email}</span>
                       </div>
-                      <span className="text-[10px] text-[var(--text-tertiary)] mt-1">AI Match</span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 mt-4">
@@ -171,24 +158,6 @@ export default function JobDetail() {
             </motion.div>
           )}
 
-          {job.responsibilities?.length > 0 && (
-            <motion.div variants={itemVariants}>
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="font-semibold text-[var(--text-primary)] mb-3">Responsibilities</h2>
-                  <ul className="space-y-2">
-                    {job.responsibilities.map((r, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
-                        {r}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-
           {job.requirements?.length > 0 && (
             <motion.div variants={itemVariants}>
               <Card>
@@ -241,50 +210,7 @@ export default function JobDetail() {
                       </span>
                     </div>
                   )}
-                  {job.applicationsCount !== undefined && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-[var(--text-secondary)]">Applicants</span>
-                      <span className="text-sm font-medium text-[var(--text-primary)]">{job.applicationsCount}</span>
-                    </div>
-                  )}
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {job.skills?.length > 0 && (
-            <motion.div variants={itemVariants}>
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="font-semibold text-[var(--text-primary)] mb-4">Required Skills</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {job.skills.map((skill) => (
-                      <Badge key={skill} variant="primary" size="md">{skill}</Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-
-          <motion.div variants={itemVariants}>
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="font-semibold text-[var(--text-primary)] mb-4">About the Company</h2>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold text-lg">
-                    {job.company?.charAt(0) || 'C'}
-                  </div>
-                  <div>
-                    <p className="font-medium text-[var(--text-primary)]">{job.company || 'Company'}</p>
-                    <p className="text-xs text-[var(--text-tertiary)]">{job.industry || 'Technology'}</p>
-                  </div>
-                </div>
-                {job.companyDescription && (
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                    {job.companyDescription}
-                  </p>
-                )}
               </CardContent>
             </Card>
           </motion.div>

@@ -14,7 +14,7 @@ const SubscriptionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Active', 'Past-Due', 'Cancelled'],
+    enum: ['Active', 'Past-Due', 'Cancelled', 'Expired'],
     default: 'Active'
   },
   razorpaySubscriptionId: {

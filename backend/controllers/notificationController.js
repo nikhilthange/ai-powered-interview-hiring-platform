@@ -1,4 +1,5 @@
 const Notification = require('../models/Notification');
+const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
 
 exports.getMyNotifications = asyncHandler(async (req, res, next) => {
@@ -29,6 +30,10 @@ exports.markAsRead = asyncHandler(async (req, res, next) => {
     { isRead: true },
     { new: true }
   );
+
+  if (!notification) {
+    return next(new AppError('Notification not found.', 404));
+  }
 
   res.status(200).json({
     status: 'success',

@@ -10,6 +10,4 @@ export const chatApi = {
 
   getUnreadCount: () => api.get('/chats/rooms/unread-count'),
 
-  sendMessage: (roomId, content) =>
-    api.post(`/chats/rooms/${roomId}/messages`, { content }),
 }

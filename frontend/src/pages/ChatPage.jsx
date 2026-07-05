@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent } from '../components/ui/Card'
 import { SkeletonList } from '../components/ui/Skeleton'
@@ -8,6 +8,7 @@ import ChatRoomList from '../components/chat/ChatRoomList'
 import ChatMessages from '../components/chat/ChatMessages'
 import ChatInput from '../components/chat/ChatInput'
 import { chatApi } from '../services/chatApi'
+import { useAuth } from '../hooks/useAuth'
 import {
   MessageCircle, ArrowLeft, Phone, Video, MoreHorizontal,
 } from 'lucide-react'
@@ -19,6 +20,7 @@ const containerVariants = {
 }
 
 export default function ChatPage() {
+  const { user } = useAuth()
   const [selectedRoom, setSelectedRoom] = useState(null)
 
   const { data: roomsData, isLoading } = useQuery({
@@ -27,6 +29,15 @@ export default function ChatPage() {
   })
 
   const rooms = Array.isArray(roomsData) ? roomsData : []
+
+  const otherUserName = useMemo(() => {
+    if (!selectedRoom || !user) return 'User'
+    const isCandidate = user._id === selectedRoom.candidateId?._id
+    const otherEmail = isCandidate
+      ? selectedRoom.recruiterId?.email
+      : selectedRoom.candidateId?.email
+    return otherEmail?.split('@')[0] || 'User'
+  }, [selectedRoom, user])
 
   if (isLoading) {
     return (
@@ -90,10 +101,10 @@ export default function ChatPage() {
                     <ArrowLeft className="h-5 w-5" />
                   </button>
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-semibold text-sm">
-                    {selectedRoom.name?.charAt(0) || 'U'}
+                    {otherUserName?.charAt(0) || 'U'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{selectedRoom.name || 'User'}</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{otherUserName}</p>
                     <p className="text-xs text-[var(--text-tertiary)]">Online</p>
                   </div>
                   <button className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]">

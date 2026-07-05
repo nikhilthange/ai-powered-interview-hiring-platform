@@ -1,22 +1,43 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { chatApi } from '../../services/chatApi'
+import { useSocket } from '../../hooks/useSocket'
+import { useAuth } from '../../hooks/useAuth'
 import ChatMessage from './ChatMessage'
 import { Loader2, MessageCircle } from 'lucide-react'
-import { useEffect, useRef } from 'react'
 
 export default function ChatMessages({ roomId }) {
   const bottomRef = useRef(null)
+  const socket = useSocket()
+  const { user } = useAuth()
+  const [liveMessages, setLiveMessages] = useState([])
 
   const { data, isLoading } = useQuery({
     queryKey: ['chat-messages', roomId],
     queryFn: () => chatApi.getRoomMessages(roomId).then((r) => r.data?.data?.messages || r.data?.messages || []),
+    enabled: !!roomId,
   })
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [data])
+    setLiveMessages([])
+  }, [roomId])
 
-  const messages = Array.isArray(data) ? data : []
+  useEffect(() => {
+    if (!roomId) return
+    socket.joinRoom(roomId)
+    const unsub = socket.onMessage((msg) => {
+      if (msg.chatRoomId === roomId) {
+        setLiveMessages((prev) => [...prev, msg])
+      }
+    })
+    return () => unsub && unsub()
+  }, [roomId, socket])
+
+  const messages = [...(Array.isArray(data) ? data : []), ...liveMessages]
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages.length])
 
   if (isLoading) {
     return (

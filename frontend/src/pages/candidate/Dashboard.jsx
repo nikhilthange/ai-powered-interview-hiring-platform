@@ -247,7 +247,7 @@ export default function CandidateDashboard() {
                               </span>
                               <div>
                                 <p className="text-sm font-medium text-[var(--text-primary)] truncate">{job.title}</p>
-                                <p className="text-xs text-[var(--text-secondary)]">{job.company || 'Company'}</p>
+                                <p className="text-xs text-[var(--text-secondary)]">{job.location || 'Location N/A'}</p>
                               </div>
                             </div>
                           </div>

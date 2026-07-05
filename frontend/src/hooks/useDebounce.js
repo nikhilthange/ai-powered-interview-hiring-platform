@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 export function useDebounce(value, delay = 300) {
   const [debounced, setDebounced] = useState(value)
@@ -8,5 +8,6 @@ export function useDebounce(value, delay = 300) {
     return () => clearTimeout(timer)
   }, [value, delay])
 
-  return debounced
+  const result = useMemo(() => debounced, [debounced])
+  return result
 }

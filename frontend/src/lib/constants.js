@@ -1,6 +1,6 @@
-export const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Remote', 'Internship']
+export const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Remote']
 
-export const EXPERIENCE_LEVELS = ['Junior', 'Mid', 'Senior', 'Lead']
+export const EXPERIENCE_LEVELS = ['Junior', 'Mid', 'Senior']
 
 export const APPLICATION_STATUSES = ['All', 'Applied', 'Reviewing', 'Shortlisted', 'Interview Scheduled', 'Rejected', 'Hired']
 
@@ -18,7 +18,6 @@ export const JOB_TYPE_COLORS = {
   'Part-time': 'info',
   Contract: 'warning',
   Remote: 'success',
-  Internship: 'default',
 }
 
 export const ALLOWED_FILE_TYPES = [

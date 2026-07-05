@@ -18,15 +18,9 @@ router.post('/pdf', upload.single('pdf'), asyncHandler(async (req, res) => {
     throw new AppError('Please upload a PDF file.', 400);
   }
 
-  const pdfModule = require('pdf-parse');
-  console.log('=== pdf-parse debug ===');
-  console.log('typeof pdfModule:', typeof pdfModule);
-  console.log('pdfModule keys:', Object.keys(pdfModule));
-  console.log('typeof pdfModule.PDFParse:', typeof pdfModule.PDFParse);
-
-  const { PDFParse } = pdfModule;
+  const pdfParse = require('pdf-parse');
   const buffer = fs.readFileSync(req.file.path);
-  const data = await PDFParse(buffer);
+  const data = await pdfParse(buffer);
 
   if (req.file.path) {
     fs.unlink(req.file.path, () => {});

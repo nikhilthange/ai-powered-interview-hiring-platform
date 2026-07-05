@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './context/AuthContext'
@@ -7,12 +8,24 @@ import { ToastProvider } from './components/ui/Toast'
 import ErrorBoundary from './components/layout/ErrorBoundary'
 import { router } from './routes'
 
+const ReactQueryDevtools = lazy(() =>
+  import('@tanstack/react-query-devtools').then((mod) => ({
+    default: mod.ReactQueryDevtools,
+  }))
+)
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
       retry: 1,
       refetchOnWindowFocus: false,
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 0,
     },
   },
 })
@@ -38,6 +51,11 @@ export default function App() {
             <SocketProvider>
               <ToastProvider>
                 <RouterProvider router={router} />
+                {import.meta.env.DEV && (
+                  <Suspense fallback={null}>
+                    <ReactQueryDevtools buttonPosition="bottom-left" />
+                  </Suspense>
+                )}
               </ToastProvider>
             </SocketProvider>
           </AuthProvider>

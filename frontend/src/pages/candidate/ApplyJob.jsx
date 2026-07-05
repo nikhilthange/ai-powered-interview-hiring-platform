@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../../services/jobApi'
-import api from '../../services/axios'
+import { applicationApi } from '../../services/applicationApi'
 import { useToast } from '../../components/ui/Toast'
 import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
@@ -21,18 +21,18 @@ export default function ApplyJob() {
 
   const { data: jobData, isLoading } = useQuery({
     queryKey: ['job', id],
-    queryFn: () => jobApi.getJobById(id).then((r) => r.data),
+    queryFn: () => jobApi.getJob(id).then((r) => r.data),
   })
 
   const mutation = useMutation({
-    mutationFn: (data) => api.post(`/applications/${id}/apply`, data),
+    mutationFn: (formData) => applicationApi.submitApplication(id, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-applications'] })
-      toast.success('Application Submitted', 'Your application has been sent successfully!')
+      toast.success('Application submitted successfully!')
       navigate('/my-applications')
     },
     onError: (err) => {
-      toast.error('Application Failed', err?.response?.data?.message || 'Something went wrong.')
+      toast.error(err?.response?.data?.message || 'Failed to submit application.')
     },
   })
 
@@ -65,7 +65,7 @@ export default function ApplyJob() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-[var(--text-primary)]">{job.title}</h1>
-              <p className="text-sm text-[var(--text-secondary)]">{job.company} • {job.location}</p>
+              <p className="text-sm text-[var(--text-secondary)]">{job.recruiterId?.email || 'Company'} • {job.location}</p>
             </div>
           </div>
         )}

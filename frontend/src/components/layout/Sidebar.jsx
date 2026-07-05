@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
@@ -35,26 +36,24 @@ const adminLinks = [
   { to: '/admin/users', label: 'Users', icon: Users },
 ]
 
-export default function Sidebar({ open, onClose, collapsed, onToggle }) {
+const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
   const { user, logout } = useAuth()
   const location = useLocation()
 
-  const getLinks = () => {
+  const links = useMemo(() => {
     if (!user) return []
     switch (user.role) {
       case 'admin': return adminLinks
       case 'recruiter': return recruiterLinks
       default: return candidateLinks
     }
-  }
+  }, [user])
 
-  const links = getLinks()
-
-  const bottomLinks = [
+  const bottomLinks = useMemo(() => [
     { to: user?.role === 'recruiter' ? '/recruiter/profile' : '/profile', label: 'Profile', icon: User },
     { to: '/plans', label: 'Billing', icon: CreditCard },
     { to: '/notifications', label: 'Notifications', icon: Bell },
-  ]
+  ], [user?.role])
 
   return (
     <>
@@ -197,4 +196,6 @@ export default function Sidebar({ open, onClose, collapsed, onToggle }) {
       </aside>
     </>
   )
-}
+})
+
+export default Sidebar

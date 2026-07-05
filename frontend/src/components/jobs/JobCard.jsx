@@ -1,5 +1,6 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
-import { MapPin, Briefcase, Clock, IndianRupee, Building2 } from 'lucide-react'
+import { MapPin, Briefcase, Clock, IndianRupee } from 'lucide-react'
 import Badge from '../ui/Badge'
 import { Card, CardContent } from '../ui/Card'
 import { formatDateRelative } from '../../lib/utils'
@@ -12,7 +13,7 @@ const typeColors = {
   Internship: 'default',
 }
 
-export default function JobCard({ job, showActions, onDelete }) {
+const JobCard = memo(function JobCard({ job, showActions, onDelete }) {
   return (
     <Card hover>
       <CardContent className="p-5">
@@ -22,7 +23,7 @@ export default function JobCard({ job, showActions, onDelete }) {
               <div className="min-w-0">
                 <div className="flex items-center gap-3">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--color-primary-50)] to-[var(--color-primary-100)] text-[var(--color-primary-600)] dark:from-[var(--color-primary-950)] dark:to-[var(--color-primary-900)] dark:text-[var(--color-primary-400)] font-semibold text-sm">
-                    {job.company?.charAt(0) || job.title?.charAt(0) || 'J'}
+                    {job.title?.charAt(0) || 'J'}
                   </span>
                   <div>
                     <Link
@@ -31,10 +32,10 @@ export default function JobCard({ job, showActions, onDelete }) {
                     >
                       {job.title}
                     </Link>
-                    {job.company && (
+                    {job.location && (
                       <p className="text-xs text-[var(--text-secondary)] flex items-center gap-1 mt-0.5">
-                        <Building2 className="h-3 w-3" />
-                        {job.company}
+                        <MapPin className="h-3 w-3" aria-hidden="true" />
+                        {job.location}
                       </p>
                     )}
                   </div>
@@ -47,15 +48,15 @@ export default function JobCard({ job, showActions, onDelete }) {
 
             <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--text-secondary)]">
               <span className="inline-flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5" />
+                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
                 {job.location}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Briefcase className="h-3.5 w-3.5" />
+                <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
                 {job.experienceLevel}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5" />
+                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                 {formatDateRelative(job.createdAt)}
               </span>
             </div>
@@ -67,16 +68,16 @@ export default function JobCard({ job, showActions, onDelete }) {
             <div className="flex flex-wrap items-center gap-2">
               {job.salaryRange?.min > 0 && (
                 <span className="inline-flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                  <IndianRupee className="h-3.5 w-3.5" />
+                  <IndianRupee className="h-3.5 w-3.5" aria-hidden="true" />
                   {job.salaryRange.min.toLocaleString('en-IN')}
                   {job.salaryRange.max > 0 && ` - ${job.salaryRange.max.toLocaleString('en-IN')}`}
                 </span>
               )}
-              {job.skills?.slice(0, 3).map((skill) => (
-                <Badge key={skill} variant="default" size="xs">{skill}</Badge>
+                    {job.requirements?.slice(0, 3).map((req) => (
+                <Badge key={req} variant="default" size="xs">{req}</Badge>
               ))}
-              {job.skills?.length > 3 && (
-                <span className="text-xs text-[var(--text-tertiary)]">+{job.skills.length - 3}</span>
+              {job.requirements?.length > 3 && (
+                <span className="text-xs text-[var(--text-tertiary)]">+{job.requirements.length - 3}</span>
               )}
             </div>
           </div>
@@ -101,4 +102,6 @@ export default function JobCard({ job, showActions, onDelete }) {
       </CardContent>
     </Card>
   )
-}
+})
+
+export default JobCard

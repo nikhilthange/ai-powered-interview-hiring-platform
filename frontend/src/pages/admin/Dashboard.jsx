@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
-import { useQueries } from '@tanstack/react-query'
-import api from '../../services/axios'
+import { useQuery } from '@tanstack/react-query'
+import { adminApi } from '../../services/adminApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import { SkeletonMetrics } from '../../components/ui/Skeleton'
@@ -19,24 +19,22 @@ const itemVariants = {
 }
 
 export default function AdminDashboard() {
-  const results = useQueries({
-    queries: [
-      { queryKey: ['admin-users'], queryFn: () => api.get('/admin/users').then((r) => r.data) },
-      { queryKey: ['admin-jobs'], queryFn: () => api.get('/admin/jobs').then((r) => r.data) },
-    ],
+  const { data: analytics, isLoading } = useQuery({
+    queryKey: ['admin-analytics'],
+    queryFn: () => adminApi.getAnalytics(),
   })
-
-  const isLoading = results.some((q) => q.isPending && !q.data)
 
   if (isLoading) return <SkeletonMetrics />
 
-  const users = results[0].data?.data?.users || []
-  const jobs = results[1].data?.data?.jobs || []
+  const userStats = analytics?.data?.users || []
+  const jobStats = analytics?.data?.jobs || []
+  const appStats = analytics?.data?.applications || []
 
-  const totalApps = jobs.reduce((s, j) => s + (j.applications?.length || 0), 0)
-  const activeUsers = users.filter((u) => u.isActive !== false).length
-  const recruiters = users.filter((u) => u.role === 'recruiter').length
-  const candidates = users.filter((u) => u.role === 'candidate').length
+  const totalUsers = userStats.reduce((s, u) => s + u.count, 0)
+  const recruiters = userStats.find((u) => u.role === 'recruiter')?.count || 0
+  const candidates = userStats.find((u) => u.role === 'candidate')?.count || 0
+  const totalJobs = jobStats.reduce((s, j) => s + j.count, 0)
+  const totalApps = appStats.reduce((s, a) => s + a.count, 0)
 
 
   return (

@@ -1,6 +1,6 @@
+import { memo, useState, useCallback, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'
 import { Card, CardContent } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
@@ -10,6 +10,7 @@ import EmptyState from '../components/ui/EmptyState'
 import { Link } from 'react-router-dom'
 import { cn } from '../lib/utils'
 import { useDebounce } from '../hooks/useDebounce'
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import {
   Search, MapPin, Briefcase,
   Check, Bookmark, DollarSign,
@@ -26,20 +27,238 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
+const JobListItem = memo(function JobListItem({ job }) {
+  const queryClient = useQueryClient()
+
+  const handleMouseEnter = useCallback(() => {
+    queryClient.prefetchQuery({
+      queryKey: ['job', job._id],
+      queryFn: () => jobApi.getJob(job._id).then((r) => r.data),
+      staleTime: 30000,
+    })
+  }, [queryClient, job._id])
+
+  return (
+    <motion.div variants={itemVariants} whileHover={{ y: -2 }}>
+      <Link to={`/jobs/${job._id}`} onMouseEnter={handleMouseEnter}>
+        <div className="rounded-2xl border bg-[var(--bg-primary)] p-5 transition-all border-[var(--border-color)] shadow-sm hover:shadow-md hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 dark:from-indigo-950 dark:to-indigo-900 dark:text-indigo-400 font-bold text-lg">
+              {job.title?.charAt(0) || 'J'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold text-[var(--text-primary)]">{job.title}</h3>
+                  {job.recruiterId?.email && (
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-sm text-[var(--text-secondary)]">{job.recruiterId.email}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                {job.location && (
+                  <Badge variant="default" size="xs">
+                    <MapPin className="h-3 w-3" aria-hidden="true" />
+                    {job.location}
+                  </Badge>
+                )}
+                {job.salaryRange?.min > 0 && (
+                  <Badge variant="primary" size="xs">
+                    <DollarSign className="h-3 w-3" aria-hidden="true" />
+                    ₹{job.salaryRange.min.toLocaleString('en-IN')}
+                  </Badge>
+                )}
+                {job.jobType && <Badge variant="info" size="xs">{job.jobType}</Badge>}
+                {job.experienceLevel && (
+                  <Badge variant="warning" size="xs">
+                    <GraduationCap className="h-3 w-3" aria-hidden="true" />
+                    {job.experienceLevel}
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-4">
+                <Button size="sm">
+                  <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
+                  Apply Now
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
+                  Save
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  )
+})
+
+const FiltersPanel = memo(function FiltersPanel({ filters, setFilters, jobTypes, expLevels, showFilters, setShowFilters, hasActiveFilters }) {
+  return (
+    <div className={cn(
+      'w-full lg:w-64 shrink-0 space-y-4',
+      showFilters ? 'block' : 'hidden lg:block'
+    )}>
+      <Card>
+        <CardContent className="p-5 space-y-5">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-[var(--text-primary)] text-sm">Filters</h3>
+            <button
+              onClick={() => { setFilters({}); setShowFilters(false) }}
+              className="text-xs text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors"
+            >
+              Clear all
+            </button>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Job Type</label>
+            <div className="space-y-1.5">
+              {jobTypes.map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setFilters((f) => ({ ...f, type: f.type === type ? undefined : type }))}
+                  className={cn(
+                    'w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all',
+                    filters.type === type
+                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 font-medium'
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+                  )}
+                >
+                  <div className={cn(
+                    'h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
+                    filters.type === type ? 'border-indigo-500 bg-indigo-500' : 'border-[var(--border-color)]'
+                  )}>
+                    {filters.type === type && <Check className="h-3 w-3 text-white" aria-hidden="true" />}
+                  </div>
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Experience Level</label>
+            <div className="space-y-1.5">
+              {expLevels.map((level) => (
+                <button
+                  key={level}
+                  onClick={() => setFilters((f) => ({ ...f, level: f.level === level ? undefined : level }))}
+                  className={cn(
+                    'w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all',
+                    filters.level === level
+                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 font-medium'
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+                  )}
+                >
+                  <div className={cn(
+                    'h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
+                    filters.level === level ? 'border-indigo-500 bg-indigo-500' : 'border-[var(--border-color)]'
+                  )}>
+                    {filters.level === level && <Check className="h-3 w-3 text-white" aria-hidden="true" />}
+                  </div>
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Location</label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" aria-hidden="true" />
+              <input
+                type="text"
+                placeholder="Filter by location..."
+                value={filters.location || ''}
+                onChange={(e) => setFilters((f) => ({ ...f, location: e.target.value || undefined }))}
+                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-10 pr-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+})
+
 export default function Jobs() {
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState({})
   const [showFilters, setShowFilters] = useState(false)
+  const [page, setPage] = useState(1)
   const debouncedSearch = useDebounce(search, 300)
+  const allJobsRef = useRef([])
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['jobs', debouncedSearch, filters],
-    queryFn: () => jobApi.getJobs({ search: debouncedSearch, ...filters }).then((r) => r.data),
+  const queryKey = useMemo(() => ['jobs', debouncedSearch, filters], [debouncedSearch, filters])
+
+  const apiFilters = useMemo(() => {
+    const mapped = {}
+    if (filters.type) mapped.jobType = filters.type
+    if (filters.level) mapped.experienceLevel = filters.level
+    if (filters.location) mapped.location = filters.location
+    return mapped
+  }, [filters])
+
+  const { data, isLoading, isError, error, refetch, isFetching, fetchStatus } = useQuery({
+    queryKey,
+    queryFn: () => jobApi.getJobsPaginated({ search: debouncedSearch, page, limit: 10, ...apiFilters }).then((r) => r.data),
+    placeholderData: (prev) => prev,
   })
 
-  const jobs = data?.data?.jobs || []
+  const jobs = useMemo(() => {
+    const newJobs = data?.data?.jobs || []
+    if (page === 1) {
+      allJobsRef.current = newJobs
+    } else if (newJobs.length > 0) {
+      const existingIds = new Set(allJobsRef.current.map((j) => j._id))
+      const unique = newJobs.filter((j) => !existingIds.has(j._id))
+      allJobsRef.current = [...allJobsRef.current, ...unique]
+    }
+    return allJobsRef.current
+  }, [data, page])
 
-  if (isLoading) {
+  const totalPages = data?.totalPages || data?.pagination?.totalPages || 1
+  const hasMore = page < totalPages
+
+  const handleLoadMore = useCallback(() => {
+    if (!isFetching && hasMore) {
+      setPage((p) => p + 1)
+    }
+  }, [isFetching, hasMore])
+
+  const { sentinelRef } = useInfiniteScroll({
+    onLoadMore: handleLoadMore,
+    hasMore,
+    isLoading: isFetching,
+  })
+
+  const handleSearchClear = useCallback(() => setSearch(''), [])
+
+  const jobTypes = useMemo(() =>
+    [...new Set(jobs.map((j) => j.jobType).filter(Boolean))],
+    [jobs]
+  )
+
+  const expLevels = useMemo(() =>
+    [...new Set(jobs.map((j) => j.experienceLevel).filter(Boolean))],
+    [jobs]
+  )
+
+  const hasActiveFilters = useMemo(() => Object.keys(filters).length > 0, [filters])
+
+  const handleSetFilters = useCallback((fn) => {
+    setFilters(fn)
+    setPage(1)
+    allJobsRef.current = []
+  }, [])
+
+  const handleToggleFilters = useCallback(() => setShowFilters((prev) => !prev), [])
+
+  if (isLoading && page === 1) {
     return (
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -69,11 +288,6 @@ export default function Jobs() {
     )
   }
 
-  const jobTypes = [...new Set(jobs.map((j) => j.jobType).filter(Boolean))]
-  const expLevels = [...new Set(jobs.map((j) => j.experienceLevel).filter(Boolean))]
-
-  const hasActiveFilters = Object.keys(filters).length > 0
-
   return (
     <motion.div
       variants={containerVariants}
@@ -92,10 +306,10 @@ export default function Jobs() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={handleToggleFilters}
             className="lg:hidden"
           >
-            <Filter className="h-4 w-4" />
+            <Filter className="h-4 w-4" aria-hidden="true" />
             Filters
             {hasActiveFilters && (
               <span className="flex h-2 w-2 rounded-full bg-indigo-500" />
@@ -105,109 +319,36 @@ export default function Jobs() {
       </div>
 
       <div className="relative group">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" aria-hidden="true" />
         <input
           type="text"
           placeholder="Search by title, company, or location..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          aria-label="Search jobs"
           className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-12 pr-12 py-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all shadow-sm"
         />
         {search && (
           <button
-            onClick={() => setSearch('')}
+            onClick={handleSearchClear}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Clear search"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        <div className={cn(
-          'w-full lg:w-64 shrink-0 space-y-4',
-          showFilters ? 'block' : 'hidden lg:block'
-        )}>
-          <Card>
-            <CardContent className="p-5 space-y-5">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-[var(--text-primary)] text-sm">Filters</h3>
-                <button
-                  onClick={() => { setFilters({}); setShowFilters(false) }}
-                  className="text-xs text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors"
-                >
-                  Clear all
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Job Type</label>
-                <div className="space-y-1.5">
-                  {jobTypes.map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => setFilters((f) => ({ ...f, type: f.type === type ? undefined : type }))}
-                      className={cn(
-                        'w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all',
-                        filters.type === type
-                          ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 font-medium'
-                          : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
-                      )}
-                    >
-                      <div className={cn(
-                        'h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
-                        filters.type === type ? 'border-indigo-500 bg-indigo-500' : 'border-[var(--border-color)]'
-                      )}>
-                        {filters.type === type && <Check className="h-3 w-3 text-white" />}
-                      </div>
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Experience Level</label>
-                <div className="space-y-1.5">
-                  {expLevels.map((level) => (
-                    <button
-                      key={level}
-                      onClick={() => setFilters((f) => ({ ...f, level: f.level === level ? undefined : level }))}
-                      className={cn(
-                        'w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all',
-                        filters.level === level
-                          ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 font-medium'
-                          : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
-                      )}
-                    >
-                      <div className={cn(
-                        'h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
-                        filters.level === level ? 'border-indigo-500 bg-indigo-500' : 'border-[var(--border-color)]'
-                      )}>
-                        {filters.level === level && <Check className="h-3 w-3 text-white" />}
-                      </div>
-                      {level}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Location</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
-                  <input
-                    type="text"
-                    placeholder="Filter by location..."
-                    value={filters.location || ''}
-                    onChange={(e) => setFilters((f) => ({ ...f, location: e.target.value || undefined }))}
-                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-10 pr-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <FiltersPanel
+          filters={filters}
+          setFilters={handleSetFilters}
+          jobTypes={jobTypes}
+          expLevels={expLevels}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          hasActiveFilters={hasActiveFilters}
+        />
 
         <div className="flex-1 min-w-0 space-y-3">
           {jobs.length === 0 ? (
@@ -217,87 +358,19 @@ export default function Jobs() {
               description="Try adjusting your search or filters"
             />
           ) : (
-            jobs.map((job) => (
-              <motion.div
-                key={job._id}
-                variants={itemVariants}
-                whileHover={{ y: -2 }}
-              >
-                <Link to={`/jobs/${job._id}`}>
-                  <div className="rounded-2xl border bg-[var(--bg-primary)] p-5 transition-all border-[var(--border-color)] shadow-sm hover:shadow-md hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 dark:from-indigo-950 dark:to-indigo-900 dark:text-indigo-400 font-bold text-lg">
-                        {job.company?.charAt(0) || job.title?.charAt(0) || 'J'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h3 className="font-semibold text-[var(--text-primary)]">{job.title}</h3>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-sm text-[var(--text-secondary)]">{job.company || 'Company'}</span>
-                            </div>
-                          </div>
-                          {job.aiMatchScore && (
-                            <div className="flex flex-col items-center shrink-0">
-                              <div className={cn(
-                                'flex h-10 w-10 items-center justify-center rounded-xl text-xs font-bold',
-                                job.aiMatchScore >= 80 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' :
-                                job.aiMatchScore >= 60 ? 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' :
-                                'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400'
-                              )}>
-                                {job.aiMatchScore}%
-                              </div>
-                              <span className="text-[10px] text-[var(--text-tertiary)] mt-0.5">Match</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 mt-3">
-                          {job.location && (
-                            <Badge variant="default" size="xs">
-                              <MapPin className="h-3 w-3" />
-                              {job.location}
-                            </Badge>
-                          )}
-                          {job.salaryRange?.min > 0 && (
-                            <Badge variant="primary" size="xs">
-                              <DollarSign className="h-3 w-3" />
-                              ₹{job.salaryRange.min.toLocaleString('en-IN')}
-                            </Badge>
-                          )}
-                          {job.jobType && <Badge variant="info" size="xs">{job.jobType}</Badge>}
-                          {job.experienceLevel && (
-                            <Badge variant="warning" size="xs">
-                              <GraduationCap className="h-3 w-3" />
-                              {job.experienceLevel}
-                            </Badge>
-                          )}
-                        </div>
-                        {job.skills?.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-3">
-                            {job.skills.slice(0, 4).map((skill) => (
-                              <Badge key={skill} variant="default" size="xs">{skill}</Badge>
-                            ))}
-                            {job.skills.length > 4 && (
-                              <Badge variant="default" size="xs">+{job.skills.length - 4}</Badge>
-                            )}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2 mt-4">
-                          <Button size="sm">
-                            <Briefcase className="h-3.5 w-3.5" />
-                            Apply Now
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Bookmark className="h-3.5 w-3.5" />
-                            Save
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+            <>
+              {jobs.map((job) => (
+                <JobListItem key={job._id} job={job} />
+              ))}
+              {hasMore && (
+                <div ref={sentinelRef} className="flex justify-center py-4">
+                  <div className="flex items-center gap-2 text-sm text-[var(--text-tertiary)]">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--border-color)] border-t-indigo-500" />
+                    Loading more jobs...
                   </div>
-                </Link>
-              </motion.div>
-            ))
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -13,7 +13,7 @@ export function formatDate(date, options = {}) {
     ...options,
   }).format(new Date(date))
 }
-
+ 
 export function formatDateRelative(date) {
   const now = new Date()
   const d = new Date(date)
@@ -69,7 +69,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 export function getMediaUrl(path) {
   if (!path) return null
   if (path.startsWith('http://') || path.startsWith('https://')) return path
-  return `${API_URL}${path.startsWith('/') ? '' : '/'}${path}`
+  const baseUrl = API_URL.replace(/\/api\/v1\/?$/, '')
+  return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`
 }
 
 export function getGradeColor(score) {

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect, useRef } from 'react'
 import { Bell } from 'lucide-react'
@@ -13,7 +14,7 @@ const dropdownVariants = {
   exit: { opacity: 0, scale: 0.95, y: -10, transition: { duration: 0.1 } },
 }
 
-export default function NotificationBell() {
+const NotificationBell = memo(function NotificationBell() {
   const { isAuthenticated } = useAuth()
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
   const [open, setOpen] = useState(false)
@@ -139,4 +140,6 @@ export default function NotificationBell() {
       </AnimatePresence>
     </div>
   )
-}
+})
+
+export default NotificationBell

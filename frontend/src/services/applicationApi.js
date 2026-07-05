@@ -18,4 +18,7 @@ export const applicationApi = {
   checkDuplicate: (jobId) => api.get(`/applications/check/${jobId}`),
 
   withdrawApplication: (id) => api.delete(`/applications/${id}`),
+
+  getMyApplicationsPaginated: ({ page = 1, limit = 10, status } = {}) =>
+    api.get('/applications/my-applications', { params: { page, limit, status } }),
 }

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
@@ -8,7 +9,7 @@ import { useClickOutside } from '../../hooks/useClickOutside'
 import { Menu, LogOut, User, CreditCard, Shield, Moon, Sun, Search, Sparkles } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 
-export default function Navbar() {
+const Navbar = memo(function Navbar() {
   const { user, isAuthenticated, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const { toggleSidebar } = useLayout()
@@ -253,4 +254,6 @@ export default function Navbar() {
       </div>
     </header>
   )
-}
+})
+
+export default Navbar

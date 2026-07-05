@@ -1,8 +1,9 @@
+import { memo } from 'react'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../hooks/useAuth'
 import { formatDateRelative } from '../../lib/utils'
 
-export default function ChatMessage({ message }) {
+function ChatMessageInner({ message }) {
   const { user } = useAuth()
   const isOwn = message.senderId?._id === user?._id || message.senderId === user?._id || message.isOwn
 
@@ -27,3 +28,6 @@ export default function ChatMessage({ message }) {
     </div>
   )
 }
+
+const ChatMessage = memo(ChatMessageInner)
+export default ChatMessage

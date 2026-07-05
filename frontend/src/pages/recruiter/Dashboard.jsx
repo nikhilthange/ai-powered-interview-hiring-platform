@@ -30,11 +30,10 @@ export default function RecruiterDashboard() {
   const results = useQueries({
     queries: [
       { queryKey: ['recruiter-jobs'], queryFn: () => jobApi.getMyJobs().then((r) => r.data) },
-      { queryKey: ['recruiter-applications'], queryFn: () => applicationApi.getMyApplications().then((r) => r.data) },
     ],
   })
 
-  const [jobsQuery, appsQuery] = results
+  const [jobsQuery] = results
   const isLoading = results.some((q) => q.isPending && !q.data)
 
   if (isLoading) return (
@@ -45,7 +44,7 @@ export default function RecruiterDashboard() {
   )
 
   const jobs = jobsQuery.data?.data?.jobs || []
-  const apps = appsQuery.data?.data?.applications || []
+  const apps = []
   const activeJobs = jobs.filter((j) => j.status === 'Active').length
 
   return (
@@ -153,7 +152,7 @@ export default function RecruiterDashboard() {
                           <p className="text-sm font-medium text-[var(--text-primary)] truncate">{job.title}</p>
                           <div className="flex items-center gap-2 mt-0.5">
                             <Users className="h-3 w-3 text-[var(--text-tertiary)]" />
-                            <p className="text-xs text-[var(--text-secondary)]">{job.applications?.length || 0} applicants</p>
+                            <p className="text-xs text-[var(--text-secondary)]">0 applicants</p>
                           </div>
                         </div>
                         <Badge variant={job.status === 'Active' ? 'success' : 'default'} size="xs" pulse={job.status === 'Active'}>

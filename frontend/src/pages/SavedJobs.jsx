@@ -8,7 +8,7 @@ import { SkeletonList } from '../components/ui/Skeleton'
 import EmptyState from '../components/ui/EmptyState'
 import {
   Bookmark, MapPin, DollarSign, Briefcase,
-  GraduationCap, Building2, AlertCircle,
+  GraduationCap, AlertCircle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -100,8 +100,8 @@ export default function SavedJobs() {
                       <div className="min-w-0 flex-1">
                         <h3 className="font-semibold text-[var(--text-primary)] truncate">{job.title}</h3>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <Building2 className="h-3.5 w-3.5 text-[var(--text-tertiary)]" />
-                          <span className="text-sm text-[var(--text-secondary)] truncate">{job.company || 'Company'}</span>
+                          <MapPin className="h-3.5 w-3.5 text-[var(--text-tertiary)]" />
+                          <span className="text-sm text-[var(--text-secondary)] truncate">{job.location || 'Location N/A'}</span>
                         </div>
                       </div>
                     </div>

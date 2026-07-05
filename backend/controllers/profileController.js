@@ -34,10 +34,12 @@ exports.createOrUpdateProfile = asyncHandler(async (req, res, next) => {
   if (experienceYears !== undefined) fields.experienceYears = experienceYears;
 
   if (req.user.role === 'recruiter' && company) {
+    const existing = await Profile.findOne({ userId: req.user._id }).select('company');
     fields.company = {
       name: company.name || '',
       website: company.website || '',
-      logoUrl: company.logoUrl || ''
+      logoUrl: company.logoUrl || '',
+      isVerified: existing?.company?.isVerified || false
     };
   }
 

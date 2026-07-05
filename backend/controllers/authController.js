@@ -63,7 +63,7 @@ exports.register = asyncHandler(async (req, res, next) => {
 
   await Profile.create({
     userId: newUser._id,
-    fullName: name,
+    fullName: name || email.split('@')[0],
     skills: []
   });
 

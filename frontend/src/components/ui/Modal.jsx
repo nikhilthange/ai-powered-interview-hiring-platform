@@ -1,11 +1,11 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { memo, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import { X } from 'lucide-react'
 
 const focusableSelector = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-export default function Modal({ open, onClose, title, children, className, size = 'md' }) {
+const Modal = memo(function Modal({ open, onClose, title, children, className, size = 'md' }) {
   const overlayRef = useRef(null)
   const contentRef = useRef(null)
   const triggerRef = useRef(null)
@@ -113,4 +113,6 @@ export default function Modal({ open, onClose, title, children, className, size 
       )}
     </AnimatePresence>
   )
-}
+})
+
+export default Modal

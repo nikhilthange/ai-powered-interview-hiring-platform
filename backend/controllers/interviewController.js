@@ -169,10 +169,10 @@ exports.careerRoadmapUpload = asyncHandler(async (req, res) => {
   }
 
   const profile = await Profile.findOne({ userId: req.user._id });
-  let skills = profile?.skills?.filter(Boolean) || [];
+  const skills = (profile?.skills || []).filter(Boolean);
   if (skills.length === 0) {
     const response = await generateCareerRoadmap(
-      ['extract from resume', 'general development'],
+      ['general development'],
       targetRole.trim()
     );
     cleanup(req.file.path);

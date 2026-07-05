@@ -29,8 +29,8 @@ export default function Register() {
   const passwordStrength = (() => {
     const p = form.password
     let score = 0
-    if (p.length >= 6) score++
-    if (p.length >= 10) score++
+    if (p.length >= 8) score++
+    if (p.length >= 12) score++
     if (/[A-Z]/.test(p)) score++
     if (/[0-9]/.test(p)) score++
     if (/[^A-Za-z0-9]/.test(p)) score++

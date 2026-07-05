@@ -52,7 +52,7 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
   await User.findByIdAndDelete(req.params.id);
   await Profile.findOneAndDelete({ userId: req.params.id });
 
-  res.status(204).json({ status: 'success', data: null });
+  res.status(200).json({ status: 'success', message: 'User deleted successfully.' });
 });
 
 /**
@@ -64,6 +64,7 @@ exports.verifyRecruiter = asyncHandler(async (req, res, next) => {
     return next(new AppError('Profile not found for this user.', 404));
   }
 
+  if (!profile.company) profile.company = {};
   profile.company.isVerified = true;
   await profile.save();
 
@@ -90,6 +91,7 @@ exports.rejectRecruiter = asyncHandler(async (req, res, next) => {
     return next(new AppError('Profile not found for this user.', 404));
   }
 
+  if (!profile.company) profile.company = {};
   profile.company.isVerified = false;
   await profile.save();
 

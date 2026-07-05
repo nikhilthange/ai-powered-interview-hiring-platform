@@ -29,9 +29,7 @@ router.post('/pdf', upload.single('pdf'), asyncHandler(async (req, res) => {
   res.status(200).json({
     status: 'success',
     data: {
-      pdfModuleType: typeof pdfModule,
-      pdfModuleKeys: Object.keys(pdfModule),
-      pdfParseType: typeof PDFParse,
+      pdfParseType: typeof pdfParse,
       textLength: data.text.length,
       textPreview: data.text.slice(0, 200),
     },

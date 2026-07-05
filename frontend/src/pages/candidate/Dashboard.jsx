@@ -105,7 +105,7 @@ export default function CandidateDashboard() {
   const apps = appsQuery.data?.data?.applications || []
   const appsCount = appsQuery.data?.results || apps.length
   const savedCount = savedQuery.data?.results || 0
-  const sessions = Array.isArray(sessionsQuery.data) ? sessionsQuery.data : []
+  const sessions = sessionsQuery.data?.data?.sessions || []
   const recommendedJobs = Array.isArray(jobsQuery.data) ? jobsQuery.data : []
 
   const name = profile.fullName || user?.email?.split('@')[0] || 'User'

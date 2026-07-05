@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
-import { useQueries } from '@tanstack/react-query'
+import { useQueries, useQuery } from '@tanstack/react-query'
 import { jobApi } from '../../services/jobApi'
 import { applicationApi } from '../../services/applicationApi'
 import { Card, CardContent } from '../../components/ui/Card'
@@ -36,6 +36,23 @@ export default function RecruiterDashboard() {
   const [jobsQuery] = results
   const isLoading = results.some((q) => q.isPending && !q.data)
 
+  const jobs = jobsQuery.data?.data?.jobs || []
+  const jobIds = jobs.map(j => j._id)
+
+  const appsQuery = useQuery({
+    queryKey: ['recruiter-apps', ...jobIds],
+    queryFn: async () => {
+      if (jobIds.length === 0) return []
+      const results = await Promise.all(
+        jobIds.map(id =>
+          applicationApi.getJobApplications(id).then(r => r.data?.data?.applications || [])
+        )
+      )
+      return results.flat()
+    },
+    enabled: jobIds.length > 0 && !isLoading,
+  })
+
   if (isLoading) return (
     <div className="space-y-6">
       <SkeletonMetrics />
@@ -43,8 +60,7 @@ export default function RecruiterDashboard() {
     </div>
   )
 
-  const jobs = jobsQuery.data?.data?.jobs || []
-  const apps = []
+  const apps = appsQuery.data || []
   const activeJobs = jobs.filter((j) => j.status === 'Active').length
 
   return (
@@ -145,14 +161,16 @@ export default function RecruiterDashboard() {
                 />
               ) : (
                 <div className="space-y-2">
-                  {jobs.slice(0, 4).map((job) => (
+                  {jobs.slice(0, 4).map((job) => {
+                    const appCount = apps.filter(a => a.jobId?.toString() === job._id?.toString()).length
+                    return (
                     <Link key={job._id} to={`/recruiter/jobs/${job._id}/edit`}>
                       <motion.div whileHover={{ x: 2 }} className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3.5 hover:bg-[var(--bg-tertiary)] transition-colors">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-[var(--text-primary)] truncate">{job.title}</p>
                           <div className="flex items-center gap-2 mt-0.5">
                             <Users className="h-3 w-3 text-[var(--text-tertiary)]" />
-                            <p className="text-xs text-[var(--text-secondary)]">0 applicants</p>
+                            <p className="text-xs text-[var(--text-secondary)]">{appCount} applicant{appCount !== 1 ? 's' : ''}</p>
                           </div>
                         </div>
                         <Badge variant={job.status === 'Active' ? 'success' : 'default'} size="xs" pulse={job.status === 'Active'}>
@@ -160,7 +178,8 @@ export default function RecruiterDashboard() {
                         </Badge>
                       </motion.div>
                     </Link>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </CardContent>

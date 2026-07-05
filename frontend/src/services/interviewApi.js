@@ -25,8 +25,8 @@ export const interviewApi = {
   generateSessionQuestions: (sessionId) =>
     api.post('/interviews/session/generate-questions', { sessionId }).then((r) => r.data),
 
-  submitAnswer: (sessionId, questionId, answer) =>
-    api.post('/interviews/session/submit-answer', { sessionId, questionId, answer }).then((r) => r.data),
+  submitAnswer: (data) =>
+    api.post('/interviews/session/submit-answer', data).then((r) => r.data),
 
   completeSession: (sessionId) =>
     api.post('/interviews/session/complete', { sessionId }).then((r) => r.data),

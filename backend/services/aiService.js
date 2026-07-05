@@ -214,19 +214,20 @@ exports.generateCareerRoadmap = async (skills, targetRole) => {
   const mockFn = async () => {
     await delay(1200);
     return {
-      role: targetRole,
-      estimatedMonths: 6,
-      phases: [
-        { title: 'Foundation Building', duration: 'Months 1-2', skillsToLearn: ['TypeScript', 'Advanced Node.js streams'], recommendedResources: ['TypeScript Documentation', 'Node.js Design Patterns book'] },
-        { title: 'Enterprise Architecture', duration: 'Months 3-4', skillsToLearn: ['Docker containerization', 'Redis Caching & Pub/Sub'], recommendedResources: ['Docker Mastery course', 'Redis University tutorials'] },
-        { title: 'System Deployment', duration: 'Months 5-6', skillsToLearn: ['Nginx config', 'CI/CD workflows', 'VPS monitoring'], recommendedResources: ['Nginx fundamentals', 'GitHub Actions workflow docs'] }
+      targetRole,
+      summary: `A structured ${6}-month career roadmap to become a ${targetRole}.`,
+      estimatedDuration: `${6} months`,
+      milestones: [
+        { title: 'Foundation Building', duration: 'Months 1-2', description: 'Build strong foundations in core technologies.', status: 'pending', skills: ['TypeScript', 'Advanced Node.js streams'], resources: [{ title: 'TypeScript Documentation' }, { title: 'Node.js Design Patterns book' }] },
+        { title: 'Enterprise Architecture', duration: 'Months 3-4', description: 'Learn enterprise-grade architecture patterns and tools.', status: 'pending', skills: ['Docker containerization', 'Redis Caching & Pub/Sub'], resources: [{ title: 'Docker Mastery course' }, { title: 'Redis University tutorials' }] },
+        { title: 'System Deployment', duration: 'Months 5-6', description: 'Master production deployment and monitoring.', status: 'pending', skills: ['Nginx config', 'CI/CD workflows', 'VPS monitoring'], resources: [{ title: 'Nginx fundamentals' }, { title: 'GitHub Actions workflow docs' }] }
       ]
     };
   };
 
   const aiCall = async () => {
     const content = await callNvidia([
-      { role: 'system', content: 'You are a career development coach. Create a phased career roadmap for the candidate to reach their target role starting from their current skills. Output purely valid JSON with schema: { "role": string, "estimatedMonths": integer, "phases": [{ "title": string, "duration": string, "skillsToLearn": [string], "recommendedResources": [string] }] }' },
+      { role: 'system', content: 'You are a career development coach. Create a phased career roadmap for the candidate to reach their target role starting from their current skills. Output purely valid JSON with schema: { "targetRole": string, "summary": string, "estimatedDuration": string, "milestones": [{ "title": string, "duration": string, "description": string, "status": string, "skills": [string], "resources": [{ "title": string }], "projects": [{ "title": string, "description": string }] }] }' },
       { role: 'user', content: `Current Skills: ${skills.join(', ')}\nTarget Role: ${targetRole}` }
     ], { responseFormat: 'json_object' });
     return JSON.parse(content);
@@ -288,7 +289,7 @@ exports.analyzeSkillGap = async (resumeText, targetRole) => {
   const mockFn = async () => {
     await delay(1200);
     return {
-      currentSkills: ['JavaScript', 'Node.js', 'Express', 'MongoDB'],
+      existingSkills: ['JavaScript', 'Node.js', 'Express', 'MongoDB'],
       missingSkills: ['TypeScript', 'Docker', 'Redis', 'AWS', 'CI/CD'],
       gapAnalysis: 'Core backend skills present. Missing DevOps and cloud deployment skills required for the target role.',
       recommendations: ['Learn TypeScript — essential for modern Node.js enterprise codebases', 'Get hands-on with Docker and container orchestration', 'Study Redis for caching and pub/sub patterns', 'Obtain at least one cloud certification (AWS/GCP/Azure)', 'Set up a CI/CD pipeline using GitHub Actions']
@@ -297,7 +298,7 @@ exports.analyzeSkillGap = async (resumeText, targetRole) => {
 
   const aiCall = async () => {
     const content = await callNvidia([
-      { role: 'system', content: 'You are a skill gap analyst. Compare the candidate resume against the target role requirements. Output purely valid JSON with schema: { "currentSkills": [string], "missingSkills": [string], "gapAnalysis": string, "recommendations": [string] }' },
+      { role: 'system', content: 'You are a skill gap analyst. Compare the candidate resume against the target role requirements. Output purely valid JSON with schema: { "existingSkills": [string], "missingSkills": [string], "gapAnalysis": string, "recommendations": [string] }' },
       { role: 'user', content: `Resume Text:\n${resumeText}\n\nTarget Role: ${targetRole}` }
     ], { responseFormat: 'json_object' });
     return JSON.parse(content);
@@ -310,24 +311,35 @@ exports.analyzeSkillGapFromFile = async (resumeText, targetRole) => {
   const mockFn = async () => {
     await delay(2000);
     return {
-      currentSkills: ['JavaScript', 'Node.js', 'Express', 'MongoDB', 'REST APIs'],
+      existingSkills: ['JavaScript', 'Node.js', 'Express', 'MongoDB', 'REST APIs'],
       missingSkills: ['TypeScript', 'Docker', 'Redis', 'AWS', 'CI/CD'],
       gapAnalysis: 'Core backend skills present. Missing DevOps and cloud deployment skills required for the target role.',
       recommendations: ['Learn TypeScript', 'Get hands-on with Docker', 'Study Redis', 'Obtain cloud certification', 'Set up CI/CD pipeline'],
-      learningRoadmap: {
-        overview: 'Structured 6-month learning plan to close the skill gaps.',
-        phases: [
-          { title: 'Foundations', duration: 'Month 1', focus: 'Core language and tool fundamentals', skillsToLearn: ['TypeScript basics', 'Docker fundamentals'], resources: [{ name: 'TypeScript Handbook', url: 'https://www.typescriptlang.org/docs/' }], milestones: ['Convert a Node.js project to TypeScript'] },
-          { title: 'Intermediate', duration: 'Months 2-3', focus: 'Cloud and infrastructure skills', skillsToLearn: ['AWS EC2/S3/Lambda', 'Redis caching'], resources: [{ name: 'AWS Free Tier', url: 'https://aws.amazon.com/free/' }], milestones: ['Deploy a Node.js app on AWS EC2'] },
-          { title: 'Advanced', duration: 'Months 4-6', focus: 'Production-ready systems', skillsToLearn: ['Kubernetes basics', 'Microservices patterns'], resources: [{ name: 'Kubernetes Documentation', url: 'https://kubernetes.io/docs/' }], milestones: ['Deploy a multi-service app on Kubernetes'] }
-        ]
-      }
+      learningResources: [
+        { title: 'Docker Deep Dive', description: 'Comprehensive course on Docker fundamentals and best practices.', url: '#' },
+        { title: 'Kubernetes in Action', description: 'Hands-on guide to container orchestration with K8s.', url: '#' },
+        { title: 'AWS Certified Solutions Architect', description: 'Official AWS certification training material.', url: '#' },
+        { title: 'CI/CD Pipeline Design', description: 'Learn to build robust CI/CD pipelines.', url: '#' },
+      ],
+      recommendedProjects: [
+        { title: 'Microservices Dashboard', description: 'Build a dashboard app with Docker, K8s, and a React frontend.', skills: ['Docker', 'Kubernetes', 'React'] },
+        { title: 'Infrastructure as Code Demo', description: 'Provision cloud resources using Terraform or CloudFormation.', skills: ['Terraform', 'AWS'] },
+      ],
+      certifications: [
+        { name: 'AWS Certified Solutions Architect', provider: 'Amazon Web Services' },
+        { name: 'Certified Kubernetes Administrator', provider: 'CNCF' },
+      ],
+      timeline: [
+        { title: 'Foundations', duration: 'Month 1', description: 'Core language and tool fundamentals: TypeScript basics, Docker fundamentals.', status: 'pending' },
+        { title: 'Intermediate', duration: 'Months 2-3', description: 'Cloud and infrastructure skills: AWS EC2/S3/Lambda, Redis caching.', status: 'pending' },
+        { title: 'Advanced', duration: 'Months 4-6', description: 'Production-ready systems: Kubernetes basics, Microservices patterns.', status: 'pending' },
+      ]
     };
   };
 
   const aiCall = async () => {
     const content = await callNvidia([
-      { role: 'system', content: 'You are a skill gap analyst and career coach. Analyze the resume against the target role, identify skill gaps, provide actionable recommendations, and create a structured learning roadmap. Output purely valid JSON with schema: { "currentSkills": [string], "missingSkills": [string], "gapAnalysis": string, "recommendations": [string], "learningRoadmap": { "overview": string, "phases": [{ "title": string, "duration": string, "focus": string, "skillsToLearn": [string], "resources": [{ "name": string, "url": string }], "milestones": [string] }] } }' },
+      { role: 'system', content: 'You are a skill gap analyst and career coach. Analyze the resume against the target role, identify skill gaps, provide actionable recommendations, and create a structured learning roadmap. Output purely valid JSON with schema: { "existingSkills": [string], "missingSkills": [string], "gapAnalysis": string, "recommendations": [string], "learningResources": [{ "title": string, "description": string, "url": string }], "recommendedProjects": [{ "title": string, "description": string, "skills": [string] }], "certifications": [{ "name": string, "provider": string }], "timeline": [{ "title": string, "duration": string, "description": string, "status": string }] }' },
       { role: 'user', content: `Resume Text:\n${resumeText}\n\nTarget Role: ${targetRole}` }
     ], { responseFormat: 'json_object' });
     return JSON.parse(content);

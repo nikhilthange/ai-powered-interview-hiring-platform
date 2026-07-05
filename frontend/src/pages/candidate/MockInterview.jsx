@@ -1,16 +1,18 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { interviewApi } from '../../services/interviewApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
+import FileDropzone from '../../components/FileUpload/FileDropzone'
 import { cn } from '../../lib/utils'
+import { TARGET_ROLES, EXPERIENCE_LEVELS } from '../../lib/constants'
 import {
   Mic, MicOff, Send, CheckCircle,
   ArrowLeft, Loader2, Sparkles, Brain,
   BarChart3, Star, Target, MessageCircle, StopCircle,
-  Award,
+  Award, Briefcase, Upload, AlertTriangle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -34,13 +36,21 @@ export default function MockInterview() {
   const [sessionEnded, setSessionEnded] = useState(false)
   const [feedback, setFeedback] = useState(null)
   const [isThinking, setIsThinking] = useState(false)
+  const [file, setFile] = useState(null)
+  const [targetRole, setTargetRole] = useState('')
+  const [difficulty, setDifficulty] = useState('Mid')
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const startMutation = useMutation({
-    mutationFn: interviewApi.createSession,
+    mutationFn: (formData) =>
+      interviewApi.createSession(formData, (progressEvent) => {
+        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        setUploadProgress(progress)
+      }),
     onSuccess: (res) => {
-      const data = res.data?.data || res.data
-      setSessionId(data._id || data.sessionId)
-      setQuestions(data.questions || data.questions || [])
+      const session = res.data?.session || res.data
+      setSessionId(session._id || session.sessionId)
+      setQuestions(session.questions || [])
     },
   })
 
@@ -58,18 +68,147 @@ export default function MockInterview() {
   const endMutation = useMutation({
     mutationFn: interviewApi.completeSession,
     onSuccess: (res) => {
-      const data = res.data?.data || res.data
-      setFeedback(data.feedback || data.analysis)
+      const data = res.data?.data || res.data || res
+      setFeedback({
+        overallScore: data.overallScore,
+        score: data.percentage,
+        strengths: data.topStrengths || [],
+        areasForImprovement: data.areasToImprove || [],
+        detailedFeedback: data.overallFeedback ? [data.overallFeedback] : [],
+      })
       setSessionEnded(true)
     },
   })
 
-  useEffect(() => {
-    if (!sessionId && questions.length === 0 && !startMutation.isPending) {
-      startMutation.mutate({ jobRole: 'general', experience: 'mid' })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const handleFileChange = useCallback((f) => setFile(f), [])
+
+  const handleStartInterview = (e) => {
+    e.preventDefault()
+    if (!file || !targetRole) return
+    const formData = new FormData()
+    formData.append('resume', file)
+    formData.append('targetRole', targetRole.trim())
+    formData.append('difficulty', difficulty)
+    startMutation.mutate(formData)
+  }
+
+  if (!sessionId && !startMutation.isPending) {
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="max-w-3xl mx-auto space-y-6"
+      >
+        <motion.div variants={itemVariants}>
+          <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-6">
+            <Sparkles className="h-4 w-4" /> Back to dashboard
+          </Link>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Mock Interview</h1>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              Upload your resume, choose a role, and practice with AI-powered interview questions.
+            </p>
+          </div>
+        </motion.div>
+
+        <motion.form variants={itemVariants} onSubmit={handleStartInterview} className="space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Upload Resume</h2>
+              <FileDropzone onFile={handleFileChange} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Target Role</h2>
+              <div className="relative">
+                <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
+                <input
+                  type="text"
+                  list="roles"
+                  placeholder="Search or type a target role..."
+                  value={targetRole}
+                  onChange={(e) => setTargetRole(e.target.value)}
+                  className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-10 pr-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                />
+                <datalist id="roles">
+                  {TARGET_ROLES.map((role) => <option key={role} value={role} />)}
+                </datalist>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {TARGET_ROLES.slice(0, 6).map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => setTargetRole(role)}
+                    className={cn(
+                      'rounded-lg px-3 py-1.5 text-xs font-medium border transition-all',
+                      targetRole === role
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-400 dark:border-indigo-800'
+                        : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-transparent hover:bg-indigo-50 dark:hover:bg-indigo-950'
+                    )}
+                  >
+                    {role}
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Difficulty Level</h2>
+              <div className="flex flex-wrap gap-2">
+                {EXPERIENCE_LEVELS.map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => setDifficulty(level)}
+                    className={cn(
+                      'rounded-lg px-4 py-2 text-sm font-medium border transition-all',
+                      difficulty === level
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-400 dark:border-indigo-800'
+                        : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-transparent hover:bg-indigo-50 dark:hover:bg-indigo-950'
+                    )}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {uploadProgress > 0 && uploadProgress < 100 && (
+            <div className="w-full h-2 rounded-full bg-[var(--bg-tertiary)] overflow-hidden">
+              <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+            </div>
+          )}
+
+          <div className="flex items-center gap-3">
+            <Button type="submit" disabled={!file || !targetRole || startMutation.isPending} size="lg">
+              {startMutation.isPending ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Starting Interview...</>
+              ) : (
+                <><Brain className="h-4 w-4" /> Start Interview</>
+              )}
+            </Button>
+          </div>
+
+          {startMutation.isError && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+              <div>
+                <p className="font-medium">Failed to Start Interview</p>
+                <p className="mt-0.5 opacity-90">{startMutation.error?.response?.data?.message || 'Unable to create session. Please try again.'}</p>
+              </div>
+            </motion.div>
+          )}
+        </motion.form>
+      </motion.div>
+    )
+  }
 
   const handleSubmitAnswer = useCallback(() => {
     if (!input.trim() || !sessionId) return
@@ -89,7 +228,7 @@ export default function MockInterview() {
 
   const handleEndSession = useCallback(() => {
     if (sessionId) {
-      endMutation.mutate({ sessionId })
+      endMutation.mutate(sessionId)
     }
   }, [sessionId, endMutation])
 

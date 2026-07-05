@@ -31,11 +31,13 @@ export default function AdminDashboard() {
   const appStats = analytics?.data?.applications || []
 
   const totalUsers = userStats.reduce((s, u) => s + u.count, 0)
+  const users = userStats || []
+  const jobs = jobStats || []
   const recruiters = userStats.find((u) => u.role === 'recruiter')?.count || 0
   const candidates = userStats.find((u) => u.role === 'candidate')?.count || 0
   const totalJobs = jobStats.reduce((s, j) => s + j.count, 0)
   const totalApps = appStats.reduce((s, a) => s + a.count, 0)
-
+  const activeUsers = totalUsers
 
   return (
     <motion.div

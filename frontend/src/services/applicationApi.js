@@ -20,5 +20,5 @@ export const applicationApi = {
   withdrawApplication: (id) => api.delete(`/applications/${id}`),
 
   getMyApplicationsPaginated: ({ page = 1, limit = 10, status } = {}) =>
-    api.get('/applications/my-applications', { params: { page, limit, status } }),
+    api.get('/applications/my-applications', { params: { page, limit, status } }).then((r) => r.data),
 }

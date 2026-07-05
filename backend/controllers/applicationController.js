@@ -74,17 +74,40 @@ exports.checkDuplicateApplication = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * GET MY APPLICATIONS (Candidate)
+ * GET MY APPLICATIONS (Candidate) — Paginated
  */
 exports.getMyApplications = asyncHandler(async (req, res, next) => {
-  const applications = await Application.find({ candidateId: req.user._id })
-    .populate('jobId', 'title location jobType status')
-    .sort({ createdAt: -1 });
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 10));
+  const skip = (page - 1) * limit;
+
+  const filter = { candidateId: req.user._id };
+  if (req.query.status && req.query.status !== 'All') {
+    filter.status = req.query.status;
+  }
+
+  const [applications, totalItems] = await Promise.all([
+    Application.find(filter)
+      .populate('jobId', 'title location jobType status')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Application.countDocuments(filter),
+  ]);
+
+  const totalPages = Math.ceil(totalItems / limit) || 1;
 
   res.status(200).json({
-    status: 'success',
-    results: applications.length,
-    data: { applications }
+    success: true,
+    applications,
+    pagination: {
+      page,
+      limit,
+      totalPages,
+      totalItems,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+    },
   });
 });
 

@@ -90,21 +90,21 @@ const ApplicationItem = memo(function ApplicationItem({ app }) {
 
 export default function MyApplications() {
   const [activeTab, setActiveTab] = useState('All')
+  const [page, setPage] = useState(1)
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['my-applications-page'],
-    queryFn: () => applicationApi.getMyApplications().then((r) => r.data),
+    queryKey: ['my-applications-page', activeTab, page],
+    queryFn: () => applicationApi.getMyApplicationsPaginated({ page, status: activeTab }),
     staleTime: 30000,
   })
 
-  const applications = useMemo(() => data?.data?.applications || [], [data])
+  const applications = useMemo(() => data?.applications || [], [data])
+  const pagination = useMemo(() => data?.pagination || {}, [data])
 
-  const filtered = useMemo(() =>
-    activeTab === 'All' ? applications : applications.filter((a) => a.status === activeTab),
-    [applications, activeTab]
-  )
-
-  const handleTabChange = useCallback((status) => setActiveTab(status), [])
+  const handleTabChange = useCallback((status) => {
+    setActiveTab(status)
+    setPage(1)
+  }, [])
 
   if (isLoading) return (
     <div className="space-y-6">
@@ -134,39 +134,29 @@ export default function MyApplications() {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">My Applications</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
-            {applications.length} application{applications.length !== 1 ? 's' : ''} total
+            {pagination.totalItems || 0} application{(pagination.totalItems || 0) !== 1 ? 's' : ''} total
           </p>
         </div>
       </motion.div>
 
       <motion.div variants={itemVariants} className="flex overflow-x-auto gap-1 pb-2 -mx-3 sm:-mx-4 px-3 sm:px-4 lg:mx-0 lg:px-0 scrollbar-none">
-        {APPLICATION_STATUSES.map((status) => {
-          const count = status === 'All' ? applications.length : applications.filter((a) => a.status === status).length
-          const isActive = activeTab === status
-          return (
-            <button
-              key={status}
-              onClick={() => handleTabChange(status)}
-              className={cn(
-                'whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition-all shrink-0',
-                isActive
-                  ? 'bg-[var(--color-primary-500)] text-white shadow-sm'
-                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
-              )}
-            >
-              {status}
-              <span className={cn(
-                'ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold',
-                isActive ? 'bg-white/20 text-white' : 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)]'
-              )}>
-                {count}
-              </span>
-            </button>
-          )
-        })}
+        {APPLICATION_STATUSES.map((status) => (
+          <button
+            key={status}
+            onClick={() => handleTabChange(status)}
+            className={cn(
+              'whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition-all shrink-0',
+              activeTab === status
+                ? 'bg-[var(--color-primary-500)] text-white shadow-sm'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+            )}
+          >
+            {status}
+          </button>
+        ))}
       </motion.div>
 
-      {filtered.length === 0 ? (
+      {applications.length === 0 ? (
         <motion.div variants={itemVariants}>
           <EmptyState
             icon={Search}
@@ -177,9 +167,33 @@ export default function MyApplications() {
         </motion.div>
       ) : (
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-3">
-          {filtered.map((app) => (
+          {applications.map((app) => (
             <ApplicationItem key={app._id} app={app} />
           ))}
+        </motion.div>
+      )}
+
+      {pagination.totalPages > 1 && (
+        <motion.div variants={itemVariants} className="flex items-center justify-center gap-3 pt-2 pb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!pagination.hasPrevPage}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-[var(--text-secondary)]">
+            Page {pagination.page} of {pagination.totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!pagination.hasNextPage}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </Button>
         </motion.div>
       )}
     </motion.div>

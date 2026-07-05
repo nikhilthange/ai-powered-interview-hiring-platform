@@ -102,8 +102,8 @@ export default function CandidateDashboard() {
   }
 
   const profile = profileQuery.data || {}
-  const apps = appsQuery.data?.data?.applications || []
-  const appsCount = appsQuery.data?.results || apps.length
+  const apps = appsQuery.data?.applications || []
+  const appsCount = appsQuery.data?.pagination?.totalItems || apps.length
   const savedCount = savedQuery.data?.results || 0
   const sessions = sessionsQuery.data?.data?.sessions || []
   const recommendedJobs = Array.isArray(jobsQuery.data) ? jobsQuery.data : []

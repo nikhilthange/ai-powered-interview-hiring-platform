@@ -11,9 +11,13 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
       setForm({
         fullName: profile.fullName || '',
         bio: profile.bio || '',
+        headline: profile.headline || '',
         phone: profile.phone || '',
         location: profile.location || '',
         website: profile.website || '',
+        linkedin: profile.linkedin || '',
+        github: profile.github || '',
+        portfolio: profile.portfolio || '',
         company: profile.company || '',
         title: profile.title || '',
         experienceYears: profile.experienceYears || '',
@@ -26,24 +30,37 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
     onSubmit(form)
   }
 
+  const commonFields = [
+    { id: 'fullName', label: 'Full Name', placeholder: 'John Doe' },
+    { id: 'bio', label: 'Bio', placeholder: 'Tell us about yourself...', multiline: true },
+  ]
+
+  const candidateFields = [
+    { id: 'headline', label: 'Headline', placeholder: 'Senior Software Engineer at Acme' },
+    { id: 'phone', label: 'Phone', type: 'tel', placeholder: '+1 (555) 123-4567' },
+    { id: 'location', label: 'Location', placeholder: 'San Francisco, CA' },
+    { id: 'website', label: 'Website', type: 'url', placeholder: 'https://johndoe.com' },
+    { id: 'linkedin', label: 'LinkedIn', type: 'url', placeholder: 'https://linkedin.com/in/johndoe' },
+    { id: 'github', label: 'GitHub', type: 'url', placeholder: 'https://github.com/johndoe' },
+    { id: 'portfolio', label: 'Portfolio', type: 'url', placeholder: 'https://johndoe.dev' },
+    { id: 'experienceYears', label: 'Years of Experience', type: 'number', placeholder: '5' },
+  ]
+
+  const recruiterFields = [
+    { id: 'company', label: 'Company', placeholder: 'Acme Inc.' },
+    { id: 'title', label: 'Your Title', placeholder: 'HR Manager' },
+    { id: 'phone', label: 'Phone', type: 'tel', placeholder: '+91 01234 56789' },
+    { id: 'location', label: 'Location', placeholder: 'San Francisco, CA' },
+    { id: 'website', label: 'Website', type: 'url', placeholder: 'https://acme.com' },
+    { id: 'linkedin', label: 'LinkedIn', type: 'url', placeholder: 'https://linkedin.com/company/acme' },
+  ]
+
   const fields = isRecruiter
     ? [
-        { id: 'fullName', label: 'Company Name', placeholder: 'Acme Inc.' },
-        { id: 'bio', label: 'Company Bio', placeholder: 'Tell us about your company...', multiline: true },
-        { id: 'company', label: 'Company', placeholder: 'Acme Inc.' },
-        { id: 'title', label: 'Your Title', placeholder: 'HR Manager' },
-        { id: 'phone', label: 'Phone', type: 'tel', placeholder: '+91 01234 56789' },
-        { id: 'location', label: 'Location', placeholder: 'San Francisco, CA' },
-        { id: 'website', label: 'Website', type: 'url', placeholder: 'https://acme.com' },
+        ...commonFields.map(f => f.id === 'fullName' ? { ...f, label: 'Company Name' } : { ...f, label: 'Company Bio' }),
+        ...recruiterFields,
       ]
-    : [
-        { id: 'fullName', label: 'Full Name', placeholder: 'John Doe' },
-        { id: 'bio', label: 'Bio', placeholder: 'Tell us about yourself...', multiline: true },
-        { id: 'phone', label: 'Phone', type: 'tel', placeholder: '+1 (555) 123-4567' },
-        { id: 'location', label: 'Location', placeholder: 'San Francisco, CA' },
-        { id: 'website', label: 'Website', type: 'url', placeholder: 'https://johndoe.com' },
-        { id: 'experienceYears', label: 'Years of Experience', type: 'number', placeholder: '5' },
-      ]
+    : [...commonFields, ...candidateFields]
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">

@@ -37,11 +37,22 @@ export default function JobDetail() {
     queryFn: () => jobApi.getJob(id).then((r) => r.data),
   })
 
+  const { data: savedData } = useQuery({
+    queryKey: ['saved-job-check', id],
+    queryFn: () => savedJobApi.isJobSaved(id).then((r) => r.data),
+    enabled: !!isAuthenticated,
+  })
+  const isSaved = savedData?.data?.isSaved === true
+
   const saveMutation = useMutation({
-    mutationFn: () => savedJobApi.saveJob(id),
+    mutationFn: () => isSaved ? savedJobApi.unsaveJob(id) : savedJobApi.saveJob(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-jobs'] })
-      toast.success('Job saved')
+      queryClient.invalidateQueries({ queryKey: ['saved-job-check', id] })
+      toast.success(isSaved ? 'Job removed from saved' : 'Job saved')
+    },
+    onError: (err) => {
+      toast.error('Failed', err?.response?.data?.message || 'Please try again.')
     },
   })
 
@@ -124,13 +135,14 @@ export default function JobDetail() {
                     </Link>
                   )}
                   <Button
-                    variant="outline"
+                    variant={isSaved ? 'primary' : 'outline'}
                     size="md"
                     className="sm:px-5 sm:py-2.5"
                     onClick={() => saveMutation.mutate()}
+                    disabled={saveMutation.isPending}
                   >
-                    <Bookmark className="h-4 w-4" />
-                    Save
+                    <Bookmark className={cn('h-4 w-4', isSaved && 'fill-current')} />
+                    {saveMutation.isPending ? '...' : isSaved ? 'Saved' : 'Save'}
                   </Button>
                   <Button variant="ghost" size="md" className="sm:px-5 sm:py-2.5">
                     <Share2 className="h-4 w-4" />

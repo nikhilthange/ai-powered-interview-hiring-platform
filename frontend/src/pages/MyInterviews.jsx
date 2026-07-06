@@ -12,7 +12,7 @@ import {
   GraduationCap, BarChart3, Star,
   Play, FileText, AlertCircle, Calendar,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -25,6 +25,7 @@ const itemVariants = {
 }
 
 export default function MyInterviews() {
+  const navigate = useNavigate()
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['my-interviews'],
     queryFn: () => interviewApi.getMySessions(),
@@ -104,11 +105,11 @@ export default function MyInterviews() {
                           </div>
                         </div>
                         <Badge
-                          variant={session.status === 'completed' ? 'success' : session.status === 'in-progress' ? 'warning' : 'default'}
+                          variant={session.status === 'completed' ? 'success' : session.status === 'in_progress' ? 'warning' : 'default'}
                           size="sm"
-                          pulse={session.status === 'in-progress'}
+                          pulse={session.status === 'in_progress'}
                         >
-                          {session.status === 'completed' ? 'Completed' : session.status === 'in-progress' ? 'In Progress' : session.status}
+                          {session.status === 'completed' ? 'Completed' : session.status === 'in_progress' ? 'In Progress' : session.status === 'pending' ? 'Pending' : session.status}
                         </Badge>
                       </div>
                       <div className="flex flex-wrap items-center gap-3 mt-3">
@@ -133,13 +134,13 @@ export default function MyInterviews() {
                       </div>
                       <div className="flex items-center gap-2 mt-4">
                         {session.status === 'completed' && (
-                          <Button size="xs" variant="outline">
+                          <Button size="xs" variant="outline" onClick={() => navigate(`/mock-interview?session=${session._id}`)}>
                             <BarChart3 className="h-3 w-3" />
                             View Results
                           </Button>
                         )}
-                        {session.status === 'in-progress' && (
-                          <Button size="xs">
+                        {session.status === 'in_progress' && (
+                          <Button size="xs" onClick={() => navigate(`/mock-interview?session=${session._id}`)}>
                             <Play className="h-3 w-3" />
                             Continue
                           </Button>

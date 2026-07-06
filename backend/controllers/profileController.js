@@ -22,23 +22,25 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
 });
 
 exports.createOrUpdateProfile = asyncHandler(async (req, res, next) => {
-  const { fullName, bio, skills, experienceYears, company } = req.body;
+  const allowedFields = [
+    'fullName', 'bio', 'phone', 'location', 'headline', 'title',
+    'website', 'linkedin', 'github', 'portfolio',
+    'skills', 'experienceYears', 'education', 'projects',
+  ];
 
-  const fields = {
-    userId: req.user._id,
-    fullName
-  };
+  const fields = { userId: req.user._id };
+  allowedFields.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      fields[field] = req.body[field];
+    }
+  });
 
-  if (bio !== undefined) fields.bio = bio;
-  if (skills !== undefined) fields.skills = skills;
-  if (experienceYears !== undefined) fields.experienceYears = experienceYears;
-
-  if (req.user.role === 'recruiter' && company) {
+  if (req.user.role === 'recruiter' && req.body.company) {
     const existing = await Profile.findOne({ userId: req.user._id }).select('company');
     fields.company = {
-      name: company.name || '',
-      website: company.website || '',
-      logoUrl: company.logoUrl || '',
+      name: req.body.company.name || '',
+      website: req.body.company.website || '',
+      logoUrl: req.body.company.logoUrl || '',
       isVerified: existing?.company?.isVerified || false
     };
   }

@@ -1,12 +1,14 @@
 import { memo, useState, useCallback, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'
+import { savedJobApi } from '../services/savedJobApi'
 import { Card, CardContent } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import { SkeletonCard } from '../components/ui/Skeleton'
 import EmptyState from '../components/ui/EmptyState'
+import { useToast } from '../components/ui/Toast'
 import { Link } from 'react-router-dom'
 import { cn } from '../lib/utils'
 import { useDebounce } from '../hooks/useDebounce'
@@ -27,8 +29,9 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
-const JobListItem = memo(function JobListItem({ job }) {
+const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, savePending }) {
   const queryClient = useQueryClient()
+  const isSaved = savedIds?.has(job._id)
 
   const handleMouseEnter = useCallback(() => {
     queryClient.prefetchQuery({
@@ -38,15 +41,21 @@ const JobListItem = memo(function JobListItem({ job }) {
     })
   }, [queryClient, job._id])
 
+  const handleSaveClick = useCallback((e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onSaveToggle?.(job._id)
+  }, [job._id, onSaveToggle])
+
   return (
     <motion.div variants={itemVariants} whileHover={{ y: -2 }}>
-      <Link to={`/jobs/${job._id}`} onMouseEnter={handleMouseEnter}>
-        <div className="rounded-2xl border bg-[var(--bg-primary)] p-5 transition-all border-[var(--border-color)] shadow-sm hover:shadow-md hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 dark:from-indigo-950 dark:to-indigo-900 dark:text-indigo-400 font-bold text-lg">
-              {job.title?.charAt(0) || 'J'}
-            </div>
-            <div className="flex-1 min-w-0">
+      <div className="rounded-2xl border bg-[var(--bg-primary)] p-5 transition-all border-[var(--border-color)] shadow-sm hover:shadow-md hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 dark:from-indigo-950 dark:to-indigo-900 dark:text-indigo-400 font-bold text-lg">
+            {job.title?.charAt(0) || 'J'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <Link to={`/jobs/${job._id}`} onMouseEnter={handleMouseEnter}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h3 className="font-semibold text-[var(--text-primary)]">{job.title}</h3>
@@ -78,20 +87,27 @@ const JobListItem = memo(function JobListItem({ job }) {
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center gap-2 mt-4">
+            </Link>
+            <div className="flex items-center gap-2 mt-4">
+              <Link to={`/jobs/${job._id}/apply`}>
                 <Button size="sm">
                   <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
                   Apply Now
                 </Button>
-                <Button variant="outline" size="sm">
-                  <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
-                  Save
-                </Button>
-              </div>
+              </Link>
+              <Button
+                variant={isSaved ? 'primary' : 'outline'}
+                size="sm"
+                onClick={handleSaveClick}
+                disabled={savePending}
+              >
+                <Bookmark className={cn('h-3.5 w-3.5', isSaved && 'fill-current')} aria-hidden="true" />
+                {isSaved ? 'Saved' : 'Save'}
+              </Button>
             </div>
           </div>
         </div>
-      </Link>
+      </div>
     </motion.div>
   )
 })
@@ -192,6 +208,50 @@ export default function Jobs() {
   const [page, setPage] = useState(1)
   const debouncedSearch = useDebounce(search, 300)
   const allJobsRef = useRef([])
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  const savedQuery = useQuery({
+    queryKey: ['saved-jobs'],
+    queryFn: () => savedJobApi.getSavedJobs().then((r) => r.data),
+    staleTime: 30000,
+  })
+  const savedJobIds = useMemo(() => {
+    const savedJobs = savedQuery.data?.data?.jobs || savedQuery.data?.data || []
+    return new Set(savedJobs.map((j) => j._id))
+  }, [savedQuery.data])
+
+  const saveToggleMutation = useMutation({
+    mutationFn: (jobId) => savedJobApi.saveJob(jobId),
+    onSuccess: (_, jobId) => {
+      queryClient.invalidateQueries({ queryKey: ['saved-jobs'] })
+      toast.success('Job saved')
+    },
+    onError: (err) => {
+      toast.error('Failed to save', err?.response?.data?.message || 'Please try again.')
+    },
+  })
+
+  const unsaveMutation = useMutation({
+    mutationFn: (jobId) => savedJobApi.unsaveJob(jobId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-jobs'] })
+      toast.success('Job removed from saved')
+    },
+    onError: (err) => {
+      toast.error('Failed to unsave', err?.response?.data?.message || 'Please try again.')
+    },
+  })
+
+  const handleSaveToggle = useCallback((jobId) => {
+    if (savedJobIds.has(jobId)) {
+      unsaveMutation.mutate(jobId)
+    } else {
+      saveToggleMutation.mutate(jobId)
+    }
+  }, [savedJobIds, saveToggleMutation, unsaveMutation])
+
+  const savePending = saveToggleMutation.isPending || unsaveMutation.isPending
 
   const queryKey = useMemo(() => ['jobs', debouncedSearch, filters], [debouncedSearch, filters])
 
@@ -360,7 +420,7 @@ export default function Jobs() {
           ) : (
             <>
               {jobs.map((job) => (
-                <JobListItem key={job._id} job={job} />
+                <JobListItem key={job._id} job={job} savedIds={savedJobIds} onSaveToggle={handleSaveToggle} savePending={savePending} />
               ))}
               {hasMore && (
                 <div ref={sentinelRef} className="flex justify-center py-4">

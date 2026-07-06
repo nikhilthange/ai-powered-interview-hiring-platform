@@ -10,9 +10,11 @@ import { SkeletonPage } from '../components/ui/Skeleton'
 const lazyLoad = (importFn) => {
   const Component = lazy(importFn)
   return (
-    <Suspense fallback={<SkeletonPage />}>
-      <Component />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<SkeletonPage />}>
+        <Component />
+      </Suspense>
+    </ErrorBoundary>
   )
 }
 
@@ -46,6 +48,7 @@ const MyJobs = () => lazyLoad(() => import('../pages/recruiter/MyJobs'))
 const EditJob = () => lazyLoad(() => import('../pages/recruiter/EditJob'))
 const AdminDashboard = () => lazyLoad(() => import('../pages/admin/Dashboard'))
 const AdminUsers = () => lazyLoad(() => import('../pages/admin/Users'))
+const AdminAIConfig = () => lazyLoad(() => import('../pages/admin/AIConfig'))
 const NotificationsPage = () => lazyLoad(() => import('../pages/notifications/NotificationsPage'))
 const PlansPage = () => lazyLoad(() => import('../pages/profile/PlansPage'))
 const SubscriptionPage = () => lazyLoad(() => import('../pages/profile/SubscriptionPage'))
@@ -93,6 +96,7 @@ export const router = createBrowserRouter([
         { index: true, element: <Navigate to="dashboard" replace /> },
         { path: 'dashboard', element: <AdminDashboard /> },
         { path: 'users', element: <AdminUsers /> },
+        { path: 'ai-config', element: <AdminAIConfig /> },
       ]},
     ],
   },

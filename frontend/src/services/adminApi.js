@@ -7,4 +7,7 @@ export const adminApi = {
   verifyRecruiter: (id) => api.patch(`/admin/users/${id}/verify-recruiter`),
   rejectRecruiter: (id) => api.patch(`/admin/users/${id}/reject-recruiter`),
   getUnverifiedRecruiters: () => api.get('/admin/unverified-recruiters').then((r) => r.data),
+  getAiConfig: () => api.get('/admin/ai-config').then((r) => r.data),
+  updateAiConfig: (provider) => api.patch('/admin/ai-config', { provider }).then((r) => r.data),
+  resetAiMetrics: () => api.post('/admin/ai-config/reset-metrics').then((r) => r.data),
 }

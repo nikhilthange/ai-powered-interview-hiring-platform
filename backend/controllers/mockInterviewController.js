@@ -18,9 +18,11 @@ exports.createSession = asyncHandler(async (req, res) => {
     cleanup(req.file?.path);
     throw new AppError('Please provide a target role (at least 3 characters).', 400);
   }
-  if (!['easy', 'medium', 'hard'].includes(difficulty)) {
+  const DIFFICULTY_MAP = { junior: 'easy', mid: 'medium', senior: 'hard', easy: 'easy', medium: 'medium', hard: 'hard' };
+  const mappedDifficulty = DIFFICULTY_MAP[difficulty?.toLowerCase()];
+  if (!mappedDifficulty) {
     cleanup(req.file?.path);
-    throw new AppError('Difficulty must be one of: easy, medium, hard.', 400);
+    throw new AppError('Difficulty must be one of: easy, medium, hard (or Junior, Mid, Senior).', 400);
   }
 
   let resumeText;
@@ -36,7 +38,7 @@ exports.createSession = asyncHandler(async (req, res) => {
     resumeText,
     resumeFileName: req.file.originalname,
     targetRole: targetRole.trim(),
-    difficulty,
+    difficulty: mappedDifficulty,
     status: 'pending',
   });
 

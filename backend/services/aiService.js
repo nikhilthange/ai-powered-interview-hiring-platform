@@ -1,26 +1,25 @@
 const Application = require('../models/Application');
+const AiConfig = require('../models/AiConfig');
 const { createAndSend } = require('../utils/notificationHelper');
 
 const AI_SERVICE_NAME = 'aiService';
-const NVIDIA_BASE_URL = 'https://integrate.api.nvidia.com/v1';
-const MODEL = 'meta/llama-3.3-70b-instruct';
+const NVIDIA_BASE_URL = process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1';
+const NVIDIA_MODEL = process.env.NVIDIA_MODEL || 'meta/llama-3.3-70b-instruct';
 
 const circuitBreaker = {
   failures: 0,
   maxFailures: 3,
   isOpen: false,
-  lastFailureTime: 0,
   cooldownMs: 60000,
   trip() {
     this.failures++;
-    this.lastFailureTime = Date.now();
     if (this.failures >= this.maxFailures) {
       this.isOpen = true;
-      console.error(`[${AI_SERVICE_NAME}] Circuit breaker OPEN after ${this.failures} failures. Falling back to mock mode for ${this.cooldownMs}ms.`);
+      console.error(`[${AI_SERVICE_NAME}] Circuit breaker OPEN after ${this.failures} failures. Using mock for ${this.cooldownMs}ms.`);
       setTimeout(() => {
         this.isOpen = false;
         this.failures = 0;
-        console.log(`[${AI_SERVICE_NAME}] Circuit breaker RESET. Attempting real API calls again.`);
+        console.log(`[${AI_SERVICE_NAME}] Circuit breaker RESET.`);
       }, this.cooldownMs);
     }
   },
@@ -30,13 +29,60 @@ const circuitBreaker = {
   }
 };
 
-let nvidiaApiKey = null;
-if (process.env.NVIDIA_API_KEY) {
-  nvidiaApiKey = process.env.NVIDIA_API_KEY;
-  console.log(`[${AI_SERVICE_NAME}] NVIDIA NIM client initialized successfully.`);
-} else {
-  console.warn(`[${AI_SERVICE_NAME}] No NVIDIA_API_KEY found. Running in mock mode.`);
+let currentProvider = process.env.MOCK_AI === 'true' ? 'mock' : 'nvidia';
+let providerLoaded = false;
+
+async function loadProvider() {
+  try {
+    const config = await AiConfig.getConfig();
+    if (process.env.MOCK_AI === 'true') {
+      currentProvider = 'mock';
+    } else if (process.env.MOCK_AI === 'false') {
+      currentProvider = 'nvidia';
+    } else {
+      currentProvider = config.provider;
+    }
+    // Sync DB when env explicitly overrides provider
+    if (process.env.MOCK_AI === 'true' || process.env.MOCK_AI === 'false') {
+      await AiConfig.findOneAndUpdate({}, { provider: currentProvider }, { upsert: true });
+    }
+  } catch {
+    currentProvider = process.env.MOCK_AI === 'true' ? 'mock' : 'nvidia';
+  }
+  providerLoaded = true;
+
+  console.log(`[${AI_SERVICE_NAME}] Provider loaded. MOCK_AI=${process.env.MOCK_AI}, NODE_ENV=${process.env.NODE_ENV}, currentProvider=${currentProvider}, circuitBreakerOpen=${circuitBreaker.isOpen}, NVIDIA_API_KEY=${!!process.env.NVIDIA_API_KEY}`);
 }
+
+function getProvider() {
+  return currentProvider;
+}
+
+async function setProvider(provider) {
+  currentProvider = provider;
+  circuitBreaker.reset();
+  await AiConfig.findOneAndUpdate({}, { provider }, { upsert: true });
+}
+
+async function recordMetrics({ duration, error }) {
+  const update = { $inc: { totalRequests: 1 }, $set: { lastApiCall: new Date() } };
+  if (error) {
+    update.$inc.totalErrors = 1;
+    update.$set.lastError = String(error).slice(0, 500);
+  }
+  if (duration !== undefined) {
+    const config = await AiConfig.getConfig();
+    const prevAvg = config.averageResponseTime || 0;
+    const prevCount = config.totalRequests || 0;
+    const newAvg = prevCount > 0
+      ? Math.round((prevAvg * prevCount + duration) / (prevCount + 1))
+      : duration;
+    update.$set.averageResponseTime = newAvg;
+  }
+  await AiConfig.findOneAndUpdate({}, update, { upsert: true });
+}
+
+loadProvider();
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -44,7 +90,7 @@ async function callNvidia(messages, options = {}) {
   const { temperature = 0.2, maxTokens = 1024, responseFormat } = options;
 
   const body = {
-    model: MODEL,
+    model: NVIDIA_MODEL,
     messages,
     temperature,
     max_tokens: maxTokens,
@@ -55,8 +101,10 @@ async function callNvidia(messages, options = {}) {
     body.response_format = { type: 'json_object' };
   }
 
+  const apiKey = process.env.NVIDIA_API_KEY;
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 25000);
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
 
   let response;
   try {
@@ -64,7 +112,7 @@ async function callNvidia(messages, options = {}) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${nvidiaApiKey}`
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify(body),
       signal: controller.signal
@@ -72,7 +120,7 @@ async function callNvidia(messages, options = {}) {
   } catch (err) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      throw new Error('NVIDIA API request timed out after 25s');
+      throw new Error('NVIDIA API request timed out after 30s');
     }
     throw err;
   }
@@ -88,35 +136,61 @@ async function callNvidia(messages, options = {}) {
 }
 
 async function callAI(mockFn, aiCall, options = {}) {
-  const callerName = options.name || 'nvidia_call';
+  const callerName = options.name || 'ai_call';
 
-  if (!nvidiaApiKey || circuitBreaker.isOpen) {
+  if (!providerLoaded) {
+    await loadProvider();
+  }
+
+  const mockBranch = currentProvider === 'mock' || !process.env.NVIDIA_API_KEY || circuitBreaker.isOpen;
+  console.log(`[${AI_SERVICE_NAME}] callAI "${callerName}": { MOCK_AI: "${process.env.MOCK_AI}", NODE_ENV: "${process.env.NODE_ENV}", currentProvider: "${currentProvider}", circuitBreakerOpen: ${circuitBreaker.isOpen}, hasApiKey: ${!!process.env.NVIDIA_API_KEY}, enteringMockBranch: ${mockBranch} }`);
+
+  if (mockBranch) {
     if (circuitBreaker.isOpen) {
       console.warn(`[${AI_SERVICE_NAME}] Circuit breaker OPEN for "${callerName}". Using mock data.`);
     }
-    if (typeof mockFn === 'function') {
-      return mockFn();
+    if (currentProvider === 'mock') {
+      console.log(`[${AI_SERVICE_NAME}] Mock mode: "${callerName}"`);
     }
-    return mockFn;
-  }
-
-  try {
-    const result = await aiCall();
-    circuitBreaker.reset();
+    const result = typeof mockFn === 'function' ? await mockFn() : mockFn;
+    await recordMetrics({});
     return result;
-  } catch (err) {
-    console.error(`[${AI_SERVICE_NAME}] NVIDIA API call "${callerName}" FAILED:`, err.message);
-    if (err.stack) console.error(`[${AI_SERVICE_NAME}] Stack:`, err.stack.split('\n').slice(0, 4).join('\n'));
-
-    circuitBreaker.trip();
-
-    if (typeof mockFn === 'function') {
-      console.warn(`[${AI_SERVICE_NAME}] Falling back to mock data for "${callerName}".`);
-      return mockFn();
-    }
-    throw err;
   }
+
+  const start = Date.now();
+  let lastError;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const result = await aiCall();
+      circuitBreaker.reset();
+      await recordMetrics({ duration: Date.now() - start });
+      return result;
+    } catch (err) {
+      lastError = err.message;
+      console.error(`[${AI_SERVICE_NAME}] NVIDIA call "${callerName}" attempt ${attempt}/3: ${err.message}`);
+
+      if (attempt < 3) {
+        await delay(1000 * attempt);
+      }
+    }
+  }
+
+  circuitBreaker.trip();
+  const fallbackReason = `All 3 retries failed for "${callerName}". Reason: ${lastError}`;
+  console.warn(`[${AI_SERVICE_NAME}] ${fallbackReason}. Falling back to mock.`);
+
+  await recordMetrics({ duration: Date.now() - start, error: fallbackReason });
+
+  if (typeof mockFn === 'function') {
+    return mockFn();
+  }
+  return mockFn;
 }
+
+exports.getProvider = getProvider;
+exports.setProvider = setProvider;
+exports.recordMetrics = recordMetrics;
 
 exports.analyzeResumeBackground = async (applicationId, resumeText, jobDescription) => {
   try {
@@ -229,8 +303,8 @@ exports.generateCareerRoadmap = async (skills, targetRole) => {
     await delay(1200);
     return {
       targetRole,
-      summary: `A structured ${6}-month career roadmap to become a ${targetRole}.`,
-      estimatedDuration: `${6} months`,
+      summary: `A structured 6-month career roadmap to become a ${targetRole}.`,
+      estimatedDuration: '6 months',
       milestones: [
         { title: 'Foundation Building', duration: 'Months 1-2', description: 'Build strong foundations in core technologies.', status: 'pending', skills: ['TypeScript', 'Advanced Node.js streams'], resources: [{ title: 'TypeScript Documentation' }, { title: 'Node.js Design Patterns book' }] },
         { title: 'Enterprise Architecture', duration: 'Months 3-4', description: 'Learn enterprise-grade architecture patterns and tools.', status: 'pending', skills: ['Docker containerization', 'Redis Caching & Pub/Sub'], resources: [{ title: 'Docker Mastery course' }, { title: 'Redis University tutorials' }] },
@@ -365,7 +439,7 @@ exports.analyzeSkillGapFromFile = async (resumeText, targetRole) => {
 exports.analyzeInterviewFeedback = async (qaPairs) => {
   const mockFn = async () => {
     await delay(1000);
-    return `Candidate answered all questions with basic competency. Good understanding of core architecture. Overall Rating: 7.5/10.`;
+    return 'Candidate answered all questions with basic competency. Good understanding of core architecture. Overall Rating: 7.5/10.';
   };
 
   const aiCall = async () => {

@@ -14,4 +14,9 @@ router.patch('/users/:id/reject-recruiter', adminController.rejectRecruiter);
 router.get('/unverified-recruiters', adminController.getUnverifiedRecruiters);
 router.get('/analytics', adminController.getDashboardAnalytics);
 
+// AI Configuration
+router.get('/ai-config', adminController.getAiConfig);
+router.patch('/ai-config', adminController.updateAiConfig);
+router.post('/ai-config/reset-metrics', adminController.resetAiMetrics);
+
 module.exports = router;

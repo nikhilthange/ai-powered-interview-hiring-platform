@@ -37,6 +37,11 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
+    // Never intercept the refresh endpoint itself — avoids infinite loops
+    if (originalRequest?.url?.includes('/auth/refresh')) {
+      return Promise.reject(error)
+    }
+
     if (
       error.response?.status === 401 &&
       error.response?.data?.code === 'TOKEN_EXPIRED' &&

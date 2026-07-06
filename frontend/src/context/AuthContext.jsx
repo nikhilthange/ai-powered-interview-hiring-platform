@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useState, useEffect, useCallback, useRef } from 'react'
 import { authApi } from '../services/authApi'
 
 export const AuthContext = createContext(null)
@@ -7,8 +7,11 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const refreshLock = useRef(false)
 
   const tryRefresh = useCallback(async () => {
+    if (refreshLock.current) return false
+    refreshLock.current = true
     try {
       const { data } = await authApi.refreshToken()
       localStorage.setItem('accessToken', data.accessToken)
@@ -16,11 +19,14 @@ export function AuthProvider({ children }) {
     } catch {
       localStorage.removeItem('accessToken')
       return false
+    } finally {
+      refreshLock.current = false
     }
   }, [])
 
   const loadUser = useCallback(async () => {
     const token = localStorage.getItem('accessToken')
+
     if (!token) {
       const refreshed = await tryRefresh()
       if (!refreshed) {
@@ -28,6 +34,7 @@ export function AuthProvider({ children }) {
         return
       }
     }
+
     try {
       const { data } = await authApi.getMe()
       setUser(data.data.user)

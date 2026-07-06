@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button'
 import { SkeletonList } from '../../components/ui/Skeleton'
 import EmptyState from '../../components/ui/EmptyState'
 import { Link } from 'react-router-dom'
-import { Briefcase, Users, Plus, Edit, MapPin } from 'lucide-react'
+import { Briefcase, Users, Plus, Edit, MapPin, Eye } from 'lucide-react'
 
 const containerVariants = {
   hidden: { opacity: 0 },

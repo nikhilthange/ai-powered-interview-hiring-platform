@@ -12,13 +12,6 @@ const rateLimit = require('express-rate-limit');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./middleware/errorHandler');
 const authRouter = require('./routes/authRoutes');
-const authLimiter = rateLimit({
-  max: 10,
-  windowMs: 15 * 60 * 1000,
-  message: 'Too many authentication attempts. Please try again in 15 minutes.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 const jobRouter = require('./routes/jobRoutes');
 const profileRouter = require('./routes/profileRoutes');
 const applicationRouter = require('./routes/applicationRoutes');
@@ -75,7 +68,6 @@ const globalLimiter = rateLimit({
   message: 'Too many requests from this IP. Please try again in 15 minutes.'
 });
 app.use('/api', globalLimiter);
-app.use('/api/v1/auth', authLimiter);
 
 // 2. Data Parsing Middlewares
 app.use(express.json({ limit: '100kb' })); // Body parser

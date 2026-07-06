@@ -5,6 +5,8 @@ const Job = require('../models/Job');
 const Application = require('../models/Application');
 const Subscription = require('../models/Subscription');
 const Notification = require('../models/Notification');
+const AiConfig = require('../models/AiConfig');
+const aiService = require('../services/aiService');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
 const { createAndSend } = require('../utils/notificationHelper');
@@ -200,5 +202,62 @@ exports.getDashboardAnalytics = asyncHandler(async (req, res, next) => {
       applications: applicationStats,
       revenue: revenueStats
     }
+  });
+});
+
+/**
+ * GET AI CONFIG + METRICS (Admin)
+ */
+exports.getAiConfig = asyncHandler(async (req, res) => {
+  const config = await AiConfig.getConfig();
+  res.status(200).json({
+    status: 'success',
+    data: {
+      provider: config.provider,
+      totalRequests: config.totalRequests,
+      totalErrors: config.totalErrors,
+      averageResponseTime: config.averageResponseTime,
+      lastApiCall: config.lastApiCall,
+      lastError: config.lastError,
+      hasNvidiaKey: !!process.env.NVIDIA_API_KEY
+    }
+  });
+});
+
+/**
+ * UPDATE AI PROVIDER (Admin)
+ */
+exports.updateAiConfig = asyncHandler(async (req, res) => {
+  const { provider } = req.body;
+  if (!provider || !['mock', 'nvidia'].includes(provider)) {
+    throw new AppError('Provider must be one of: mock, nvidia', 400);
+  }
+
+  await aiService.setProvider(provider);
+
+  res.status(200).json({
+    status: 'success',
+    message: `AI provider switched to ${provider}.`,
+    data: { provider }
+  });
+});
+
+/**
+ * RESET AI METRICS (Admin)
+ */
+exports.resetAiMetrics = asyncHandler(async (req, res) => {
+  await AiConfig.findOneAndUpdate({}, {
+    $set: {
+      totalRequests: 0,
+      totalErrors: 0,
+      averageResponseTime: 0,
+      lastApiCall: null,
+      lastError: ''
+    }
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'AI metrics reset successfully.'
   });
 });

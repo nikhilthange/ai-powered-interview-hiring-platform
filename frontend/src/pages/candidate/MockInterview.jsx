@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { interviewApi } from '../../services/interviewApi'
 import { Card, CardContent } from '../../components/ui/Card'
@@ -26,6 +26,8 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
+const DIFFICULTY_MAP = { Junior: 'easy', Mid: 'medium', Senior: 'hard' }
+
 export default function MockInterview() {
   const [sessionId, setSessionId] = useState(null)
   const [questions, setQuestions] = useState([])
@@ -40,6 +42,9 @@ export default function MockInterview() {
   const [targetRole, setTargetRole] = useState('')
   const [difficulty, setDifficulty] = useState('Mid')
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [genError, setGenError] = useState(null)
+  const [submitError, setSubmitError] = useState(null)
+  const autoCompletingRef = useRef(false)
 
   const startMutation = useMutation({
     mutationFn: (formData) =>
@@ -47,21 +52,44 @@ export default function MockInterview() {
         const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
         setUploadProgress(progress)
       }),
-    onSuccess: (res) => {
+    onSuccess: async (res) => {
       const session = res.data?.session || res.data
-      setSessionId(session._id || session.sessionId)
-      setQuestions(session.questions || [])
+      const sid = session._id || session.sessionId
+      setSessionId(sid)
+      setGenError(null)
+      try {
+        const qRes = await interviewApi.generateSessionQuestions(sid)
+        const qData = qRes.data || qRes
+        setQuestions(qData.questions || [])
+      } catch {
+        setQuestions([])
+        setGenError('Failed to generate questions. Please try again.')
+      }
     },
   })
 
   const submitMutation = useMutation({
     mutationFn: interviewApi.submitAnswer,
-    onSuccess: (res) => {
+    onSuccess: (res, variables) => {
       const data = res.data?.data || res.data
       if (data.feedback) {
         setFeedback((prev) => [...(prev || []), data.feedback])
       }
       setIsThinking(false)
+      setSubmitError(null)
+      setQuestions((prev) => prev.map((q) =>
+        q._id === variables.questionId
+          ? { ...q, score: data.score, feedback: data.feedback, strengths: data.strengths || [], improvements: data.improvements || [] }
+          : q
+      ))
+      if (currentQ === questions.length - 1 && sessionId && !autoCompletingRef.current) {
+        autoCompletingRef.current = true
+        endMutation.mutate(sessionId)
+      }
+    },
+    onError: (err) => {
+      setIsThinking(false)
+      setSubmitError(err?.response?.data?.message || err?.message || 'Failed to submit answer. Please try again.')
     },
   })
 
@@ -78,9 +106,35 @@ export default function MockInterview() {
       })
       setSessionEnded(true)
     },
+    onError: (err) => {
+      autoCompletingRef.current = false
+      setSubmitError(err?.response?.data?.message || err?.message || 'Failed to complete interview. Please try again.')
+    },
   })
 
   const handleFileChange = useCallback((f) => setFile(f), [])
+
+  const handleSubmitAnswer = useCallback(() => {
+    if (!input.trim() || !sessionId) return
+    const answer = input.trim()
+    setAnswers((prev) => [...prev, { question: currentQ, answer }])
+    setIsThinking(true)
+    setInput('')
+    submitMutation.mutate({
+      sessionId,
+      questionId: questions[currentQ]?._id || currentQ,
+      answer,
+    })
+    if (currentQ < questions.length - 1) {
+      setTimeout(() => setCurrentQ((prev) => prev + 1), 500)
+    }
+  }, [input, sessionId, currentQ, questions, submitMutation])
+
+  const handleEndSession = useCallback(() => {
+    if (sessionId) {
+      endMutation.mutate(sessionId)
+    }
+  }, [sessionId, endMutation])
 
   const handleStartInterview = (e) => {
     e.preventDefault()
@@ -88,7 +142,7 @@ export default function MockInterview() {
     const formData = new FormData()
     formData.append('resume', file)
     formData.append('targetRole', targetRole.trim())
-    formData.append('difficulty', difficulty)
+    formData.append('difficulty', DIFFICULTY_MAP[difficulty] || difficulty.toLowerCase())
     startMutation.mutate(formData)
   }
 
@@ -210,28 +264,6 @@ export default function MockInterview() {
     )
   }
 
-  const handleSubmitAnswer = useCallback(() => {
-    if (!input.trim() || !sessionId) return
-    const answer = input.trim()
-    setAnswers((prev) => [...prev, { question: currentQ, answer }])
-    setIsThinking(true)
-    setInput('')
-    submitMutation.mutate({
-      sessionId,
-      questionId: questions[currentQ]?._id || currentQ,
-      answer,
-    })
-    if (currentQ < questions.length - 1) {
-      setTimeout(() => setCurrentQ((prev) => prev + 1), 500)
-    }
-  }, [input, sessionId, currentQ, questions, submitMutation])
-
-  const handleEndSession = useCallback(() => {
-    if (sessionId) {
-      endMutation.mutate(sessionId)
-    }
-  }, [sessionId, endMutation])
-
   if (startMutation.isPending) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -248,7 +280,7 @@ export default function MockInterview() {
     )
   }
 
-  if (sessionEnded && endMutation.isSuccess) {
+  if (sessionEnded) {
     const fb = feedback || endMutation.data?.data?.feedback || endMutation.data?.feedback
     return (
       <motion.div
@@ -365,6 +397,17 @@ export default function MockInterview() {
   const question = questions[currentQ]
   const progress = questions.length > 0 ? ((currentQ + 1) / questions.length) * 100 : 0
 
+  if (questions.length === 0 && genError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <AlertTriangle className="h-12 w-12 text-red-400" />
+        <p className="text-lg font-medium text-[var(--text-primary)]">Failed to generate questions</p>
+        <p className="text-sm text-[var(--text-secondary)]">{genError}</p>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    )
+  }
+
   return (
     <motion.div
       variants={containerVariants}
@@ -372,6 +415,43 @@ export default function MockInterview() {
       animate="visible"
       className="max-w-3xl mx-auto space-y-6"
     >
+      {submitError && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium">Error</p>
+            <p className="mt-0.5 opacity-90">{submitError}</p>
+          </div>
+          <Button size="xs" variant="outline" onClick={() => setSubmitError(null)}>Dismiss</Button>
+        </motion.div>
+      )}
+
+      {endMutation.isPending && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 py-4 px-5 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900">
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
+            <Loader2 className="h-5 w-5 text-indigo-500" />
+          </motion.div>
+          <div>
+            <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Completing your interview...</p>
+            <p className="text-xs text-indigo-500 dark:text-indigo-400">Generating AI feedback and score</p>
+          </div>
+        </motion.div>
+      )}
+
+      {endMutation.isError && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium">Failed to complete session</p>
+            <p className="mt-0.5 opacity-90">{endMutation.error?.response?.data?.message || 'Unable to end session. Please try again.'}</p>
+          </div>
+          <Button size="xs" variant="outline" onClick={() => { endMutation.reset(); setSubmitError(null); }}>Dismiss</Button>
+        </motion.div>
+      )}
+
       <motion.div variants={itemVariants} className="flex items-center justify-between">
         <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
           <ArrowLeft className="h-4 w-4" /> Exit
@@ -380,7 +460,6 @@ export default function MockInterview() {
           <Badge variant="primary" size="sm">
             Q {currentQ + 1}/{questions.length}
           </Badge>
-
         </div>
       </motion.div>
 
@@ -462,10 +541,10 @@ export default function MockInterview() {
                   variant="outline"
                   size="sm"
                   onClick={handleEndSession}
-                  disabled={endMutation.isPending}
+                  disabled={endMutation.isPending || isThinking}
                 >
-                  <StopCircle className="h-4 w-4" />
-                  End
+                  {endMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <StopCircle className="h-4 w-4" />}
+                  {endMutation.isPending ? 'Completing...' : 'End'}
                 </Button>
                 <Button
                   size="sm"

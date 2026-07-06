@@ -6,7 +6,7 @@ import Badge from '../../components/ui/Badge'
 import { SkeletonMetrics } from '../../components/ui/Skeleton'
 import { Link } from 'react-router-dom'
 import { cn } from '../../lib/utils'
-import { Users, Briefcase, FileText, Activity, Shield, ArrowRight } from 'lucide-react'
+import { Users, Briefcase, FileText, Activity, Shield, ArrowRight, Brain, Server } from 'lucide-react'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -22,6 +22,12 @@ export default function AdminDashboard() {
   const { data: analytics, isLoading } = useQuery({
     queryKey: ['admin-analytics'],
     queryFn: () => adminApi.getAnalytics(),
+  })
+
+  const { data: aiConfig } = useQuery({
+    queryKey: ['ai-config'],
+    queryFn: () => adminApi.getAiConfig(),
+    staleTime: 30000,
   })
 
   if (isLoading) return <SkeletonMetrics />
@@ -99,6 +105,41 @@ export default function AdminDashboard() {
           )
         })}
       </motion.div>
+
+      {aiConfig && (
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    'rounded-xl p-2',
+                    aiConfig.provider === 'mock' ? 'bg-amber-50 dark:bg-amber-950' : 'bg-emerald-50 dark:bg-emerald-950'
+                  )}>
+                    {aiConfig.provider === 'mock'
+                      ? <Brain className="h-4 w-4 text-amber-600" />
+                      : <Server className="h-4 w-4 text-emerald-600" />
+                    }
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">
+                      AI Provider: {aiConfig.provider === 'mock' ? 'Mock AI' : 'NVIDIA NIM'}
+                    </p>
+                    <p className="text-xs text-[var(--text-tertiary)]">
+                      {aiConfig.totalRequests} requests · {aiConfig.totalErrors} errors
+                      {aiConfig.averageResponseTime ? ` · ${aiConfig.averageResponseTime}ms avg` : ''}
+                      {aiConfig.lastError ? ' · Has errors' : ' · No errors'}
+                    </p>
+                  </div>
+                </div>
+                <Link to="/admin/ai-config" className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
+                  Manage <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <motion.div variants={itemVariants}>

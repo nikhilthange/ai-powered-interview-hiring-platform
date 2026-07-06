@@ -309,16 +309,28 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * LOGOUT CONTROLLER
+ * LOGOUT CONTROLLER (no protect middleware needed — resilient to expired tokens)
  */
 exports.logout = asyncHandler(async (req, res, next) => {
-  // 1. Invalidate session token in DB for the request user context
-  if (req.user) {
-    req.user.refreshToken = undefined;
-    await req.user.save({ validateBeforeSave: false });
+  // 1. Best effort: try to invalidate refresh token in DB from cookie
+  const { refreshToken } = req.cookies;
+  if (refreshToken) {
+    try {
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+      const hashedRefreshToken = crypto
+        .createHash('sha256')
+        .update(refreshToken)
+        .digest('hex');
+      await User.findOneAndUpdate(
+        { _id: decoded.id, refreshToken: hashedRefreshToken },
+        { $unset: { refreshToken: 1 } }
+      );
+    } catch {
+      // Token invalid/expired — cookie will be cleared below
+    }
   }
 
-  // 2. Invalidate refresh token cookie
+  // 2. Invalidate refresh token cookie on the client
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === 'production',

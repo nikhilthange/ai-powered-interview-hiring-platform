@@ -25,11 +25,10 @@
     "multer": "^1.4.5-lts.1",
     "node-cron": "^4.2.1",
     "nodemailer": "^6.9.4",
-
     "pdf-parse": "^2.4.5",
     "razorpay": "^2.8.6",
     "socket.io": "^4.6.1",
-    "xss-clean": "^0.1.4",
+    "xss": "^1.0.15",
     "zod": "^3.21.4"
   },
   "devDependencies": {

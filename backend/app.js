@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
+const xss = require('xss');
 const hpp = require('hpp');
 const rateLimit = require('express-rate-limit');
 
@@ -84,7 +84,27 @@ app.use(cookieParser()); // Cookie parser to process refresh cookies
 
 // 3. Security Data Sanitization Middlewares
 app.use(mongoSanitize()); // Prevent NoSQL query injection (e.g. email: { $ne: null })
-app.use(xss()); // Invalidate cross-site scripting injection attempts in user inputs
+
+// Recursively sanitize all string values in req.body, req.query, req.params against XSS
+function sanitizeObject(val) {
+  if (Array.isArray(val)) return val.map(sanitizeObject);
+  if (typeof val === 'object' && val !== null) {
+    const out = {};
+    for (const key of Object.keys(val)) out[key] = sanitizeObject(val[key]);
+    return out;
+  }
+  if (typeof val === 'string') return xss(val);
+  return val;
+}
+
+const xssSanitizer = (req, res, next) => {
+  if (req.body) req.body = sanitizeObject(req.body);
+  if (req.query) req.query = sanitizeObject(req.query);
+  if (req.params) req.params = sanitizeObject(req.params);
+  next();
+};
+app.use(xssSanitizer);
+
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 
 // Serve uploaded files (resumes, avatars)

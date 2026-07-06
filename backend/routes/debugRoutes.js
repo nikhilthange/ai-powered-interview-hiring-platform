@@ -18,9 +18,21 @@ router.post('/pdf', upload.single('pdf'), asyncHandler(async (req, res) => {
     throw new AppError('Please upload a PDF file.', 400);
   }
 
-  const pdfParse = require('pdf-parse');
+  const pdfParseModule = require('pdf-parse');
   const buffer = fs.readFileSync(req.file.path);
-  const data = await pdfParse(buffer);
+  let text = '';
+
+  if (pdfParseModule.PDFParse) {
+    const { VerbosityLevel } = pdfParseModule;
+    const parser = new pdfParseModule.PDFParse({ data: buffer, verbosity: VerbosityLevel?.ERRORS ?? 0 });
+    await parser.load();
+    const textResult = await parser.getText();
+    text = textResult?.text || '';
+  } else {
+    const pdfParse = pdfParseModule.default || pdfParseModule;
+    const data = await pdfParse(buffer);
+    text = data.text || '';
+  }
 
   if (req.file.path) {
     fs.unlink(req.file.path, () => {});
@@ -29,9 +41,8 @@ router.post('/pdf', upload.single('pdf'), asyncHandler(async (req, res) => {
   res.status(200).json({
     status: 'success',
     data: {
-      pdfParseType: typeof pdfParse,
-      textLength: data.text.length,
-      textPreview: data.text.slice(0, 200),
+      textLength: text.length,
+      textPreview: text.slice(0, 200),
     },
   });
 }));

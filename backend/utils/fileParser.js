@@ -6,15 +6,6 @@ const AppError = require('./appError');
 const readFile = util.promisify(fs.readFile);
 
 async function extractTextFromPDF(filePath) {
-  let pdfParse;
-  try {
-    const pdfParseModule = require('pdf-parse');
-    pdfParse = pdfParseModule.default || pdfParseModule;
-  } catch (err) {
-    console.error('[fileParser] Failed to load pdf-parse module:', err.message);
-    throw new AppError('PDF parsing library is not available.', 500);
-  }
-
   let buffer;
   try {
     buffer = await readFile(filePath);
@@ -24,10 +15,29 @@ async function extractTextFromPDF(filePath) {
   }
 
   try {
-    const data = await pdfParse(buffer);
-    const text = data.text || '';
-    console.log(`[fileParser] Extracted ${text.length} chars from PDF`);
-    return text;
+    const pdfParseModule = require('pdf-parse');
+
+    // pdf-parse v2.x exports { PDFParse } class
+    if (pdfParseModule.PDFParse) {
+      const { VerbosityLevel } = pdfParseModule;
+      const parser = new pdfParseModule.PDFParse({ data: buffer, verbosity: VerbosityLevel?.ERRORS ?? 0 });
+      await parser.load();
+      const textResult = await parser.getText();
+      const text = textResult?.text || '';
+      console.log(`[fileParser] Extracted ${text.length} chars from PDF (v2 API)`);
+      return text;
+    }
+
+    // pdf-parse v1.x exports a function directly
+    const pdfParse = pdfParseModule.default || pdfParseModule;
+    if (typeof pdfParse === 'function') {
+      const data = await pdfParse(buffer);
+      const text = data.text || '';
+      console.log(`[fileParser] Extracted ${text.length} chars from PDF (v1 API)`);
+      return text;
+    }
+
+    throw new Error('Unrecognized pdf-parse module shape');
   } catch (err) {
     console.error('[fileParser] PDF extraction failed:', err.message, err.stack);
     throw new AppError(

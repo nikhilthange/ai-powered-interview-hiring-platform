@@ -98,15 +98,18 @@ exports.getMyApplications = asyncHandler(async (req, res, next) => {
   const totalPages = Math.ceil(totalItems / limit) || 1;
 
   res.status(200).json({
-    success: true,
-    applications,
-    pagination: {
-      page,
-      limit,
-      totalPages,
-      totalItems,
-      hasNextPage: page < totalPages,
-      hasPrevPage: page > 1,
+    status: 'success',
+    results: applications.length,
+    data: {
+      applications,
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        totalItems,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
     },
   });
 });

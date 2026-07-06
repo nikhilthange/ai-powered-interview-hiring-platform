@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
-import api from '../../services/axios'
+import { adminApi } from '../../services/adminApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
@@ -21,7 +21,7 @@ const itemVariants = {
 export default function AdminUsers() {
   const { data, isLoading } = useQuery({
     queryKey: ['admin-users'],
-    queryFn: () => api.get('/admin/users').then((r) => r.data),
+    queryFn: () => adminApi.getUsers(),
   })
 
   if (isLoading) return (

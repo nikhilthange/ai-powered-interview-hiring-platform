@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
-import api from '../../services/axios'
+import { jobApi } from '../../services/jobApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
@@ -22,7 +22,7 @@ const itemVariants = {
 export default function MyJobs() {
   const { data, isLoading } = useQuery({
     queryKey: ['recruiter-jobs'],
-    queryFn: () => api.get('/jobs/my-jobs').then((r) => r.data),
+    queryFn: () => jobApi.getMyJobs().then((r) => r.data),
   })
 
   if (isLoading) return (

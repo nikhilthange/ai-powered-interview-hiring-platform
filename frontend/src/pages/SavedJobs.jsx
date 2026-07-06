@@ -28,7 +28,7 @@ export default function SavedJobs() {
     queryFn: () => savedJobApi.getSavedJobs().then((r) => r.data),
   })
 
-  const saved = data?.data?.savedJobs || data?.data || []
+  const saved = data?.data?.jobs || data?.data || []
   const jobs = saved.map((s) => s.jobId).filter(Boolean)
 
   if (isLoading) return (

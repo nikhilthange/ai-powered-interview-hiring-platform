@@ -23,14 +23,23 @@ async function refreshTokenAndReconnect() {
 }
 
 export function connectSocket() {
-  if (socket) return socket
+  if (socket?.connected) return socket
+
+  if (socket) {
+    socket.removeAllListeners()
+    socket.disconnect()
+    socket = null
+  }
 
   socket = io(SOCKET_URL, {
     auth: { token: localStorage.getItem('accessToken') },
     transports: ['websocket', 'polling'],
     reconnection: true,
-    reconnectionAttempts: 5,
-    reconnectionDelay: 2000,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 30000,
+    randomizationFactor: 0.5,
+    timeout: 20000,
   })
 
   socket.on('connect_error', async (err) => {
@@ -48,6 +57,7 @@ export function connectSocket() {
 
 export function disconnectSocket() {
   if (socket) {
+    socket.removeAllListeners()
     socket.disconnect()
     socket = null
   }

@@ -98,8 +98,8 @@ export default function MyApplications() {
     staleTime: 30000,
   })
 
-  const applications = useMemo(() => data?.applications || [], [data])
-  const pagination = useMemo(() => data?.pagination || {}, [data])
+  const applications = useMemo(() => data?.data?.applications || [], [data])
+  const pagination = useMemo(() => data?.data?.pagination || {}, [data])
 
   const handleTabChange = useCallback((status) => {
     setActiveTab(status)

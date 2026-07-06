@@ -30,7 +30,7 @@ export default function MyInterviews() {
     queryFn: () => interviewApi.getMySessions(),
   })
 
-  const sessions = Array.isArray(data) ? data : []
+  const sessions = data?.data?.sessions || []
 
   if (isLoading) return (
     <div className="space-y-6">

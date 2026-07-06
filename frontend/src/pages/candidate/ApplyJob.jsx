@@ -38,9 +38,13 @@ export default function ApplyJob() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (!resume) {
+      toast.error('Please upload your resume to apply.')
+      return
+    }
     const formData = new FormData()
     if (form.coverLetter) formData.append('coverLetter', form.coverLetter)
-    if (resume) formData.append('resume', resume)
+    formData.append('resume', resume)
     mutation.mutate(formData)
   }
 
@@ -86,12 +90,12 @@ export default function ApplyJob() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Resume (Optional)</label>
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Resume <span className="text-red-500">*</span></label>
               <label className="flex cursor-pointer items-center justify-center gap-3 rounded-xl border-2 border-dashed border-[var(--border-color)] p-6 text-center hover:border-indigo-300 hover:bg-[var(--bg-tertiary)] transition-all">
                 <Upload className="h-6 w-6 text-[var(--text-tertiary)]" />
                 <div>
                   <p className="text-sm text-[var(--text-secondary)]">
-                    {resume ? resume.name : 'Upload a different resume'}
+                    {resume ? resume.name : 'Upload your resume'}
                   </p>
                   <p className="text-xs text-[var(--text-tertiary)]">PDF, DOCX (max 5 MB)</p>
                 </div>

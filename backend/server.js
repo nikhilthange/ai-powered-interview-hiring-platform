@@ -37,9 +37,31 @@ const { startSubscriptionJobs } = require('./jobs/subscriptionJobs');
 connectDB();
 
 const port = process.env.PORT || 5000;
-const server = app.listen(port, () => {
-  console.log(`Application running in ${process.env.NODE_ENV} mode on port ${port}...`);
-});
+const startServer = (retries = 0) => {
+  const server = app.listen(port)
+    .on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        if (retries < 1) {
+          console.warn(`Port ${port} is in use. Retrying in 2s...`);
+          setTimeout(() => {
+            server.close();
+            startServer(retries + 1);
+          }, 2000);
+        } else {
+          console.error(`Port ${port} is still in use after retry. Please close the other process.`);
+          process.exit(1);
+        }
+      } else {
+        console.error('Server error:', err.message);
+        process.exit(1);
+      }
+    })
+    .on('listening', () => {
+      console.log(`Application running in ${process.env.NODE_ENV} mode on port ${port}...`);
+    });
+  return server;
+};
+const server = startServer();
 
 try {
   initSocket(server);

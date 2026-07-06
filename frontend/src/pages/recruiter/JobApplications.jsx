@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import api from '../../services/axios'
+import { applicationApi } from '../../services/applicationApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
@@ -29,7 +29,7 @@ export default function RecruiterJobApplications() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['job-applications', jobId],
-    queryFn: () => api.get(`/applications/${jobId}`).then((r) => r.data),
+    queryFn: () => applicationApi.getJobApplications(jobId).then((r) => r.data),
   })
 
   if (isLoading) return (

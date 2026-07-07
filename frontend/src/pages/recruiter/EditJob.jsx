@@ -6,9 +6,12 @@ import { useToast } from '../../components/ui/Toast'
 import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
+import Modal from '../../components/ui/Modal'
 import { SkeletonPage } from '../../components/ui/Skeleton'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Sparkles, FileQuestion, DollarSign, ClipboardList } from 'lucide-react'
+import { useMutation as useAiMutation } from '@tanstack/react-query'
+import { recruiterAiApi } from '../../services/recruiterAiApi'
 
 export default function EditJob() {
   const { id } = useParams()
@@ -47,6 +50,31 @@ export default function EditJob() {
       toast.error(err?.response?.data?.message || 'Failed to update job.')
     },
   })
+
+  const [aiModal, setAiModal] = useState({ type: null, open: false, data: null, loading: false })
+
+  const aiActions = {
+    questions: useAiMutation({
+      mutationFn: () => recruiterAiApi.generateInterviewQuestions(id),
+      onSuccess: (res) => { setAiModal({ type: 'questions', open: true, data: res?.data, loading: false }) },
+      onError: (err) => { toast.error('Failed to generate questions.'); setAiModal((p) => ({ ...p, loading: false })) },
+    }),
+    salary: useAiMutation({
+      mutationFn: () => recruiterAiApi.suggestSalaryRange(id),
+      onSuccess: (res) => { setAiModal({ type: 'salary', open: true, data: res?.data, loading: false }) },
+      onError: (err) => { toast.error('Failed to get salary suggestion.'); setAiModal((p) => ({ ...p, loading: false })) },
+    }),
+    assignment: useAiMutation({
+      mutationFn: () => recruiterAiApi.generateTechnicalAssignment(id),
+      onSuccess: (res) => { setAiModal({ type: 'assignment', open: true, data: res?.data, loading: false }) },
+      onError: (err) => { toast.error('Failed to generate assignment.'); setAiModal((p) => ({ ...p, loading: false })) },
+    }),
+  }
+
+  const runAiAction = (type) => {
+    setAiModal({ type, open: false, data: null, loading: true })
+    aiActions[type].mutate()
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -125,6 +153,19 @@ export default function EditJob() {
               <textarea rows={4} value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-y" />
             </div>
 
+            <div className="flex flex-wrap items-center gap-2 pt-2 pb-4 border-b border-[var(--border-color)]">
+              <span className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider mr-1">AI Tools:</span>
+              <Button type="button" variant="outline" size="xs" onClick={() => runAiAction('questions')} loading={aiActions.questions.isPending}>
+                <FileQuestion className="h-3 w-3 text-indigo-500" /> Questions
+              </Button>
+              <Button type="button" variant="outline" size="xs" onClick={() => runAiAction('salary')} loading={aiActions.salary.isPending}>
+                <DollarSign className="h-3 w-3 text-emerald-500" /> Salary
+              </Button>
+              <Button type="button" variant="outline" size="xs" onClick={() => runAiAction('assignment')} loading={aiActions.assignment.isPending}>
+                <ClipboardList className="h-3 w-3 text-purple-500" /> Assignment
+              </Button>
+            </div>
+
             <div className="flex items-center gap-3 pt-2">
               <Button type="submit" loading={mutation.isPending} size="lg">
                 <Save className="h-4 w-4" />
@@ -137,6 +178,30 @@ export default function EditJob() {
           </form>
         </CardContent>
       </Card>
+
+      <Modal
+        open={aiModal.open}
+        onClose={() => setAiModal({ type: null, open: false, data: null, loading: false })}
+        title={
+          aiModal.type === 'questions' ? 'Interview Questions' :
+          aiModal.type === 'salary' ? 'Salary Range Suggestion' :
+          aiModal.type === 'assignment' ? 'Technical Assignment' : 'AI Result'
+        }
+        size="lg"
+      >
+        <div className="space-y-4">
+          <pre className="whitespace-pre-wrap text-sm text-[var(--text-primary)] font-sans leading-relaxed max-h-[50vh] overflow-y-auto">
+            {aiModal.loading ? 'Generating...' : aiModal.data ? JSON.stringify(aiModal.data, null, 2) : ''}
+          </pre>
+          <div className="flex gap-2 justify-end pt-2 border-t border-[var(--border-color)]">
+            <Button variant="ghost" size="sm" onClick={() => {
+              navigator.clipboard.writeText(JSON.stringify(aiModal.data, null, 2))
+              toast.success('Copied!')
+            }}>Copy</Button>
+            <Button size="sm" onClick={() => setAiModal({ type: null, open: false, data: null, loading: false })}>Done</Button>
+          </div>
+        </div>
+      </Modal>
     </motion.div>
   )
 }

@@ -136,6 +136,65 @@ export default function RecruiterDashboard() {
         })}
       </motion.div>
 
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="rounded-xl bg-gradient-to-br from-pink-50 to-pink-100 p-2 dark:from-pink-950/50 dark:to-pink-900/50">
+                <Sparkles className="h-5 w-5 text-pink-600" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-[var(--text-primary)]">AI Recruiter Tools</h2>
+                <p className="text-xs text-[var(--text-tertiary)]">Generate content, analyze candidates, and more</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <Link to="/recruiter/jobs/create" className="group">
+                <div className="rounded-xl border border-[var(--border-color)] p-4 hover:bg-[var(--bg-secondary)] transition-colors text-center">
+                  <div className="flex justify-center mb-2"><span className="text-2xl">📝</span></div>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">Generate JD</p>
+                  <p className="text-xs text-[var(--text-tertiary)] mt-0.5">AI-powered job description</p>
+                </div>
+              </Link>
+              {jobs.slice(0, 1).map((job) => (
+                <Link key={job._id} to={`/recruiter/jobs/${job._id}/edit`} className="group">
+                  <div className="rounded-xl border border-[var(--border-color)] p-4 hover:bg-[var(--bg-secondary)] transition-colors text-center">
+                    <div className="flex justify-center mb-2"><span className="text-2xl">❓</span></div>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">Questions</p>
+                    <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Interview questions</p>
+                  </div>
+                </Link>
+              ))}
+              {jobs.slice(0, 1).map((job) => (
+                <Link key={`salary-${job._id}`} to={`/recruiter/jobs/${job._id}/edit`} className="group">
+                  <div className="rounded-xl border border-[var(--border-color)] p-4 hover:bg-[var(--bg-secondary)] transition-colors text-center">
+                    <div className="flex justify-center mb-2"><span className="text-2xl">💰</span></div>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">Salary</p>
+                    <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Market range data</p>
+                  </div>
+                </Link>
+              ))}
+              {jobs.slice(0, 1).map((job) => (
+                <Link key={`assign-${job._id}`} to={`/recruiter/jobs/${job._id}/edit`} className="group">
+                  <div className="rounded-xl border border-[var(--border-color)] p-4 hover:bg-[var(--bg-secondary)] transition-colors text-center">
+                    <div className="flex justify-center mb-2"><span className="text-2xl">📋</span></div>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">Assignment</p>
+                    <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Tech assessment</p>
+                  </div>
+                </Link>
+              ))}
+              <Link to="/ai-chat" className="group">
+                <div className="rounded-xl border border-[var(--border-color)] p-4 hover:bg-[var(--bg-secondary)] transition-colors text-center">
+                  <div className="flex justify-center mb-2"><Sparkles className="h-6 w-6 text-pink-500 mx-auto" /></div>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">AI Chat</p>
+                  <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Ask anything</p>
+                </div>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <motion.div variants={itemVariants}>
           <Card>

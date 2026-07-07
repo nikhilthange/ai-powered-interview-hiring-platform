@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../../services/jobApi'
+import { recruiterAiApi } from '../../services/recruiterAiApi'
 import { useToast } from '../../components/ui/Toast'
 import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
+import Modal from '../../components/ui/Modal'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Save, AlertCircle, Plus, X } from 'lucide-react'
+import { ArrowLeft, Save, AlertCircle, Plus, X, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function CreateJob() {
@@ -18,6 +20,30 @@ export default function CreateJob() {
     title: '', location: '', description: '',
     requirements: '', jobType: 'Full-time', experienceLevel: 'Junior',
     salaryMin: '', salaryMax: '',
+  })
+
+  const [aiModal, setAiModal] = useState({ open: false, data: null })
+
+  const aiMutation = useMutation({
+    mutationFn: recruiterAiApi.generateJobDescription,
+    onSuccess: (res) => {
+      const data = res?.data
+      if (data) {
+        setForm({
+          title: data.title || form.title,
+          location: data.location || form.location,
+          description: data.description || form.description,
+          requirements: Array.isArray(data.requirements) ? data.requirements.join('\n') : data.requirements || form.requirements,
+          jobType: data.jobType || form.jobType,
+          experienceLevel: data.experienceLevel || form.experienceLevel,
+          salaryMin: data.salaryRange?.min?.toString() || form.salaryMin,
+          salaryMax: data.salaryRange?.max?.toString() || form.salaryMax,
+        })
+        setAiModal({ open: true, data })
+        toast.success('Job description generated! Fill in any remaining details.')
+      }
+    },
+    onError: (err) => toast.error(err?.response?.data?.message || 'AI generation failed.'),
   })
 
   const mutation = useMutation({
@@ -62,7 +88,27 @@ export default function CreateJob() {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Input label="Job Title" placeholder="e.g. Senior Frontend Developer" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+              <div className="relative">
+                <Input label="Job Title" placeholder="e.g. Senior Frontend Developer" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">&nbsp;</label>
+                <Button
+                  type="button" variant="outline" size="md"
+                  onClick={() => aiMutation.mutate({
+                    title: form.title || 'Software Engineer',
+                    location: form.location || 'Remote',
+                    jobType: form.jobType,
+                    experienceLevel: form.experienceLevel,
+                    requirements: form.requirements.split('\n').filter(Boolean),
+                  })}
+                  loading={aiMutation.isPending}
+                  className="w-full"
+                >
+                  <Sparkles className="h-4 w-4 text-indigo-500" />
+                  Generate with AI
+                </Button>
+              </div>
               <Input label="Location" placeholder="e.g. San Francisco, CA" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
               <Input label="Salary Min (₹)" placeholder="e.g. 50000" type="number" value={form.salaryMin} onChange={(e) => setForm({ ...form, salaryMin: e.target.value })} />
               <Input label="Salary Max (₹)" placeholder="e.g. 150000" type="number" value={form.salaryMax} onChange={(e) => setForm({ ...form, salaryMax: e.target.value })} />
@@ -116,6 +162,21 @@ export default function CreateJob() {
           </form>
         </CardContent>
       </Card>
+
+      <Modal open={aiModal.open} onClose={() => setAiModal({ open: false, data: aiModal.data })} title="AI Generated Job Description" size="lg">
+        <div className="space-y-4">
+          <pre className="whitespace-pre-wrap text-sm text-[var(--text-primary)] font-sans leading-relaxed max-h-[50vh] overflow-y-auto">
+            {aiModal.data && JSON.stringify(aiModal.data, null, 2)}
+          </pre>
+          <div className="flex gap-2 justify-end pt-2 border-t border-[var(--border-color)]">
+            <Button variant="ghost" size="sm" onClick={() => {
+              navigator.clipboard.writeText(JSON.stringify(aiModal.data, null, 2))
+              toast.success('Copied!')
+            }}>Copy</Button>
+            <Button size="sm" onClick={() => setAiModal({ open: false, data: aiModal.data })}>Done</Button>
+          </div>
+        </div>
+      </Modal>
     </motion.div>
   )
 }

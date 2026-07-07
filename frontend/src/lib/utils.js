@@ -110,62 +110,57 @@ const COMPLETION_WEIGHTS = {
   experienceYears: 10,
   education: 10,
   resumeUrl: 10,
-  portfolio: 5,
-  github: 5,
   linkedin: 5,
+  github: 5,
+  portfolio: 5,
 };
 
 const COMPLETION_LABELS = {
   fullName: 'Name',
   email: 'Email',
   phone: 'Phone',
-  avatarUrl: 'Profile Photo',
+  avatarUrl: 'Avatar',
   headline: 'Headline',
   bio: 'Bio',
   skills: 'Skills',
   experienceYears: 'Experience',
   education: 'Education',
   resumeUrl: 'Resume',
-  portfolio: 'Portfolio',
-  github: 'GitHub',
   linkedin: 'LinkedIn',
+  github: 'GitHub',
+  portfolio: 'Portfolio',
 };
 
 function isFieldComplete(field, profile, user) {
   switch (field) {
     case 'email':
-      return Boolean(user?.email);
+      return typeof user?.email === 'string' && user.email.trim().length > 0;
     case 'skills':
       return Array.isArray(profile.skills) && profile.skills.length > 0;
     case 'experienceYears':
       return typeof profile.experienceYears === 'number' && profile.experienceYears > 0;
     case 'education':
       return Array.isArray(profile.education) && profile.education.length > 0;
+    case 'fullName':
+    case 'phone':
+    case 'avatarUrl':
+    case 'headline':
+    case 'bio':
+    case 'resumeUrl':
+    case 'linkedin':
+    case 'github':
+    case 'portfolio':
+      return typeof profile[field] === 'string' && profile[field].trim().length > 0;
     default:
-      return Boolean(profile[field]);
+      return false;
   }
 }
 
 export function calculateProfileCompletion(profile, user = {}) {
-  if (!profile) return 0
-  const completedFields = [];
-  const missingFields = [];
-  let total = 0;
-
-  for (const [field, weight] of Object.entries(COMPLETION_WEIGHTS)) {
-    if (isFieldComplete(field, profile, user)) {
-      total += weight;
-      completedFields.push(COMPLETION_LABELS[field]);
-    } else {
-      missingFields.push(COMPLETION_LABELS[field]);
-    }
+  if (!profile) {
+    return { completionPercentage: 0, completedFields: [], missingFields: [] };
   }
 
-  return total
-}
-
-export function getProfileCompletionDetails(profile, user = {}) {
-  if (!profile) return { completionPercentage: 0, completedFields: [], missingFields: [] }
   const completedFields = [];
   const missingFields = [];
   let total = 0;
@@ -180,4 +175,8 @@ export function getProfileCompletionDetails(profile, user = {}) {
   }
 
   return { completionPercentage: total, completedFields, missingFields };
+}
+
+export function getProfileCompletionDetails(profile, user = {}) {
+  return calculateProfileCompletion(profile, user);
 }

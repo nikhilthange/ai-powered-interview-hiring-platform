@@ -40,7 +40,7 @@ export default function CandidateDashboard() {
     queries: [
       {
         queryKey: ['profile'],
-        queryFn: () => profileApi.getMyProfile().then((r) => r.data?.data?.profile),
+        queryFn: () => profileApi.getMyProfile().then((r) => r.data),
       },
       {
         queryKey: ['my-applications'],
@@ -102,7 +102,8 @@ export default function CandidateDashboard() {
     )
   }
 
-  const profile = profileQuery.data || {}
+  const profile = profileQuery.data?.data?.profile || profileQuery.data || {}
+  const profileCompletion = profileQuery.data?.data?.completion?.completionPercentage ?? calculateProfileCompletion(profile, user).completionPercentage
   const apps = appsQuery.data?.data?.applications || []
   const appsCount = appsQuery.data?.data?.pagination?.totalItems || apps.length
   const savedCount = savedQuery.data?.results || 0
@@ -110,7 +111,6 @@ export default function CandidateDashboard() {
   const recommendedJobs = Array.isArray(jobsQuery.data) ? jobsQuery.data : []
 
   const name = profile.fullName || user?.email?.split('@')[0] || 'User'
-  const profileCompletion = calculateProfileCompletion(profile, user)
 
   const completedSessions = sessions.filter((s) => s.status === 'completed')
   const avgScore = completedSessions.length > 0

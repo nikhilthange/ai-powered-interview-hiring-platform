@@ -24,11 +24,29 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
+function buildInitialForm(profile) {
+  return {
+    fullName: profile.fullName || '',
+    headline: profile.headline || '',
+    bio: profile.bio || '',
+    phone: profile.phone || '',
+    location: profile.location || '',
+    website: profile.website || '',
+    linkedin: profile.linkedin || '',
+    github: profile.github || '',
+    portfolio: profile.portfolio || '',
+    title: profile.title || '',
+    experienceYears: profile.experienceYears ?? '',
+  }
+}
+
 export default function CandidateProfile() {
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const [newSkill, setNewSkill] = useState('')
   const [selectedAvatarFile, setSelectedAvatarFile] = useState(null)
+  const [currentFormValues, setCurrentFormValues] = useState(null)
+  const [formVersion, setFormVersion] = useState(0)
   const resumeInputRef = useRef(null)
 
   const { data, isLoading, isError, error } = useApi(['profile'], () =>
@@ -77,11 +95,24 @@ export default function CandidateProfile() {
     updateMutation.mutate({ data: { skills: updatedSkills }, avatarFile: selectedAvatarFile || undefined })
   }
 
-  const handleProfileSubmit = (formData) => {
-    console.log('=== handleProfileSubmit ===');
-    console.log('formData:', JSON.stringify(formData, null, 2));
-    console.log('selectedAvatarFile:', selectedAvatarFile ? { name: selectedAvatarFile.name, size: selectedAvatarFile.size } : 'none');
-    updateMutation.mutate({ data: formData, avatarFile: selectedAvatarFile || undefined })
+  const handleFormChange = (form) => {
+    setCurrentFormValues(form)
+  }
+
+  const handleSave = () => {
+    if (updateMutation.isPending || !currentFormValues) return
+    const data = {
+      ...currentFormValues,
+      experienceYears: currentFormValues.experienceYears !== '' ? Number(currentFormValues.experienceYears) : 0,
+    }
+    if (!data.fullName) delete data.fullName
+    updateMutation.mutate({ data, avatarFile: selectedAvatarFile || undefined })
+  }
+
+  const handleCancel = () => {
+    setFormVersion((v) => v + 1)
+    setCurrentFormValues(null)
+    setSelectedAvatarFile(null)
   }
 
   const handleAvatarSelect = (file) => {
@@ -120,9 +151,11 @@ export default function CandidateProfile() {
 
   const profile = data?.data?.profile
   const resumeUrl = getMediaUrl(profile?.resumeUrl)
+  const initial = profile ? buildInitialForm(profile) : {}
+  const isDirty = currentFormValues && JSON.stringify(currentFormValues) !== JSON.stringify(initial)
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-4xl mx-auto space-y-6">
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-4xl mx-auto space-y-6 pb-24 sm:pb-6">
       <motion.div variants={itemVariants}>
         <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">My Profile</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">Manage your personal information and career details</p>
@@ -133,7 +166,7 @@ export default function CandidateProfile() {
           <CardContent className="p-6 sm:p-8">
             <AvatarUpload currentUrl={profile?.avatarUrl} onUpload={handleAvatarSelect} loading={updateMutation.isPending} />
             <div className="mt-6">
-              <ProfileForm profile={profile} onSubmit={handleProfileSubmit} loading={updateMutation.isPending} isRecruiter={false} />
+              <ProfileForm key={formVersion} profile={profile} onChange={handleFormChange} isRecruiter={false} />
             </div>
           </CardContent>
         </Card>
@@ -228,6 +261,47 @@ export default function CandidateProfile() {
             )}
           </CardContent>
         </Card>
+      </motion.div>
+
+      <motion.div variants={itemVariants} className="mt-6 mb-8">
+        <div className="hidden sm:flex sm:flex-row sm:items-center sm:justify-end gap-3">
+          <Button variant="outline" onClick={handleCancel} disabled={updateMutation.isPending}>
+            Cancel
+          </Button>
+          <Button
+            variant="gradient"
+            onClick={handleSave}
+            disabled={!isDirty || updateMutation.isPending}
+            loading={updateMutation.isPending}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            Save Changes
+          </Button>
+        </div>
+
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border-color)] bg-[var(--bg-primary)]/95 backdrop-blur-md px-4 py-3 flex gap-3">
+          <Button variant="outline" onClick={handleCancel} disabled={updateMutation.isPending} className="flex-1">
+            Cancel
+          </Button>
+          <Button
+            variant="gradient"
+            onClick={handleSave}
+            disabled={!isDirty || updateMutation.isPending}
+            loading={updateMutation.isPending}
+            className="flex-1"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            Save Changes
+          </Button>
+        </div>
       </motion.div>
 
       <motion.div variants={itemVariants}>

@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import Input from '../ui/Input'
-import Button from '../ui/Button'
-import { Save } from 'lucide-react'
 
-export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = false }) {
+export default function ProfileForm({ profile, onChange, isRecruiter = false }) {
   const [form, setForm] = useState({})
 
   useEffect(() => {
@@ -25,22 +23,14 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
         base.company = profile.company?.name ?? ''
       }
       setForm(base)
+      if (onChange) onChange(base)
     }
-  }, [profile, isRecruiter])
+  }, [profile, isRecruiter]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const data = {
-      ...form,
-      experienceYears: form.experienceYears !== '' ? Number(form.experienceYears) : 0,
-    }
-    if (isRecruiter && typeof data.company === 'string') {
-      data.company = { name: data.company }
-    }
-    if (!data.fullName) {
-      delete data.fullName
-    }
-    onSubmit(data)
+  const updateField = (field, value) => {
+    const next = { ...form, [field]: value }
+    setForm(next)
+    if (onChange) onChange(next)
   }
 
   const commonFields = [
@@ -76,7 +66,7 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
     : [...commonFields, ...candidateFields]
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-2">
         {fields.slice(0, 2).map((field) => (
           field.multiline ? (
@@ -87,7 +77,7 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
                 rows={3}
                 placeholder={field.placeholder}
                 value={form[field.id] || ''}
-                onChange={(e) => setForm({ ...form, [field.id]: e.target.value })}
+                onChange={(e) => updateField(field.id, e.target.value)}
                 className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-y"
               />
             </div>
@@ -99,7 +89,7 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
               type={field.type || 'text'}
               placeholder={field.placeholder}
               value={form[field.id] || ''}
-              onChange={(e) => setForm({ ...form, [field.id]: e.target.value })}
+              onChange={(e) => updateField(field.id, e.target.value)}
             />
           )
         ))}
@@ -114,17 +104,10 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
             type={field.type || 'text'}
             placeholder={field.placeholder}
             value={form[field.id] || ''}
-            onChange={(e) => setForm({ ...form, [field.id]: e.target.value })}
+            onChange={(e) => updateField(field.id, e.target.value)}
           />
         ))}
       </div>
-
-      <div className="pt-2">
-        <Button type="submit" loading={loading}>
-          <Save className="h-4 w-4" />
-          Save Changes
-        </Button>
-      </div>
-    </form>
+    </div>
   )
 }

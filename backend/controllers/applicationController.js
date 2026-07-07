@@ -88,7 +88,7 @@ exports.getMyApplications = asyncHandler(async (req, res, next) => {
 
   const [applications, totalItems] = await Promise.all([
     Application.find(filter)
-      .populate('jobId', 'title location jobType status')
+      .populate('jobId', 'title location jobType status recruiterId')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),

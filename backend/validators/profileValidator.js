@@ -16,24 +16,24 @@ const projectSchema = z.object({
 });
 
 const createOrUpdateProfileSchema = z.object({
-  fullName: z.string({ required_error: 'Full name is required' }).trim().min(1, 'Full name cannot be empty'),
-  bio: z.string().optional().default(''),
-  phone: z.string().optional().default(''),
-  location: z.string().optional().default(''),
-  headline: z.string().optional().default(''),
-  title: z.string().optional().default(''),
-  website: z.string().optional().default(''),
-  linkedin: z.string().optional().default(''),
-  github: z.string().optional().default(''),
-  portfolio: z.string().optional().default(''),
-  skills: z.array(z.string().trim()).optional().default([]),
-  experienceYears: z.number().min(0).optional().default(0),
-  education: z.array(educationSchema).optional().default([]),
-  projects: z.array(projectSchema).optional().default([]),
+  fullName: z.string({ required_error: 'Full name is required' }).trim().min(1, 'Full name cannot be empty').optional(),
+  bio: z.string().optional(),
+  phone: z.string().optional(),
+  location: z.string().optional(),
+  headline: z.string().optional(),
+  title: z.string().optional(),
+  website: z.string().optional(),
+  linkedin: z.string().optional(),
+  github: z.string().optional(),
+  portfolio: z.string().optional(),
+  skills: z.array(z.string().trim()).optional(),
+  experienceYears: z.number().min(0).optional(),
+  education: z.array(educationSchema).optional(),
+  projects: z.array(projectSchema).optional(),
   company: z.object({
-    name: z.string().trim().optional().default(''),
-    website: z.string().trim().optional().default(''),
-    logoUrl: z.string().trim().optional().default('')
+    name: z.string().trim().optional(),
+    website: z.string().trim().optional(),
+    logoUrl: z.string().trim().optional()
   }).optional()
 });
 

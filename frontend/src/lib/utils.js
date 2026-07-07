@@ -99,15 +99,85 @@ export function generateId(prefix = 'a11y') {
   return `${prefix}-${++idCounter}`
 }
 
-export function calculateProfileCompletion(profile) {
+const COMPLETION_WEIGHTS = {
+  fullName: 5,
+  email: 5,
+  phone: 5,
+  avatarUrl: 5,
+  headline: 10,
+  bio: 10,
+  skills: 15,
+  experienceYears: 10,
+  education: 10,
+  resumeUrl: 10,
+  portfolio: 5,
+  github: 5,
+  linkedin: 5,
+};
+
+const COMPLETION_LABELS = {
+  fullName: 'Name',
+  email: 'Email',
+  phone: 'Phone',
+  avatarUrl: 'Profile Photo',
+  headline: 'Headline',
+  bio: 'Bio',
+  skills: 'Skills',
+  experienceYears: 'Experience',
+  education: 'Education',
+  resumeUrl: 'Resume',
+  portfolio: 'Portfolio',
+  github: 'GitHub',
+  linkedin: 'LinkedIn',
+};
+
+function isFieldComplete(field, profile, user) {
+  switch (field) {
+    case 'email':
+      return Boolean(user?.email);
+    case 'skills':
+      return Array.isArray(profile.skills) && profile.skills.length > 0;
+    case 'experienceYears':
+      return typeof profile.experienceYears === 'number' && profile.experienceYears > 0;
+    case 'education':
+      return Array.isArray(profile.education) && profile.education.length > 0;
+    default:
+      return Boolean(profile[field]);
+  }
+}
+
+export function calculateProfileCompletion(profile, user = {}) {
   if (!profile) return 0
-  const fields = [
-    profile.fullName,
-    profile.bio,
-    profile.skills?.length > 0,
-    profile.experienceYears > 0,
-    profile.resumeUrl,
-    profile.avatarUrl,
-  ]
-  return Math.round((fields.filter(Boolean).length / fields.length) * 100)
+  const completedFields = [];
+  const missingFields = [];
+  let total = 0;
+
+  for (const [field, weight] of Object.entries(COMPLETION_WEIGHTS)) {
+    if (isFieldComplete(field, profile, user)) {
+      total += weight;
+      completedFields.push(COMPLETION_LABELS[field]);
+    } else {
+      missingFields.push(COMPLETION_LABELS[field]);
+    }
+  }
+
+  return total
+}
+
+export function getProfileCompletionDetails(profile, user = {}) {
+  if (!profile) return { completionPercentage: 0, completedFields: [], missingFields: [] }
+  const completedFields = [];
+  const missingFields = [];
+  let total = 0;
+
+  for (const [field, weight] of Object.entries(COMPLETION_WEIGHTS)) {
+    if (isFieldComplete(field, profile, user)) {
+      total += weight;
+      completedFields.push(COMPLETION_LABELS[field]);
+    } else {
+      missingFields.push(COMPLETION_LABELS[field]);
+    }
+  }
+
+  return { completionPercentage: total, completedFields, missingFields };
 }

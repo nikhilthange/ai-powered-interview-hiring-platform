@@ -28,6 +28,7 @@ export default function ApplyJob() {
     mutationFn: (formData) => applicationApi.submitApplication(id, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-applications'] })
+      queryClient.invalidateQueries({ queryKey: ['my-applications-page'] })
       toast.success('Application submitted successfully!')
       navigate('/my-applications')
     },

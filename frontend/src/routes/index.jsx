@@ -48,7 +48,13 @@ const MyJobs = () => lazyLoad(() => import('../pages/recruiter/MyJobs'))
 const EditJob = () => lazyLoad(() => import('../pages/recruiter/EditJob'))
 const AdminDashboard = () => lazyLoad(() => import('../pages/admin/Dashboard'))
 const AdminUsers = () => lazyLoad(() => import('../pages/admin/Users'))
+const AdminJobs = () => lazyLoad(() => import('../pages/admin/Jobs'))
+const AdminApplications = () => lazyLoad(() => import('../pages/admin/Applications'))
+const AdminRecruiters = () => lazyLoad(() => import('../pages/admin/Recruiters'))
 const AdminAIConfig = () => lazyLoad(() => import('../pages/admin/AIConfig'))
+const AdminSettings = () => lazyLoad(() => import('../pages/admin/Settings'))
+const AdminAuditLogs = () => lazyLoad(() => import('../pages/admin/AuditLogs'))
+const AdminNotifications = () => lazyLoad(() => import('../pages/admin/Notifications'))
 const NotificationsPage = () => lazyLoad(() => import('../pages/notifications/NotificationsPage'))
 const PlansPage = () => lazyLoad(() => import('../pages/profile/PlansPage'))
 const SubscriptionPage = () => lazyLoad(() => import('../pages/profile/SubscriptionPage'))
@@ -96,7 +102,13 @@ export const router = createBrowserRouter([
         { index: true, element: <Navigate to="dashboard" replace /> },
         { path: 'dashboard', element: <AdminDashboard /> },
         { path: 'users', element: <AdminUsers /> },
+        { path: 'jobs', element: <AdminJobs /> },
+        { path: 'applications', element: <AdminApplications /> },
+        { path: 'recruiters', element: <AdminRecruiters /> },
         { path: 'ai-config', element: <AdminAIConfig /> },
+        { path: 'settings', element: <AdminSettings /> },
+        { path: 'audit-logs', element: <AdminAuditLogs /> },
+        { path: 'notifications', element: <AdminNotifications /> },
       ]},
     ],
   },

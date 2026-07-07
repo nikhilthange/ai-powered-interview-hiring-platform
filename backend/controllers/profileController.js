@@ -2,6 +2,7 @@ const Profile = require('../models/Profile');
 const aiService = require('../services/aiService');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
+const { calculateProfileCompletion } = require('../utils/profileCompletion');
 const fs = require('fs');
 const path = require('path');
 
@@ -15,9 +16,11 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
     return next(new AppError('Profile not found.', 404));
   }
 
+  const completion = calculateProfileCompletion(profile, req.user);
+
   res.status(200).json({
     status: 'success',
-    data: { profile }
+    data: { profile, completion }
   });
 });
 
@@ -37,10 +40,13 @@ exports.createOrUpdateProfile = asyncHandler(async (req, res, next) => {
 
   if (req.user.role === 'recruiter' && req.body.company) {
     const existing = await Profile.findOne({ userId: req.user._id }).select('company');
+    const companyData = typeof req.body.company === 'string'
+      ? { name: req.body.company }
+      : req.body.company;
     fields.company = {
-      name: req.body.company.name || '',
-      website: req.body.company.website || '',
-      logoUrl: req.body.company.logoUrl || '',
+      name: companyData.name || '',
+      website: companyData.website || '',
+      logoUrl: companyData.logoUrl || '',
       isVerified: existing?.company?.isVerified || false
     };
   }
@@ -51,9 +57,11 @@ exports.createOrUpdateProfile = asyncHandler(async (req, res, next) => {
     { new: true, upsert: true, runValidators: true }
   );
 
+  const completion = calculateProfileCompletion(profile, req.user);
+
   res.status(200).json({
     status: 'success',
-    data: { profile }
+    data: { profile, completion }
   });
 });
 
@@ -68,9 +76,11 @@ exports.uploadAvatar = asyncHandler(async (req, res, next) => {
     { new: true }
   );
 
+  const completion = calculateProfileCompletion(profile, req.user);
+
   res.status(200).json({
     status: 'success',
-    data: { profile }
+    data: { profile, completion }
   });
 });
 
@@ -85,9 +95,11 @@ exports.uploadResume = asyncHandler(async (req, res, next) => {
     { new: true }
   );
 
+  const completion = calculateProfileCompletion(profile, req.user);
+
   res.status(200).json({
     status: 'success',
-    data: { profile }
+    data: { profile, completion }
   });
 });
 

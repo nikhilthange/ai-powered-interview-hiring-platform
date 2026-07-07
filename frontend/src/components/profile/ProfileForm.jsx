@@ -18,16 +18,23 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
         linkedin: profile.linkedin || '',
         github: profile.github || '',
         portfolio: profile.portfolio || '',
-        company: profile.company || '',
+        company: profile.company?.name ?? '',
         title: profile.title || '',
-        experienceYears: profile.experienceYears || '',
+        experienceYears: profile.experienceYears ?? '',
       })
     }
   }, [profile])
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSubmit(form)
+    const data = {
+      ...form,
+      experienceYears: form.experienceYears !== '' ? Number(form.experienceYears) : 0,
+    }
+    if (isRecruiter && typeof data.company === 'string') {
+      data.company = { name: data.company }
+    }
+    onSubmit(data)
   }
 
   const commonFields = [

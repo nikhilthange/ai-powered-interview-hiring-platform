@@ -95,7 +95,6 @@ export default function MyApplications() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['my-applications-page', activeTab, page],
     queryFn: () => applicationApi.getMyApplicationsPaginated({ page, status: activeTab }),
-    staleTime: 30000,
   })
 
   const applications = useMemo(() => data?.data?.applications || [], [data])

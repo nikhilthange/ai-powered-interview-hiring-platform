@@ -71,13 +71,13 @@ export default function CandidateProfile() {
     const skill = newSkill.trim()
     if (!skill || profile?.skills?.includes(skill)) return
     const updatedSkills = [...(profile?.skills || []), skill]
-    updateMutation.mutate({ skills: updatedSkills })
+    updateMutation.mutate({ fullName: profile.fullName, skills: updatedSkills })
     setNewSkill('')
   }
 
   const handleRemoveSkill = (skill) => {
     const updatedSkills = (profile?.skills || []).filter((s) => s !== skill)
-    updateMutation.mutate({ skills: updatedSkills })
+    updateMutation.mutate({ fullName: profile.fullName, skills: updatedSkills })
   }
 
   const handleResumeUpload = (e) => {

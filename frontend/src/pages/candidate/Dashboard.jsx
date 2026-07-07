@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { cn, calculateProfileCompletion, getGradeColor, getGradeLabel, formatDateRelative } from '../../lib/utils'
+import ProfileCompletion from '../../components/profile/ProfileCompletion'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -317,6 +318,8 @@ export default function CandidateDashboard() {
         </div>
 
         <div className="space-y-6">
+          <ProfileCompletion profile={profile} user={user} />
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-2.5 mb-5">

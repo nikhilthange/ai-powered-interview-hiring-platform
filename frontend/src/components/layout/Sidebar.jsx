@@ -7,7 +7,8 @@ import {
   LayoutDashboard, Briefcase, FileText, Bookmark, MessageCircle,
   GraduationCap, Search, Target, BarChart3,
   Users, X, Calendar, ChevronLeft, Bell,
-  User, CreditCard, LogOut, Sparkles,
+  User, CreditCard, LogOut, Sparkles, Settings,
+  ScrollText, Megaphone, Cpu,
 } from 'lucide-react'
 
 const candidateLinks = [

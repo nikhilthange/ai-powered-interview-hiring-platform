@@ -35,6 +35,13 @@ const recruiterLinks = [
 const adminLinks = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'Users', icon: Users },
+  { to: '/admin/jobs', label: 'Jobs', icon: Briefcase },
+  { to: '/admin/applications', label: 'Applications', icon: FileText },
+  { to: '/admin/recruiters', label: 'Recruiters', icon: User },
+  { to: '/admin/ai-config', label: 'AI Config', icon: Cpu },
+  { to: '/admin/settings', label: 'Settings', icon: Settings },
+  { to: '/admin/audit-logs', label: 'Audit Logs', icon: ScrollText },
+  { to: '/admin/notifications', label: 'Notifications', icon: Megaphone },
 ]
 
 const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {

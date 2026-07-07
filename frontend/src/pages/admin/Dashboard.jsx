@@ -2,11 +2,10 @@ import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../services/adminApi'
 import { Card, CardContent } from '../../components/ui/Card'
-import Badge from '../../components/ui/Badge'
-import { SkeletonMetrics } from '../../components/ui/Skeleton'
-import { Link } from 'react-router-dom'
-import { cn } from '../../lib/utils'
-import { Users, Briefcase, FileText, Activity, Shield, ArrowRight, Brain, Server } from 'lucide-react'
+import StatCard from '../../components/ui/StatCard'
+import { SkeletonMetrics, SkeletonChart } from '../../components/ui/Skeleton'
+import { Users, Briefcase, FileText, Activity, DollarSign, CalendarCheck } from 'lucide-react'
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -18,40 +17,49 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
+const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-3 shadow-lg text-sm">
+      <p className="font-medium text-[var(--text-primary)] mb-1">{label}</p>
+      {payload.map((entry, i) => (
+        <p key={i} style={{ color: entry.color }} className="text-xs">
+          {entry.name}: {entry.value}
+        </p>
+      ))}
+    </div>
+  )
+}
+
 export default function AdminDashboard() {
-  const { data: analytics, isLoading } = useQuery({
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['admin-analytics'],
     queryFn: () => adminApi.getAnalytics(),
   })
 
-  const { data: aiConfig } = useQuery({
-    queryKey: ['ai-config'],
-    queryFn: () => adminApi.getAiConfig(),
-    staleTime: 30000,
+  const { data: chartData, isLoading: chartsLoading } = useQuery({
+    queryKey: ['admin-charts'],
+    queryFn: () => adminApi.getChartData(30),
   })
 
-  if (isLoading) return <SkeletonMetrics />
+  if (analyticsLoading) return <SkeletonMetrics />
 
-  const userStats = analytics?.data?.users || []
-  const jobStats = analytics?.data?.jobs || []
-  const appStats = analytics?.data?.applications || []
+  const stats = analytics?.data?.stats || {}
+  const userStats = analytics?.data?.userStats || []
+  const jobStats = analytics?.data?.jobStats || []
+  const appStats = analytics?.data?.applicationStats || []
+  const revenueStats = analytics?.data?.revenueStats || []
 
-  const totalUsers = userStats.reduce((s, u) => s + u.count, 0)
-  const users = userStats || []
-  const jobs = jobStats || []
-  const recruiters = userStats.find((u) => u.role === 'recruiter')?.count || 0
-  const candidates = userStats.find((u) => u.role === 'candidate')?.count || 0
-  const totalJobs = jobStats.reduce((s, j) => s + j.count, 0)
-  const totalApps = appStats.reduce((s, a) => s + a.count, 0)
-  const activeUsers = totalUsers
+  const registrations = chartData?.data?.registrations || []
+  const appsPerDay = chartData?.data?.applicationsPerDay || []
+  const jobsPerMonth = chartData?.data?.jobsPerMonth || []
+
+  const roleData = userStats.map((u) => ({ name: u.role?.charAt(0).toUpperCase() + u.role?.slice(1) || 'Unknown', value: u.count }))
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
-    >
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-600 p-6 sm:p-8">
           <div className="absolute inset-0 overflow-hidden">
@@ -61,7 +69,7 @@ export default function AdminDashboard() {
           </div>
           <div className="relative">
             <div className="flex items-center gap-3 mb-2">
-              <Shield className="h-6 w-6 text-white/80" />
+              <Activity className="h-6 w-6 text-white/80" />
               <h1 className="text-xl sm:text-2xl font-bold text-white">Admin Dashboard</h1>
             </div>
             <p className="text-sm text-white/60">Platform overview and management</p>
@@ -69,145 +77,92 @@ export default function AdminDashboard() {
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { label: 'Total Users', value: users.length, icon: Users, color: 'indigo', subtitle: `${candidates} candidates, ${recruiters} recruiters` },
-          { label: 'Total Jobs', value: jobs.length, icon: Briefcase, color: 'emerald' },
-          { label: 'Applications', value: totalApps, icon: FileText, color: 'purple' },
-          { label: 'Active Users', value: activeUsers, icon: Activity, color: 'amber', subtitle: `${Math.round((activeUsers / (users.length || 1)) * 100)}% engagement` },
-        ].map((metric) => {
-          const Icon = metric.icon
-          return (
-            <Card key={metric.label}>
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">{metric.label}</span>
-                  <div className={cn(
-                    'rounded-xl p-2',
-                    metric.color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-950' :
-                    metric.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-950' :
-                    metric.color === 'purple' ? 'bg-purple-50 dark:bg-purple-950' :
-                    'bg-amber-50 dark:bg-amber-950'
-                  )}>
-                    <Icon className={cn(
-                      'h-4 w-4',
-                      metric.color === 'indigo' ? 'text-indigo-600' :
-                      metric.color === 'emerald' ? 'text-emerald-600' :
-                      metric.color === 'purple' ? 'text-purple-600' :
-                      'text-amber-600'
-                    )} />
-                  </div>
-                </div>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">{metric.value}</p>
-                {metric.subtitle && <p className="text-xs text-[var(--text-tertiary)] mt-1">{metric.subtitle}</p>}
-              </CardContent>
-            </Card>
-          )
-        })}
+      <motion.div variants={itemVariants} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <StatCard label="Total Users" value={stats.totalUsers || 0} icon={Users} color="indigo" subtitle={`${stats.totalCandidates || 0} candidates · ${stats.totalRecruiters || 0} recruiters`} />
+        <StatCard label="Active Jobs" value={stats.activeJobs || 0} icon={Briefcase} color="emerald" />
+        <StatCard label="Applications" value={stats.totalApplications || 0} icon={FileText} color="purple" />
+        <StatCard label="Interviews" value={stats.interviewsConducted || 0} icon={CalendarCheck} color="blue" />
+        <StatCard label="AI Requests" value={stats.aiRequestsToday || 0} icon={Activity} color="amber" />
+        <StatCard label="Revenue" value={stats.revenue ? `$${stats.revenue.toLocaleString()}` : '$0'} icon={DollarSign} color="emerald" />
       </motion.div>
 
-      {aiConfig && (
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    'rounded-xl p-2',
-                    aiConfig.provider === 'mock' ? 'bg-amber-50 dark:bg-amber-950' : 'bg-emerald-50 dark:bg-emerald-950'
-                  )}>
-                    {aiConfig.provider === 'mock'
-                      ? <Brain className="h-4 w-4 text-amber-600" />
-                      : <Server className="h-4 w-4 text-emerald-600" />
-                    }
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">
-                      AI Provider: {aiConfig.provider === 'mock' ? 'Mock AI' : 'NVIDIA NIM'}
-                    </p>
-                    <p className="text-xs text-[var(--text-tertiary)]">
-                      {aiConfig.totalRequests} requests · {aiConfig.totalErrors} errors
-                      {aiConfig.averageResponseTime ? ` · ${aiConfig.averageResponseTime}ms avg` : ''}
-                      {aiConfig.lastError ? ' · Has errors' : ' · No errors'}
-                    </p>
-                  </div>
-                </div>
-                <Link to="/admin/ai-config" className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
-                  Manage <ArrowRight className="h-3 w-3" />
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+      {chartsLoading ? (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <SkeletonChart /><SkeletonChart /><SkeletonChart /><SkeletonChart />
+        </div>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="font-semibold text-[var(--text-primary)] mb-4">User Registrations (30 days)</h2>
+                <ResponsiveContainer width="100%" height={280}>
+                  <LineChart data={registrations}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                    <XAxis dataKey="_id" tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} />
+                    <YAxis tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={2} dot={{ r: 3 }} name="Registrations" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="font-semibold text-[var(--text-primary)] mb-4">Applications Per Day (30 days)</h2>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={appsPerDay}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                    <XAxis dataKey="_id" tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} />
+                    <YAxis tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} name="Applications" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="font-semibold text-[var(--text-primary)] mb-4">Jobs Per Month</h2>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={jobsPerMonth}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                    <XAxis dataKey="_id" tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} />
+                    <YAxis tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Jobs" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="font-semibold text-[var(--text-primary)] mb-4">User Role Distribution</h2>
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie data={roleData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {roleData.map((_, i) => (
+                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       )}
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-[var(--text-primary)]">Recent Users</h2>
-                <Badge variant="primary" size="xs">{users.length} total</Badge>
-              </div>
-              <div className="space-y-2">
-                {users.slice(0, 5).map((u) => (
-                  <div key={u._id} className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 font-semibold text-xs">
-                        {u.name?.charAt(0) || 'U'}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-[var(--text-primary)]">{u.name || 'User'}</p>
-                        <p className="text-xs text-[var(--text-tertiary)]">{u.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {u.isEmailVerified && <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />}
-                      <Badge variant={u.role === 'admin' ? 'danger' : u.role === 'recruiter' ? 'primary' : 'default'} size="xs">
-                        {u.role}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Link to="/admin/users" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
-                View All Users <ArrowRight className="h-3 w-3" />
-              </Link>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-[var(--text-primary)]">Recent Jobs</h2>
-                <Badge variant="primary" size="xs">{jobs.length} total</Badge>
-              </div>
-              <div className="space-y-2">
-                {jobs.slice(0, 5).map((j) => (
-                  <div key={j._id} className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{j.title}</p>
-                      <p className="text-xs text-[var(--text-tertiary)]">{j.applications?.length || 0} applicants</p>
-                    </div>
-                    <Badge variant={j.status === 'active' || j.status === 'Active' ? 'success' : 'default'} size="xs">{j.status || 'Draft'}</Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
     </motion.div>
-  )
-}
-
-function CheckCircle(props) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
   )
 }

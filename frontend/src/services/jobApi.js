@@ -6,6 +6,7 @@ export const jobApi = {
   getJob: (id) => api.get(`/jobs/${id}`),
 
   getRecommendedJobs: () => api.get('/jobs/recommended'),
+  getAiRecommendedJobs: () => api.get('/jobs/ai-recommended').then(r => r.data?.data?.jobs || []),
 
   getMyJobs: () => api.get('/jobs/recruiter/my-jobs'),
 

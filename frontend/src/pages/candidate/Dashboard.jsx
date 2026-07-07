@@ -12,6 +12,7 @@ import Button from '../../components/ui/Button'
 import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonMetrics, SkeletonList } from '../../components/ui/Skeleton'
 import { useNotifications } from '../../hooks/useNotifications'
+import AIMatchedJobs from '../../components/jobs/AIMatchedJobs'
 import {
   Briefcase, FileText, Bookmark, TrendingUp, ArrowRight, Zap,
   Target, GraduationCap, Clock, Award, Sparkles,
@@ -55,8 +56,8 @@ export default function CandidateDashboard() {
         queryFn: () => interviewApi.getMySessions(),
       },
       {
-        queryKey: ['recommended-jobs'],
-        queryFn: () => jobApi.getRecommendedJobs().then((r) => r.data?.data?.jobs || []),
+        queryKey: ['ai-recommended-jobs'],
+        queryFn: () => jobApi.getAiRecommendedJobs(),
       },
     ],
   })
@@ -109,6 +110,7 @@ export default function CandidateDashboard() {
   const savedCount = savedQuery.data?.results || 0
   const sessions = sessionsQuery.data?.data?.sessions || []
   const recommendedJobs = Array.isArray(jobsQuery.data) ? jobsQuery.data : []
+  const aiJobsLoading = jobsQuery.isPending
 
   const name = profile.fullName || user?.email?.split('@')[0] || 'User'
 
@@ -220,52 +222,25 @@ export default function CandidateDashboard() {
 
       <motion.div variants={itemVariants} className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          {recommendedJobs.length > 0 && (
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-2.5">
-                    <div className="rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 p-2 dark:from-indigo-950/50 dark:to-indigo-900/50">
-                      <Sparkles className="h-5 w-5 text-indigo-600" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <h2 className="font-semibold text-[var(--text-primary)]">Recommended Jobs</h2>
-                      <p className="text-xs text-[var(--text-tertiary)]">Matched to your profile</p>
-                    </div>
+          <Card className={recommendedJobs.length === 0 ? '' : ''}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2.5">
+                  <div className="rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 p-2 dark:from-indigo-950/50 dark:to-indigo-900/50">
+                    <Sparkles className="h-5 w-5 text-indigo-600" aria-hidden="true" />
                   </div>
-                  <Link to="/jobs" className="group flex items-center gap-1 text-sm font-medium text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors">
-                    View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-                  </Link>
+                  <div>
+                    <h2 className="font-semibold text-[var(--text-primary)]">AI Recommended Jobs</h2>
+                    <p className="text-xs text-[var(--text-tertiary)]">Top matches for your profile</p>
+                  </div>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {recommendedJobs.slice(0, 4).map((job) => (
-                    <Link key={job._id} to={`/jobs/${job._id}`}>
-                      <motion.div whileHover={{ y: -2 }} className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 transition-all hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30 hover:shadow-md">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 dark:from-indigo-950 dark:to-indigo-900 dark:text-indigo-400 text-xs font-bold">
-                                {job.title?.charAt(0) || 'J'}
-                              </span>
-                              <div>
-                                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{job.title}</p>
-                                <p className="text-xs text-[var(--text-secondary)]">{job.location || 'Location N/A'}</p>
-                              </div>
-                            </div>
-                          </div>
-                          <ChevronRight className="h-4 w-4 shrink-0 text-[var(--text-tertiary)] mt-1" aria-hidden="true" />
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 mt-3">
-                          {job.jobType && <Badge variant="primary" size="xs">{job.jobType}</Badge>}
-                          {job.experienceLevel && <Badge variant="default" size="xs">{job.experienceLevel}</Badge>}
-                        </div>
-                      </motion.div>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                <Link to="/jobs" className="group flex items-center gap-1 text-sm font-medium text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors">
+                  View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                </Link>
+              </div>
+              <AIMatchedJobs jobs={recommendedJobs} isLoading={aiJobsLoading} />
+            </CardContent>
+          </Card>
 
           {latestApps.length > 0 && (
             <Card>

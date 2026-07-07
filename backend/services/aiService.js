@@ -373,6 +373,103 @@ exports.generateChatTitle = async (message) => {
   }
 };
 
+exports.analyzeJobMatchBatch = async (candidateData, jobs) => {
+  const mockFn = async () => {
+    await delay(800);
+    return jobs.map((job, idx) => {
+      const baseScore = 50 + Math.floor(Math.random() * 45);
+      const userSkills = (candidateData.skills || []).map(s => s.toLowerCase());
+      const jobText = [job.title, job.description, ...(job.requirements || [])].join(' ').toLowerCase();
+      const matching = userSkills.filter(s => jobText.includes(s));
+      const allJobSkills = [...new Set((job.requirements || []).map(r => r.toLowerCase()))];
+      const missing = allJobSkills.filter(s => !userSkills.some(us => jobText.includes(us) || us.includes(s) || s.includes(us))).slice(0, 5);
+
+      const expLevelMap = { 'Junior': 2, 'Mid': 5, 'Senior': 8 };
+      const requiredExp = expLevelMap[job.experienceLevel] || 3;
+      const userExp = candidateData.experienceYears || 0;
+      const expScore = Math.min(10, Math.round((userExp / Math.max(requiredExp, 1)) * 10));
+
+      const userEdu = (candidateData.education || []).length;
+      const eduScore = userEdu > 0 ? 8 : 5;
+
+      return {
+        matchPercentage: baseScore,
+        matchingSkills: matching.slice(0, 6),
+        missingSkills: missing,
+        experienceMatch: { score: expScore, feedback: expScore >= 7 ? 'Experience aligns well with role requirements' : expScore >= 4 ? 'Partially meets experience expectations' : 'Less experience than preferred for this role' },
+        educationMatch: { score: eduScore, feedback: eduScore >= 7 ? 'Education background matches requirements' : 'Education requirements not fully met' },
+        whyRecommended: matching.length > 3
+          ? `Strong skill alignment with ${matching.slice(0, 4).join(', ')}`
+          : `Relevant ${job.experienceLevel || 'professional'} opportunity in ${job.jobType || 'your field'}`
+      };
+    });
+  };
+
+  const aiCall = async () => {
+    const skillsStr = (candidateData.skills || []).join(', ') || 'Not specified';
+    const expStr = `${candidateData.experienceYears || 0} years`;
+    const eduStr = (candidateData.education || []).map(e =>
+      `${e.degree || ''} in ${e.field || ''} from ${e.institution || ''} (${e.startYear || ''}-${e.endYear || ''})`
+    ).filter(Boolean).join('; ') || 'Not specified';
+    const resumeStr = candidateData.resumeText ? candidateData.resumeText.slice(0, 3000) : 'No resume provided';
+
+    const jobsText = jobs.map((job, idx) =>
+      `[${idx}] Title: ${job.title}\nDescription: ${(job.description || '').slice(0, 500)}\nRequirements: ${(job.requirements || []).join(', ')}\nLevel: ${job.experienceLevel || 'Any'}\nType: ${job.jobType || 'Any'}`
+    ).join('\n\n');
+
+    const content = await callNvidia([
+      {
+        role: 'system',
+        content: `You are an expert AI job matching system. Analyze each job against the candidate profile and output a JSON array. For each job, provide:
+
+{
+  "matchPercentage": integer 0-100,
+  "matchingSkills": [up to 6 strings of skills the candidate has that match],
+  "missingSkills": [up to 5 strings of key skills the candidate lacks],
+  "experienceMatch": { "score": integer 1-10, "feedback": string },
+  "educationMatch": { "score": integer 1-10, "feedback": string },
+  "whyRecommended": string (1-2 sentences explaining the recommendation)
+}
+
+Be objective. matchPercentage should reflect overall fit considering skills, experience, and education. Score generously but honestly. Output ONLY valid JSON array, no other text.`
+      },
+      {
+        role: 'user',
+        content: `Candidate Profile:
+Skills: ${skillsStr}
+Experience: ${expStr}
+Education: ${eduStr}
+Resume Excerpt: ${resumeStr}
+
+Jobs to evaluate (respond with array in same index order):
+${jobsText}`
+      }
+    ], { responseFormat: 'json_object', temperature: 0.3, maxTokens: 4096 });
+
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      parsed = JSON.parse(content.replace(/```json|```/g, '').trim());
+    }
+
+    if (!Array.isArray(parsed)) {
+      throw new Error('AI returned non-array response');
+    }
+
+    return parsed.map((result, idx) => ({
+      matchPercentage: Math.min(100, Math.max(0, result.matchPercentage || 50)),
+      matchingSkills: (result.matchingSkills || []).slice(0, 6),
+      missingSkills: (result.missingSkills || []).slice(0, 5),
+      experienceMatch: result.experienceMatch || { score: 5, feedback: 'Experience assessment unavailable' },
+      educationMatch: result.educationMatch || { score: 5, feedback: 'Education assessment unavailable' },
+      whyRecommended: result.whyRecommended || `Potential match for ${jobs[idx]?.title || 'this role'}`
+    }));
+  };
+
+  return callAI(mockFn, aiCall, { name: 'analyzeJobMatchBatch' });
+};
+
 exports.analyzeResumeBackground = async (applicationId, resumeText, jobDescription) => {
   try {
     const mockFn = async () => {

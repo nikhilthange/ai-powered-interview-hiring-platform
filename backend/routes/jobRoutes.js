@@ -15,6 +15,7 @@ router.get('/', jobController.getJobs);
 // Protected routes
 router.use(protect);
 router.get('/recommended', jobController.getRecommendedJobs);
+router.get('/ai-recommended', jobController.getAiRecommendedJobs);
 router.get('/recruiter/my-jobs', jobController.getMyJobs);
 router.get('/:id', jobController.getJob);
 router.post('/', restrictTo('recruiter', 'admin'), validateBody(createJobSchema), jobController.createJob);

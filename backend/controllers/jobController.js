@@ -2,6 +2,8 @@ const Job = require('../models/Job');
 const Profile = require('../models/Profile');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
+const aiService = require('../services/aiService');
+const { extractTextFromUrl } = require('../services/resumeService');
 
 /**
  * CREATE JOB (Recruiter)
@@ -166,5 +168,76 @@ exports.getMyJobs = asyncHandler(async (req, res, next) => {
     status: 'success',
     results: jobs.length,
     data: { jobs }
+  });
+});
+
+function keywordScoreJob(skillsLower, job) {
+  const text = [job.title, job.description, ...(job.requirements || [])].join(' ').toLowerCase();
+  let matchCount = 0;
+  for (const skill of skillsLower) {
+    if (text.includes(skill)) matchCount++;
+  }
+  return skillsLower.length > 0 ? (matchCount / skillsLower.length) * 100 : 0;
+}
+
+exports.getAiRecommendedJobs = asyncHandler(async (req, res, next) => {
+  const profile = await Profile.findOne({ userId: req.user._id });
+  if (!profile) {
+    return next(new AppError('Please complete your profile first.', 400));
+  }
+
+  const userSkills = profile?.skills?.filter(Boolean) || [];
+  if (userSkills.length === 0) {
+    const jobs = await Job.find({ status: 'Active' })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate('recruiterId', 'email');
+    return res.status(200).json({
+      status: 'success',
+      results: jobs.length,
+      data: { jobs: jobs.map(j => ({ job: j, matchPercentage: 0, matchingSkills: [], missingSkills: [], experienceMatch: { score: 0, feedback: 'Add skills to your profile for AI matching' }, educationMatch: { score: 0, feedback: '' }, whyRecommended: 'Complete your profile to get personalized recommendations' })) }
+    });
+  }
+
+  const skillsLower = userSkills.map((s) => s.toLowerCase());
+  const allJobs = await Job.find({ status: 'Active' }).populate('recruiterId', 'email');
+
+  const withKeywordScores = allJobs.map(j => ({
+    job: j,
+    kwScore: keywordScoreJob(skillsLower, j)
+  }));
+  withKeywordScores.sort((a, b) => b.kwScore - a.kwScore);
+  const topKeywordJobs = withKeywordScores.slice(0, 15).map(item => item.job);
+
+  let resumeText = '';
+  if (profile.resumeUrl) {
+    try {
+      resumeText = await extractTextFromUrl(profile.resumeUrl);
+    } catch {
+      resumeText = '';
+    }
+  }
+
+  const candidateData = {
+    skills: userSkills,
+    experienceYears: profile.experienceYears || 0,
+    education: profile.education || [],
+    resumeText
+  };
+
+  const aiResults = await aiService.analyzeJobMatchBatch(candidateData, topKeywordJobs);
+
+  const enriched = aiResults.map((r, idx) => ({
+    ...r,
+    job: topKeywordJobs[idx]
+  }));
+
+  enriched.sort((a, b) => b.matchPercentage - a.matchPercentage);
+  const top10 = enriched.slice(0, 10);
+
+  res.status(200).json({
+    status: 'success',
+    results: top10.length,
+    data: { jobs: top10 }
   });
 });

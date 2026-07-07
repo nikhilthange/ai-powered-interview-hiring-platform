@@ -70,11 +70,22 @@ exports.uploadAvatar = asyncHandler(async (req, res, next) => {
     return next(new AppError('Please upload an image file.', 400));
   }
 
+  const existing = await Profile.findOne({ userId: req.user._id }).select('avatarUrl');
+
+  if (existing?.avatarUrl) {
+    const oldPath = path.join(__dirname, '..', existing.avatarUrl);
+    fs.unlink(oldPath, () => {});
+  }
+
   const profile = await Profile.findOneAndUpdate(
     { userId: req.user._id },
     { $set: { avatarUrl: `/uploads/${req.file.filename}` } },
-    { new: true }
+    { new: true, upsert: true }
   );
+
+  if (!profile) {
+    return next(new AppError('Profile could not be updated.', 500));
+  }
 
   const completion = calculateProfileCompletion(profile, req.user);
 

@@ -6,6 +6,9 @@ import { useTheme } from '../../context/ThemeContext'
 import { useLayout } from '../../context/LayoutContext'
 import NotificationBell from '../notifications/NotificationBell'
 import { useClickOutside } from '../../hooks/useClickOutside'
+import { useApi } from '../../hooks/useApi'
+import { profileApi } from '../../services/profileApi'
+import { getMediaUrl } from '../../lib/utils'
 import { Menu, LogOut, User, CreditCard, Shield, Moon, Sun, Search, Sparkles } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 
@@ -60,6 +63,10 @@ const Navbar = memo(function Navbar() {
   }, [])
 
   const initial = (user?.name || user?.email || 'U').charAt(0).toUpperCase()
+  const { data: profileData } = useApi(['profile'], () =>
+    profileApi.getMyProfile().then(r => r.data)
+  )
+  const avatarUrl = getMediaUrl(profileData?.data?.profile?.avatarUrl)
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-[var(--bg-primary)]/80 backdrop-blur-xl border-[var(--border-color)] px-4 lg:px-6">
@@ -159,8 +166,14 @@ const Navbar = memo(function Navbar() {
               aria-expanded={profileOpen}
               aria-haspopup="true"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold text-sm shadow-sm shadow-indigo-500/20">
-                {initial}
+              <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm shadow-indigo-500/20">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-white font-semibold text-sm">
+                    {initial}
+                  </div>
+                )}
               </div>
               <span className="hidden text-sm font-medium text-[var(--text-primary)] md:block">
                 {user?.name || user?.email?.split('@')[0] || 'User'}
@@ -179,8 +192,14 @@ const Navbar = memo(function Navbar() {
                 >
                   <div className="px-5 py-3 border-b border-[var(--border-color)]">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold text-sm">
-                        {initial}
+                      <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600">
+                        {avatarUrl ? (
+                          <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-white font-semibold text-sm">
+                            {initial}
+                          </div>
+                        )}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-[var(--text-primary)] truncate">{user?.name || user?.email?.split('@')[0] || 'User'}</p>

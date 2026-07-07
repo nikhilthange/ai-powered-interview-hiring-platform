@@ -11,7 +11,7 @@ export const profileApi = {
     const formData = new FormData()
     formData.append('avatar', file)
     return api.post('/profiles/avatar', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': null },
     })
   },
 
@@ -19,7 +19,7 @@ export const profileApi = {
     const formData = new FormData()
     formData.append('resume', file)
     return api.post('/profiles/resume', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': null },
     })
   },
 

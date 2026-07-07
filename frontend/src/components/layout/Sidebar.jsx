@@ -2,7 +2,9 @@ import { memo, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
-import { cn } from '../../lib/utils'
+import { useApi } from '../../hooks/useApi'
+import { profileApi } from '../../services/profileApi'
+import { getMediaUrl, cn } from '../../lib/utils'
 import {
   LayoutDashboard, Briefcase, FileText, Bookmark, MessageCircle,
   GraduationCap, Search, Target, BarChart3,
@@ -47,6 +49,10 @@ const adminLinks = [
 const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
   const { user, logout } = useAuth()
   const location = useLocation()
+  const { data: profileData } = useApi(['profile'], () =>
+    profileApi.getMyProfile().then(r => r.data)
+  )
+  const avatarUrl = getMediaUrl(profileData?.data?.profile?.avatarUrl)
 
   const links = useMemo(() => {
     if (!user) return []
@@ -191,8 +197,14 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
               onClick={onClose}
               className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold text-xs shadow-sm">
-                {(user?.name?.charAt(0) || 'U').toUpperCase()}
+              <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-white font-semibold text-xs">
+                    {(user?.name?.charAt(0) || 'U').toUpperCase()}
+                  </div>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-[var(--text-primary)]">{user?.name || user?.email?.split('@')[0] || 'User'}</p>

@@ -71,7 +71,7 @@ export default function DataTable({
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-[var(--border-color)]">
+        <div className="overflow-x-auto rounded-2xl border border-[var(--border-color)]">
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/80">
@@ -109,73 +109,84 @@ export default function DataTable({
               {renderActions && <th className="px-4 py-3 text-right w-24"><span className="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">Actions</span></th>}
             </tr>
           </thead>
-          <tbody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={`skeleton-${i}`} className="border-b border-[var(--border-color)] last:border-b-0">
-                  {selectable && <td className="px-4 py-3"><div className="skeleton-shimmer h-4 w-4 rounded" /></td>}
-                  {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3"><div className="skeleton-shimmer h-4 w-3/4 rounded-lg" /></td>
+          {(() => {
+            const totalCols = columns.length + (selectable ? 1 : 0) + (renderActions ? 1 : 0)
+            if (isLoading) {
+              return (
+                <tbody>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={`skeleton-${i}`} className="border-b border-[var(--border-color)] last:border-b-0">
+                      {selectable && <td className="px-4 py-3"><div className="skeleton-shimmer h-4 w-4 rounded" /></td>}
+                      {columns.map((col) => (
+                        <td key={col.key} className="px-4 py-3"><div className="skeleton-shimmer h-4 w-3/4 rounded-lg" /></td>
+                      ))}
+                      {renderActions && <td className="px-4 py-3"><div className="skeleton-shimmer h-8 w-16 rounded-lg ml-auto" /></td>}
+                    </tr>
                   ))}
-                  {renderActions && <td className="px-4 py-3"><div className="skeleton-shimmer h-8 w-16 rounded-lg ml-auto" /></td>}
+                </tbody>
+              )
+            }
+            if (data && data.length > 0) {
+              return (
+                <motion.tbody variants={containerVariants} initial="hidden" animate="visible">
+                  {data.map((row, i) => (
+                    <motion.tr
+                      key={keyExtractor(row, i)}
+                      variants={rowVariants}
+                      className={cn(
+                        'border-b border-[var(--border-color)] last:border-b-0 transition-colors',
+                        onRowClick ? 'cursor-pointer hover:bg-[var(--bg-secondary)]/50' : 'hover:bg-[var(--bg-secondary)]/30',
+                        selectedIds?.includes(keyExtractor(row, i)) ? 'bg-[var(--color-primary-50)]/30 dark:bg-indigo-500/5' : ''
+                      )}
+                      onClick={() => onRowClick?.(row)}
+                    >
+                      {selectable && (
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds?.includes(keyExtractor(row, i))}
+                            onChange={() => onSelect?.(keyExtractor(row, i))}
+                            className="rounded border-[var(--border-color)]"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </td>
+                      )}
+                      {columns.map((col) => (
+                        <td
+                          key={col.key}
+                          className={cn(
+                            'px-4 py-3 text-sm',
+                            col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                          )}
+                        >
+                          {col.render ? col.render(row[col.key], row) : row[col.key] ?? '—'}
+                        </td>
+                      ))}
+                      {renderActions && (
+                        <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-1">
+                            {renderActions(row)}
+                          </div>
+                        </td>
+                      )}
+                    </motion.tr>
+                  ))}
+                </motion.tbody>
+              )
+            }
+            return (
+              <tbody>
+                <tr>
+                  <td colSpan={totalCols} className="px-4 py-12">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      {EmptyIcon && <EmptyIcon className="h-10 w-10 text-[var(--text-tertiary)] mb-3" />}
+                      <p className="text-sm text-[var(--text-secondary)]">{emptyMessage}</p>
+                    </div>
+                  </td>
                 </tr>
-              ))
-            ) : data && data.length > 0 ? (
-              <motion.tbody variants={containerVariants} initial="hidden" animate="visible">
-                {data.map((row, i) => (
-                  <motion.tr
-                    key={keyExtractor(row, i)}
-                    variants={rowVariants}
-                    className={cn(
-                      'border-b border-[var(--border-color)] last:border-b-0 transition-colors',
-                      onRowClick ? 'cursor-pointer hover:bg-[var(--bg-secondary)]/50' : 'hover:bg-[var(--bg-secondary)]/30',
-                      selectedIds?.includes(keyExtractor(row, i)) ? 'bg-[var(--color-primary-50)]/30 dark:bg-indigo-500/5' : ''
-                    )}
-                    onClick={() => onRowClick?.(row)}
-                  >
-                    {selectable && (
-                      <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds?.includes(keyExtractor(row, i))}
-                          onChange={() => onSelect?.(keyExtractor(row, i))}
-                          className="rounded border-[var(--border-color)]"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </td>
-                    )}
-                    {columns.map((col) => (
-                      <td
-                        key={col.key}
-                        className={cn(
-                          'px-4 py-3 text-sm',
-                          col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
-                        )}
-                      >
-                        {col.render ? col.render(row[col.key], row) : row[col.key] ?? '—'}
-                      </td>
-                    ))}
-                    {renderActions && (
-                      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1">
-                          {renderActions(row)}
-                        </div>
-                      </td>
-                    )}
-                  </motion.tr>
-                ))}
-              </motion.tbody>
-            ) : (
-              <tr>
-                <td colSpan={columns.length + (selectable ? 1 : 0) + (renderActions ? 1 : 0)} className="px-4 py-12">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    {EmptyIcon && <EmptyIcon className="h-10 w-10 text-[var(--text-tertiary)] mb-3" />}
-                    <p className="text-sm text-[var(--text-secondary)]">{emptyMessage}</p>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
+              </tbody>
+            )
+          })()}
         </table>
       </div>
 

@@ -11,7 +11,7 @@ import Modal from '../../components/ui/Modal'
 import Select from '../../components/ui/Select'
 import { SkeletonTable } from '../../components/ui/Skeleton'
 import { useToast } from '../../components/ui/Toast'
-import { Users as UsersIcon, Trash2, Ban, CheckCircle, RotateCcw, Key, Shield, Mail, Calendar } from 'lucide-react'
+import { Users as UsersIcon, Trash2, Ban, CheckCircle, RotateCcw, Key, Shield, Mail, Calendar, Eye, Edit2 } from 'lucide-react'
 import { formatDate } from '../../lib/utils'
 
 const containerVariants = {
@@ -191,25 +191,52 @@ export default function AdminUsers() {
             emptyMessage="No users found"
             emptyIcon={UsersIcon}
             renderActions={(row) => (
-              <div className="flex items-center gap-1">
-                <Button size="xs" variant="ghost" onClick={() => { setChangeRoleUser(row); setNewRole(row.role) }}>
-                  <Shield className="h-3 w-3" />
-                </Button>
-                <Button size="xs" variant="ghost" onClick={() => resetPasswordMutation.mutate(row._id)} loading={resetPasswordMutation.isPending}>
-                  <Key className="h-3 w-3" />
-                </Button>
+              <div className="flex items-center gap-0.5">
+                <button
+                  title="View user details"
+                  onClick={() => window.open(`/admin/users/${row._id}`, '_blank')}
+                  className="rounded-lg p-1.5 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  title="Change role"
+                  onClick={() => { setChangeRoleUser(row); setNewRole(row.role) }}
+                  className="rounded-lg p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors"
+                >
+                  <Edit2 className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  title="Reset password"
+                  onClick={() => resetPasswordMutation.mutate(row._id)}
+                  className="rounded-lg p-1.5 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
+                >
+                  <Key className="h-3.5 w-3.5" />
+                </button>
                 {!row.isSuspended ? (
-                  <Button size="xs" variant="ghost" className="text-amber-500" onClick={() => suspendMutation.mutate(row._id)} loading={suspendMutation.isPending}>
-                    <Ban className="h-3 w-3" />
-                  </Button>
+                  <button
+                    title="Suspend user"
+                    onClick={() => suspendMutation.mutate(row._id)}
+                    className="rounded-lg p-1.5 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors"
+                  >
+                    <Ban className="h-3.5 w-3.5" />
+                  </button>
                 ) : (
-                  <Button size="xs" variant="ghost" className="text-emerald-500" onClick={() => activateMutation.mutate(row._id)} loading={activateMutation.isPending}>
-                    <RotateCcw className="h-3 w-3" />
-                  </Button>
+                  <button
+                    title="Activate user"
+                    onClick={() => activateMutation.mutate(row._id)}
+                    className="rounded-lg p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </button>
                 )}
-                <Button size="xs" variant="ghost" className="text-red-500" onClick={() => setConfirmDelete(row)}>
-                  <Trash2 className="h-3 w-3" />
-                </Button>
+                <button
+                  title="Delete user"
+                  onClick={() => setConfirmDelete(row)}
+                  className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
               </div>
             )}
           />

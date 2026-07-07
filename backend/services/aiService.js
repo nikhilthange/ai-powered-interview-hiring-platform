@@ -86,6 +86,39 @@ loadProvider();
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+function extractJsonArray(text) {
+  const trimmed = text.trim();
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === 'object') {
+      const values = Object.values(parsed);
+      const arr = values.find(v => Array.isArray(v));
+      if (arr) return arr;
+    }
+  } catch {}
+  const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) {
+    try {
+      const parsed = JSON.parse(fenceMatch[1].trim());
+      if (Array.isArray(parsed)) return parsed;
+      if (parsed && typeof parsed === 'object') {
+        const values = Object.values(parsed);
+        const arr = values.find(v => Array.isArray(v));
+        if (arr) return arr;
+      }
+    } catch {}
+  }
+  const bracketStart = trimmed.indexOf('[');
+  if (bracketStart !== -1) {
+    try {
+      const parsed = JSON.parse(trimmed.slice(bracketStart));
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
+  }
+  return null;
+}
+
 async function callNvidia(messages, options = {}) {
   const { temperature = 0.2, maxTokens = 1024, responseFormat } = options;
 
@@ -420,18 +453,22 @@ exports.analyzeJobMatchBatch = async (candidateData, jobs) => {
     const content = await callNvidia([
       {
         role: 'system',
-        content: `You are an expert AI job matching system. Analyze each job against the candidate profile and output a JSON array. For each job, provide:
+        content: `You are an API. Return ONLY a valid JSON array. Do NOT include markdown, explanation, intro text, code fences, or notes.
 
-{
-  "matchPercentage": integer 0-100,
-  "matchingSkills": [up to 6 strings of skills the candidate has that match],
-  "missingSkills": [up to 5 strings of key skills the candidate lacks],
-  "experienceMatch": { "score": integer 1-10, "feedback": string },
-  "educationMatch": { "score": integer 1-10, "feedback": string },
-  "whyRecommended": string (1-2 sentences explaining the recommendation)
-}
+Example:
+[
+  {
+    "jobId":"123",
+    "matchPercentage":91,
+    "matchingSkills":["React","Node"],
+    "missingSkills":["Docker"],
+    "experienceMatch":{"score":8,"feedback":"Experience aligns well with role requirements"},
+    "educationMatch":{"score":7,"feedback":"Education background matches requirements"},
+    "whyRecommended":"Strong frontend experience with React and Node."
+  }
+]
 
-Be objective. matchPercentage should reflect overall fit considering skills, experience, and education. Score generously but honestly. Output ONLY valid JSON array, no other text.`
+Return NOTHING except this array.`
       },
       {
         role: 'user',
@@ -444,14 +481,9 @@ Resume Excerpt: ${resumeStr}
 Jobs to evaluate (respond with array in same index order):
 ${jobsText}`
       }
-    ], { responseFormat: 'json_object', temperature: 0.3, maxTokens: 4096 });
+    ], { temperature: 0.3, maxTokens: 4096 });
 
-    let parsed;
-    try {
-      parsed = JSON.parse(content);
-    } catch {
-      parsed = JSON.parse(content.replace(/```json|```/g, '').trim());
-    }
+    let parsed = extractJsonArray(content);
 
     if (!Array.isArray(parsed)) {
       throw new Error('AI returned non-array response');

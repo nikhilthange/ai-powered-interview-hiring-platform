@@ -25,6 +25,15 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
 });
 
 exports.createOrUpdateProfile = asyncHandler(async (req, res, next) => {
+  console.log('=== createOrUpdateProfile ===');
+  console.log('Headers:', JSON.stringify({
+    'content-type': req.headers['content-type'],
+    authorization: req.headers.authorization ? 'Bearer [hidden]' : 'none'
+  }));
+  console.log('Body:', JSON.stringify(req.body, null, 2));
+  console.log('File:', req.file ? { filename: req.file.filename, size: req.file.size, mimetype: req.file.mimetype } : 'none');
+  console.log('User:', req.user ? { _id: req.user._id, role: req.user.role, email: req.user.email } : 'none');
+
   const allowedFields = [
     'fullName', 'bio', 'phone', 'location', 'headline', 'title',
     'website', 'linkedin', 'github', 'portfolio',
@@ -37,9 +46,12 @@ exports.createOrUpdateProfile = asyncHandler(async (req, res, next) => {
       fields[field] = req.body[field];
     }
   });
+  console.log('Fields to $set (before merge):', JSON.stringify(fields, null, 2));
+
+  const existing = await Profile.findOne({ userId: req.user._id }).select('company avatarUrl fullName');
+  console.log('Existing profile:', existing ? JSON.stringify(existing.toObject()) : 'null');
 
   if (req.user.role === 'recruiter' && req.body.company) {
-    const existing = await Profile.findOne({ userId: req.user._id }).select('company');
     const companyData = typeof req.body.company === 'string'
       ? { name: req.body.company }
       : req.body.company;
@@ -51,13 +63,43 @@ exports.createOrUpdateProfile = asyncHandler(async (req, res, next) => {
     };
   }
 
-  const profile = await Profile.findOneAndUpdate(
-    { userId: req.user._id },
-    { $set: fields },
-    { new: true, upsert: true, runValidators: true }
-  );
+  if (req.file) {
+    if (existing?.avatarUrl) {
+      const oldPath = path.join(__dirname, '..', existing.avatarUrl);
+      fs.unlink(oldPath, () => {});
+    }
+    fields.avatarUrl = `/uploads/${req.file.filename}`;
+  }
+
+  if (!fields.fullName && existing?.fullName) {
+    fields.fullName = existing.fullName;
+  }
+
+  console.log('Final fields to $set:', JSON.stringify(fields, null, 2));
+  console.log('runValidators: true, upsert: true');
+
+  let profile;
+  try {
+    profile = await Profile.findOneAndUpdate(
+      { userId: req.user._id },
+      { $set: fields },
+      { new: true, upsert: true, runValidators: true }
+    );
+  } catch (mongoErr) {
+    console.log('MONGO ERROR:', mongoErr.name, '-', mongoErr.message);
+    if (mongoErr.errors) {
+      console.log('Validation errors:', JSON.stringify(Object.keys(mongoErr.errors).map(k => ({ field: k, message: mongoErr.errors[k].message }))));
+    }
+    return next(new AppError(mongoErr.message, 400));
+  }
+
+  if (!profile) {
+    console.log('PROFILE IS NULL after findOneAndUpdate');
+    return next(new AppError('Profile could not be updated.', 500));
+  }
 
   const completion = calculateProfileCompletion(profile, req.user);
+  console.log('Completion:', JSON.stringify(completion));
 
   res.status(200).json({
     status: 'success',
@@ -70,17 +112,21 @@ exports.uploadAvatar = asyncHandler(async (req, res, next) => {
     return next(new AppError('Please upload an image file.', 400));
   }
 
-  const existing = await Profile.findOne({ userId: req.user._id }).select('avatarUrl');
+  const existing = await Profile.findOne({ userId: req.user._id }).select('avatarUrl fullName');
 
   if (existing?.avatarUrl) {
     const oldPath = path.join(__dirname, '..', existing.avatarUrl);
     fs.unlink(oldPath, () => {});
   }
 
+  if (!existing) {
+    return next(new AppError('Please create your profile before uploading a photo.', 400));
+  }
+
   const profile = await Profile.findOneAndUpdate(
     { userId: req.user._id },
     { $set: { avatarUrl: `/uploads/${req.file.filename}` } },
-    { new: true, upsert: true }
+    { new: true }
   );
 
   if (!profile) {

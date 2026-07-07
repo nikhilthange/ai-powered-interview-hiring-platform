@@ -110,7 +110,7 @@ export default function CandidateDashboard() {
   const recommendedJobs = Array.isArray(jobsQuery.data) ? jobsQuery.data : []
 
   const name = profile.fullName || user?.email?.split('@')[0] || 'User'
-  const profileCompletion = calculateProfileCompletion(profile)
+  const profileCompletion = calculateProfileCompletion(profile, user)
 
   const completedSessions = sessions.filter((s) => s.status === 'completed')
   const avgScore = completedSessions.length > 0

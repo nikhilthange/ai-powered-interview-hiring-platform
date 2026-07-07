@@ -46,6 +46,9 @@ function isFieldComplete(field, profile, user) {
 }
 
 function calculateProfileCompletion(profile, user = {}) {
+  if (!profile) {
+    return { completionPercentage: 0, completedFields: [], missingFields: [] };
+  }
   const completedFields = [];
   const missingFields = [];
   let total = 0;

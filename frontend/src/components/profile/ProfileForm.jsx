@@ -8,7 +8,7 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
 
   useEffect(() => {
     if (profile) {
-      setForm({
+      const base = {
         fullName: profile.fullName || '',
         bio: profile.bio || '',
         headline: profile.headline || '',
@@ -18,12 +18,15 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
         linkedin: profile.linkedin || '',
         github: profile.github || '',
         portfolio: profile.portfolio || '',
-        company: profile.company?.name ?? '',
         title: profile.title || '',
         experienceYears: profile.experienceYears ?? '',
-      })
+      }
+      if (isRecruiter) {
+        base.company = profile.company?.name ?? ''
+      }
+      setForm(base)
     }
-  }, [profile])
+  }, [profile, isRecruiter])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -33,6 +36,9 @@ export default function ProfileForm({ profile, onSubmit, loading, isRecruiter = 
     }
     if (isRecruiter && typeof data.company === 'string') {
       data.company = { name: data.company }
+    }
+    if (!data.fullName) {
+      delete data.fullName
     }
     onSubmit(data)
   }

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useApi } from '../../hooks/useApi'
 import { profileApi } from '../../services/profileApi'
@@ -23,27 +24,27 @@ const itemVariants = {
 export default function RecruiterProfile() {
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState(null)
 
   const { data, isLoading, isError, error } = useApi(['profile'], () =>
     profileApi.getMyProfile().then((r) => r.data)
   )
 
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ['profile'] })
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    queryClient.invalidateQueries({ queryKey: ['auth'] })
+  }
+
   const updateMutation = useMutation({
-    mutationFn: profileApi.updateProfile,
+    mutationFn: ({ data, avatarFile }) => profileApi.updateProfile(data, avatarFile),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      invalidateAll()
+      setSelectedAvatarFile(null)
       toast.success('Profile Updated', 'Your profile has been saved.')
     },
     onError: (err) => {
       toast.error('Failed to Save', err?.response?.data?.message || 'Something went wrong.')
-    },
-  })
-
-  const avatarMutation = useMutation({
-    mutationFn: profileApi.uploadAvatar,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] })
-      toast.success('Photo Updated', 'Your profile photo has been changed.')
     },
   })
 
@@ -92,13 +93,13 @@ export default function RecruiterProfile() {
           <CardContent className="p-6 sm:p-8">
             <AvatarUpload
               currentUrl={profile?.avatarUrl}
-              onUpload={(file) => avatarMutation.mutate(file)}
-              loading={avatarMutation.isPending}
+              onUpload={(file) => setSelectedAvatarFile(file)}
+              loading={updateMutation.isPending}
             />
             <div className="mt-6">
               <ProfileForm
                 profile={profile}
-                onSubmit={(formData) => updateMutation.mutate(formData)}
+                onSubmit={(formData) => updateMutation.mutate({ data: formData, avatarFile: selectedAvatarFile || undefined })}
                 loading={updateMutation.isPending}
                 isRecruiter={true}
               />

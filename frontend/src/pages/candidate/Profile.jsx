@@ -28,16 +28,24 @@ export default function CandidateProfile() {
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const [newSkill, setNewSkill] = useState('')
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState(null)
   const resumeInputRef = useRef(null)
 
   const { data, isLoading, isError, error } = useApi(['profile'], () =>
     profileApi.getMyProfile().then((r) => r.data)
   )
 
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ['profile'] })
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    queryClient.invalidateQueries({ queryKey: ['auth'] })
+  }
+
   const updateMutation = useMutation({
-    mutationFn: profileApi.updateProfile,
+    mutationFn: ({ data, avatarFile }) => profileApi.updateProfile(data, avatarFile),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      invalidateAll()
+      setSelectedAvatarFile(null)
       toast.success('Profile Updated', 'Your profile has been saved successfully.')
     },
     onError: (err) => {
@@ -45,21 +53,10 @@ export default function CandidateProfile() {
     },
   })
 
-  const avatarMutation = useMutation({
-    mutationFn: profileApi.uploadAvatar,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] })
-      toast.success('Photo Updated', 'Your profile photo has been changed.')
-    },
-    onError: (err) => {
-      toast.error('Upload Failed', err?.response?.data?.message || 'Could not upload photo.')
-    },
-  })
-
   const resumeMutation = useMutation({
     mutationFn: profileApi.uploadResume,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      invalidateAll()
       toast.success('Resume Uploaded', 'Your resume has been saved to your profile.')
     },
     onError: (err) => {
@@ -71,13 +68,24 @@ export default function CandidateProfile() {
     const skill = newSkill.trim()
     if (!skill || profile?.skills?.includes(skill)) return
     const updatedSkills = [...(profile?.skills || []), skill]
-    updateMutation.mutate({ fullName: profile.fullName, skills: updatedSkills })
+    updateMutation.mutate({ data: { skills: updatedSkills }, avatarFile: selectedAvatarFile || undefined })
     setNewSkill('')
   }
 
   const handleRemoveSkill = (skill) => {
     const updatedSkills = (profile?.skills || []).filter((s) => s !== skill)
-    updateMutation.mutate({ fullName: profile.fullName, skills: updatedSkills })
+    updateMutation.mutate({ data: { skills: updatedSkills }, avatarFile: selectedAvatarFile || undefined })
+  }
+
+  const handleProfileSubmit = (formData) => {
+    console.log('=== handleProfileSubmit ===');
+    console.log('formData:', JSON.stringify(formData, null, 2));
+    console.log('selectedAvatarFile:', selectedAvatarFile ? { name: selectedAvatarFile.name, size: selectedAvatarFile.size } : 'none');
+    updateMutation.mutate({ data: formData, avatarFile: selectedAvatarFile || undefined })
+  }
+
+  const handleAvatarSelect = (file) => {
+    setSelectedAvatarFile(file)
   }
 
   const handleResumeUpload = (e) => {
@@ -123,9 +131,9 @@ export default function CandidateProfile() {
       <motion.div variants={itemVariants}>
         <Card>
           <CardContent className="p-6 sm:p-8">
-            <AvatarUpload currentUrl={profile?.avatarUrl} onUpload={(file) => avatarMutation.mutate(file)} loading={avatarMutation.isPending} />
+            <AvatarUpload currentUrl={profile?.avatarUrl} onUpload={handleAvatarSelect} loading={updateMutation.isPending} />
             <div className="mt-6">
-              <ProfileForm profile={profile} onSubmit={(formData) => updateMutation.mutate(formData)} loading={updateMutation.isPending} isRecruiter={false} />
+              <ProfileForm profile={profile} onSubmit={handleProfileSubmit} loading={updateMutation.isPending} isRecruiter={false} />
             </div>
           </CardContent>
         </Card>

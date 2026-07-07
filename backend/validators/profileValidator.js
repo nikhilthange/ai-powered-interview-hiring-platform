@@ -42,8 +42,13 @@ const generateRoadmapSchema = z.object({
 });
 
 const validateBody = (schema) => (req, res, next) => {
+  console.log('=== Zod Validation ===');
+  console.log('Schema name:', schema.description || 'createOrUpdateProfileSchema');
+  console.log('Input body:', JSON.stringify(req.body, null, 2));
   const result = schema.safeParse(req.body);
   if (!result.success) {
+    console.log('VALIDATION FAILED');
+    console.log('Errors:', JSON.stringify(result.error.errors, null, 2));
     return res.status(400).json({
       status: 'fail',
       message: 'Validation failed',
@@ -53,6 +58,8 @@ const validateBody = (schema) => (req, res, next) => {
       }))
     });
   }
+  console.log('Validation passed');
+  console.log('Parsed body:', JSON.stringify(result.data, null, 2));
   req.body = result.data;
   next();
 };

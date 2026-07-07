@@ -134,6 +134,7 @@ export default function CandidateDashboard() {
   ]
 
   const actionLinks = [
+    { to: '/ai-chat', label: 'AI Career Assistant', icon: Sparkles, desc: 'Chat with AI about your career' },
     { to: '/resume-analyzer', label: 'Analyze Resume', icon: FileText, desc: 'Get ATS score & feedback' },
     { to: '/skill-gap-analysis', label: 'Skill Gap', icon: Target, desc: 'Identify missing skills' },
     { to: '/mock-interview', label: 'Mock Interview', icon: GraduationCap, desc: 'Practice with AI' },

@@ -4,7 +4,7 @@ import { adminApi } from '../../services/adminApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import StatCard from '../../components/ui/StatCard'
 import { SkeletonMetrics, SkeletonChart } from '../../components/ui/Skeleton'
-import { Users, Briefcase, FileText, Activity, DollarSign, CalendarCheck } from 'lucide-react'
+import { Users, Briefcase, FileText, Activity, DollarSign, CalendarCheck, Sparkles, Bot } from 'lucide-react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 
 const containerVariants = {
@@ -84,6 +84,20 @@ export default function AdminDashboard() {
         <StatCard label="Interviews" value={stats.interviewsConducted || 0} icon={CalendarCheck} color="blue" />
         <StatCard label="AI Requests" value={stats.aiRequestsToday || 0} icon={Activity} color="amber" />
         <StatCard label="Revenue" value={stats.revenue ? `$${stats.revenue.toLocaleString()}` : '$0'} icon={DollarSign} color="emerald" />
+        <Link to="/ai-chat">
+          <Card className="h-full cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">AI Analytics</span>
+                <div className="rounded-xl p-2 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50">
+                  <Bot className="h-4 w-4 text-indigo-600" />
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[var(--text-primary)]">Ask AI</p>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">Analytics assistant</p>
+            </CardContent>
+          </Card>
+        </Link>
       </motion.div>
 
       {chartsLoading ? (

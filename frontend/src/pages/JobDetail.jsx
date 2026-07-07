@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'
 import { savedJobApi } from '../services/savedJobApi'
@@ -13,7 +13,7 @@ import { useAuth } from '../hooks/useAuth'
 import {
   MapPin, Briefcase, DollarSign,
   Share2, Bookmark, ArrowLeft, CheckCircle,
-  GraduationCap,
+  GraduationCap, Bot,
 } from 'lucide-react'
 
 const containerVariants = {
@@ -31,6 +31,7 @@ export default function JobDetail() {
   const { toast } = useToast()
   const { isAuthenticated } = useAuth()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['job', id],
@@ -148,6 +149,17 @@ export default function JobDetail() {
                     <Share2 className="h-4 w-4" />
                     Share
                   </Button>
+                  {isAuthenticated && (
+                    <Button
+                      variant="outline"
+                      size="md"
+                      className="sm:px-5 sm:py-2.5 border-indigo-300 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-400"
+                      onClick={() => navigate(`/ai-chat?jobContext=true&jobTitle=${encodeURIComponent(job?.title || '')}&jobDescription=${encodeURIComponent(job?.description || '')}`)}
+                    >
+                      <Bot className="h-4 w-4" />
+                      Ask AI
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

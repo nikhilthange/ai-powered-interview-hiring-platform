@@ -22,6 +22,7 @@ const adminRouter = require('./routes/adminRoutes');
 const notificationRouter = require('./routes/notificationRoutes');
 const savedJobRouter = require('./routes/savedJobRoutes');
 const analysisRouter = require('./routes/analysisRoutes');
+const aiChatRouter = require('./routes/aiChatRoutes');
 const debugRouter = require('./routes/debugRoutes');
 const path = require('path');
 
@@ -114,6 +115,7 @@ app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/saved-jobs', savedJobRouter);
 app.use('/api/v1/analysis', analysisRouter);
+app.use('/api/v1/ai-chat', aiChatRouter);
 app.use('/api/debug', debugRouter);
 
 // 5. Unhandled Routes Catchall (404)

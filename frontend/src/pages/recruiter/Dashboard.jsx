@@ -10,7 +10,7 @@ import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonMetrics, SkeletonList } from '../../components/ui/Skeleton'
 import { Link } from 'react-router-dom'
 import { cn } from '../../lib/utils'
-import { Briefcase, Users, FileText, Plus, ArrowRight, Activity, TrendingUp, Bell, ChevronRight } from 'lucide-react'
+import { Briefcase, Users, FileText, Plus, ArrowRight, Activity, TrendingUp, Bell, ChevronRight, Sparkles } from 'lucide-react'
 import { useNotifications } from '../../hooks/useNotifications'
 
 const containerVariants = {
@@ -95,12 +95,13 @@ export default function RecruiterDashboard() {
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
         {[
           { label: 'Active Jobs', value: activeJobs, icon: Briefcase, href: '/recruiter/my-jobs', color: 'indigo' },
           { label: 'Applications', value: apps.length, icon: Users, href: '/recruiter/my-jobs', color: 'emerald' },
           { label: 'Total Jobs', value: jobs.length, icon: FileText, href: '/recruiter/my-jobs', color: 'purple' },
           { label: 'Pipeline', value: apps.filter((a) => a.status === 'Reviewing' || a.status === 'Shortlisted').length, icon: TrendingUp, href: '/recruiter/my-jobs', color: 'amber' },
+          { label: 'AI Assistant', value: 'Chat', icon: Sparkles, href: '/ai-chat', color: 'pink' },
         ].map((metric) => {
           const Icon = metric.icon
           return (
@@ -114,6 +115,7 @@ export default function RecruiterDashboard() {
                       metric.color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-950' :
                       metric.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-950' :
                       metric.color === 'purple' ? 'bg-purple-50 dark:bg-purple-950' :
+                      metric.color === 'pink' ? 'bg-pink-50 dark:bg-pink-950' :
                       'bg-amber-50 dark:bg-amber-950'
                     )}>
                       <Icon className={cn(
@@ -121,6 +123,7 @@ export default function RecruiterDashboard() {
                         metric.color === 'indigo' ? 'text-indigo-600' :
                         metric.color === 'emerald' ? 'text-emerald-600' :
                         metric.color === 'purple' ? 'text-purple-600' :
+                        metric.color === 'pink' ? 'text-pink-600' :
                         'text-amber-600'
                       )} />
                     </div>

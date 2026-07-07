@@ -192,6 +192,187 @@ exports.getProvider = getProvider;
 exports.setProvider = setProvider;
 exports.recordMetrics = recordMetrics;
 
+async function callNvidiaStream(messages, callbacks, options = {}) {
+  const { temperature = 0.7, maxTokens = 2048 } = options;
+  const { onChunk, onDone, onError } = callbacks;
+
+  const body = {
+    model: NVIDIA_MODEL,
+    messages,
+    temperature,
+    max_tokens: maxTokens,
+    stream: true
+  };
+
+  const apiKey = process.env.NVIDIA_API_KEY;
+  if (!apiKey) {
+    const err = new Error('NVIDIA API key not configured');
+    if (onError) onError(err);
+    throw err;
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  let fullContent = '';
+
+  try {
+    const response = await fetch(`${NVIDIA_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`NVIDIA API error (${response.status}): ${errorText}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith('data: ')) continue;
+        const data = trimmed.slice(6);
+        if (data === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(data);
+          const content = parsed.choices?.[0]?.delta?.content || '';
+          if (content) {
+            fullContent += content;
+            if (onChunk) onChunk(content);
+          }
+        } catch {
+        }
+      }
+    }
+
+    if (buffer.trim()) {
+      const trimmed = buffer.trim();
+      if (trimmed.startsWith('data: ')) {
+        const data = trimmed.slice(6);
+        if (data !== '[DONE]') {
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices?.[0]?.delta?.content || '';
+            if (content) {
+              fullContent += content;
+              if (onChunk) onChunk(content);
+            }
+          } catch {
+          }
+        }
+      }
+    }
+
+    if (onDone) onDone(fullContent);
+    return fullContent;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      const error = new Error('NVIDIA API request timed out after 60s');
+      if (onError) onError(error);
+      throw error;
+    }
+    if (onError) onError(err);
+    throw err;
+  }
+}
+
+function buildSystemPrompt(context) {
+  const parts = ['You are an expert AI Career Assistant for a hiring platform. You help users with career-related queries including resume review, job analysis, interview preparation, salary negotiation, and career advice. Provide detailed, helpful, and professional responses. Use markdown formatting where appropriate.'];
+
+  if (context?.type === 'resume' && context.resumeText) {
+    parts.push(`\n\nThe user has uploaded a resume. Here is the resume content:\n\n${context.resumeText}\n\nUse this resume to answer questions about the user's skills, experience, and qualifications. When referring to the resume, be specific about their experience.`);
+  }
+
+  if (context?.type === 'job' && context.jobDescription) {
+    parts.push(`\n\nThe user is viewing a job posting. Here are the job details:\n\nTitle: ${context.jobTitle || 'N/A'}\n\nDescription:\n${context.jobDescription}\n\nAnswer questions about this job, how it matches their profile, what skills are needed, and how to prepare for it.`);
+  }
+
+  if (context?.type === 'recruiter') {
+    parts.push('\n\nThe user is a recruiter. Provide recruiter-focused assistance including generating job descriptions, creating interview questions, summarizing candidates, and comparing applicants. Focus on helping them find and evaluate talent effectively.');
+  }
+
+  if (context?.type === 'admin') {
+    parts.push('\n\nThe user is a platform administrator. Provide analytics and insights about user growth, job statistics, AI usage summaries, and platform metrics. Help them understand platform health and trends.');
+  }
+
+  return parts.join('\n');
+}
+
+exports.generateChatStream = async (messages, context, callbacks, options = {}) => {
+  const systemPrompt = buildSystemPrompt(context);
+  const aiMessages = [
+    { role: 'system', content: systemPrompt },
+    ...messages
+  ];
+
+  if (process.env.MOCK_AI === 'true' || currentProvider === 'mock' || !process.env.NVIDIA_API_KEY || circuitBreaker.isOpen) {
+    console.log('[aiService] Using mock for chat stream');
+    const mockResponse = 'This is a mock AI response. In production, this would be a real response from NVIDIA NIM. The AI Career Assistant is ready to help you with career advice, resume reviews, interview preparation, and more. **Key features include:**\n\n- Resume analysis and ATS scoring\n- Job description analysis\n- Interview question generation\n- Career roadmap creation\n- Salary negotiation tips\n\n*Please configure a valid NVIDIA API key to get real AI responses.*';
+    const chunkSize = 5;
+    let idx = 0;
+    const interval = setInterval(() => {
+      if (idx >= mockResponse.length) {
+        clearInterval(interval);
+        if (callbacks.onDone) callbacks.onDone(mockResponse);
+        return;
+      }
+      const chunk = mockResponse.slice(idx, idx + chunkSize);
+      idx += chunkSize;
+      if (callbacks.onChunk) callbacks.onChunk(chunk);
+    }, 30);
+    return mockResponse;
+  }
+
+  return callNvidiaStream(aiMessages, callbacks, options);
+};
+
+exports.generateChatTitle = async (message) => {
+  const mockTitle = (() => {
+    const titles = [
+      'Career Discussion',
+      'Resume Review',
+      'Job Search Advice',
+      'Interview Preparation',
+      'Skill Development',
+      'Salary Negotiation Tips',
+      'Career Planning'
+    ];
+    return titles[Math.floor(Math.random() * titles.length)];
+  })();
+
+  const aiCall = async () => {
+    return callNvidia([
+      { role: 'system', content: 'Generate a short, concise title (max 6 words) for a conversation based on the first user message. Return only the title, no quotes or punctuation.' },
+      { role: 'user', content: message }
+    ], { temperature: 0.3, maxTokens: 30 });
+  };
+
+  try {
+    const title = await aiCall();
+    return title.replace(/["'']/g, '').trim() || 'New conversation';
+  } catch {
+    return mockTitle;
+  }
+};
+
 exports.analyzeResumeBackground = async (applicationId, resumeText, jobDescription) => {
   try {
     const mockFn = async () => {

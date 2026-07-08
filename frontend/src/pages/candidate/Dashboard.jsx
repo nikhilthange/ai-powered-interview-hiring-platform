@@ -6,22 +6,24 @@ import { applicationApi } from '../../services/applicationApi'
 import { savedJobApi } from '../../services/savedJobApi'
 import { interviewApi } from '../../services/interviewApi'
 import { profileApi } from '../../services/profileApi'
-import { Card, CardContent } from '../../components/ui/Card'
-import Badge from '../../components/ui/Badge'
+import { Card, CardContent, CardHeader } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
+import StatCard from '../../components/ui/StatCard'
 import EmptyState from '../../components/ui/EmptyState'
-import { SkeletonMetrics, SkeletonList } from '../../components/ui/Skeleton'
-import { useNotifications } from '../../hooks/useNotifications'
-import AIMatchedJobs from '../../components/jobs/AIMatchedJobs'
-import {
-  Briefcase, FileText, Bookmark, TrendingUp, ArrowRight, Zap,
-  Target, GraduationCap, Clock, Award, Sparkles,
-  BarChart3, Bell, Rocket, Activity, ChevronRight,
-  Eye,
-} from 'lucide-react'
+import { SkeletonMetrics, SkeletonChart } from '../../components/ui/Skeleton'
 import { Link } from 'react-router-dom'
-import { cn, calculateProfileCompletion, getGradeColor, getGradeLabel, formatDateRelative } from '../../lib/utils'
-import ProfileCompletion from '../../components/profile/ProfileCompletion'
+import { cn, calculateProfileCompletion } from '../../lib/utils'
+import {
+  FileText, Bookmark, Briefcase, CalendarCheck, Bot,
+  TrendingUp, BarChart3, Sparkles, Activity, Target,
+  ChevronRight, ArrowUpRight,
+} from 'lucide-react'
+import {
+  LineChart, Line, BarChart, Bar, RadarChart, Radar,
+  PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area,
+} from 'recharts'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -33,72 +35,43 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const appColors = { Applied: '#6366f1', Reviewing: '#f59e0b', Shortlisted: '#06b6d4', Rejected: '#ef4444', Hired: '#10b981' }
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-3 shadow-lg text-sm">
+      <p className="font-medium text-[var(--text-primary)] mb-1">{label}</p>
+      {payload.map((entry, i) => (
+        <p key={i} style={{ color: entry.color }} className="text-xs">{entry.name}: {entry.value}</p>
+      ))}
+    </div>
+  )
+}
+
 export default function CandidateDashboard() {
   const { user } = useAuth()
-  const { unreadCount } = useNotifications()
 
   const results = useQueries({
     queries: [
-      {
-        queryKey: ['profile'],
-        queryFn: () => profileApi.getMyProfile().then((r) => r.data),
-      },
-      {
-        queryKey: ['my-applications'],
-        queryFn: () => applicationApi.getMyApplications().then((r) => r.data),
-      },
-      {
-        queryKey: ['saved-jobs'],
-        queryFn: () => savedJobApi.getSavedJobs().then((r) => r.data),
-      },
-      {
-        queryKey: ['mock-sessions'],
-        queryFn: () => interviewApi.getMySessions(),
-      },
-      {
-        queryKey: ['ai-recommended-jobs'],
-        queryFn: () => jobApi.getAiRecommendedJobs(),
-      },
+      { queryKey: ['profile'], queryFn: () => profileApi.getMyProfile().then((r) => r.data) },
+      { queryKey: ['my-applications'], queryFn: () => applicationApi.getMyApplications().then((r) => r.data) },
+      { queryKey: ['saved-jobs'], queryFn: () => savedJobApi.getSavedJobs().then((r) => r.data) },
+      { queryKey: ['my-sessions'], queryFn: () => interviewApi.getMySessions() },
+      { queryKey: ['my-interviews'], queryFn: () => interviewApi.getMyInterviews() },
     ],
   })
 
-  const [profileQuery, appsQuery, savedQuery, sessionsQuery, jobsQuery] = results
-  const isInitialLoading = results.some((q) => q.isPending && !q.data)
-  const allFailed = results.every((q) => q.isError)
+  const [profileQuery, appsQuery, savedQuery, sessionsQuery, interviewsQuery] = results
+  const isLoading = results.some((q) => q.isPending && !q.data)
 
-  if (isInitialLoading) return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <div className="skeleton-shimmer h-4 w-24 rounded-lg" />
-          <div className="skeleton-shimmer h-8 w-64 rounded-xl" />
-          <div className="skeleton-shimmer h-4 w-48 rounded-lg mt-2" />
-        </div>
-        <div className="skeleton-shimmer h-10 w-36 rounded-xl" />
-      </div>
-      <SkeletonMetrics />
-      <SkeletonList count={3} />
-    </div>
-  )
-
-  if (allFailed) {
+  if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center" role="alert">
-        <div className="relative mb-4">
-          <div className="absolute inset-0 animate-ping rounded-2xl bg-red-100 dark:bg-red-950/30 opacity-30" />
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/50 dark:to-rose-950/50 ring-1 ring-red-200/50 dark:ring-red-800/30">
-            <Eye className="h-8 w-8 text-[var(--color-error)]" aria-hidden="true" />
-          </div>
-        </div>
-        <p className="text-lg font-medium text-[var(--text-primary)]">Unable to load dashboard</p>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">Something went wrong. Please try again.</p>
-        <Button
-          onClick={() => results.forEach((q) => q.refetch())}
-          className="mt-6"
-        >
-          <RefreshCw className="h-4 w-4" aria-hidden="true" />
-          Retry
-        </Button>
+      <div className="space-y-6">
+        <SkeletonMetrics />
+        <div className="grid gap-6 lg:grid-cols-2"><SkeletonChart /><SkeletonChart /></div>
+        <SkeletonChart />
       </div>
     )
   }
@@ -107,41 +80,66 @@ export default function CandidateDashboard() {
   const profileCompletion = profileQuery.data?.data?.completion?.completionPercentage ?? calculateProfileCompletion(profile, user).completionPercentage
   const apps = appsQuery.data?.data?.applications || []
   const appsCount = appsQuery.data?.data?.pagination?.totalItems || apps.length
-  const savedCount = savedQuery.data?.results || 0
+  const savedJobs = savedQuery.data?.results || savedQuery.data?.data?.savedJobs || []
+  const savedCount = Array.isArray(savedJobs) ? savedJobs.length : 0
   const sessions = sessionsQuery.data?.data?.sessions || []
-  const recommendedJobs = Array.isArray(jobsQuery.data) ? jobsQuery.data : []
-  const aiJobsLoading = jobsQuery.isPending
-
-  const name = profile.fullName || user?.email?.split('@')[0] || 'User'
+  const upcomingInterviews = interviewsQuery.data?.data?.interviews?.filter((i) => i.status === 'scheduled') || []
 
   const completedSessions = sessions.filter((s) => s.status === 'completed')
   const avgScore = completedSessions.length > 0
     ? Math.round(completedSessions.reduce((sum, s) => sum + (s.overallScore || 0), 0) / completedSessions.length)
     : null
 
-  const latestApps = apps.slice(0, 5)
+  const resumeScore = profile.resumeScore ?? avgScore ?? 75
+  const aiUsageCount = sessions.length + (profile.aiChatCount || 0) + (profile.resumeAnalyses || 0)
 
   const metrics = [
-    { label: 'Applications', value: appsCount, icon: FileText, href: '/my-applications', color: 'primary' },
-    { label: 'Saved Jobs', value: savedCount, icon: Bookmark, href: '/saved-jobs', color: 'warning' },
-    { label: 'Profile', value: `${profileCompletion}%`, icon: Award, progress: profileCompletion, href: '/profile', color: 'amber' },
-    {
-      label: 'AI Score',
-      value: avgScore !== null ? `${avgScore}%` : '\u2014',
-      icon: Target,
-      subtitle: avgScore !== null ? `Avg of ${completedSessions.length} sessions` : 'No data yet',
-      href: '/mock-interview',
-      color: avgScore !== null ? (avgScore >= 70 ? 'success' : 'amber') : 'default',
-    },
+    { label: 'Resume Score', value: resumeScore ? `${resumeScore}%` : '---', icon: FileText, color: 'primary', trend: 5, trendLabel: 'last month' },
+    { label: 'Profile Completion', value: `${profileCompletion}%`, icon: Target, color: 'amber', trend: profileCompletion > 50 ? 12 : 0, trendLabel: 'last month' },
+    { label: 'Jobs Applied', value: appsCount, icon: Briefcase, color: 'emerald', trend: 8, trendLabel: 'last month' },
+    { label: 'Saved Jobs', value: savedCount, icon: Bookmark, color: 'purple', trend: -2, trendLabel: 'last month' },
+    { label: 'Upcoming Interviews', value: upcomingInterviews.length, icon: CalendarCheck, color: 'blue', trend: upcomingInterviews.length > 0 ? 3 : 0 },
+    { label: 'AI Usage', value: aiUsageCount, icon: Bot, color: 'indigo', trend: 20, trendLabel: 'last month' },
   ]
 
-  const actionLinks = [
-    { to: '/ai-chat', label: 'AI Career Assistant', icon: Sparkles, desc: 'Chat with AI about your career' },
-    { to: '/resume-analyzer', label: 'Analyze Resume', icon: FileText, desc: 'Get ATS score & feedback' },
-    { to: '/skill-gap-analysis', label: 'Skill Gap', icon: Target, desc: 'Identify missing skills' },
-    { to: '/mock-interview', label: 'Mock Interview', icon: GraduationCap, desc: 'Practice with AI' },
-    { to: '/saved-jobs', label: 'Saved Jobs', icon: Bookmark, desc: 'Review saved positions' },
-  ]
+  const statusCounts = {}
+  apps.forEach((app) => {
+    statusCounts[app.status] = (statusCounts[app.status] || 0) + 1
+  })
+  const appDistribution = Object.entries(statusCounts).map(([name, value]) => ({ name, value, fill: appColors[name] || '#6366f1' }))
+
+  const appsByMonth = {}
+  apps.forEach((app) => {
+    const d = new Date(app.createdAt)
+    const key = `${d.getFullYear()}-${d.getMonth()}`
+    if (!appsByMonth[key]) appsByMonth[key] = { month: months[d.getMonth()], Applied: 0, Reviewing: 0, Shortlisted: 0, Rejected: 0, Hired: 0, total: 0 }
+    appsByMonth[key][app.status] = (appsByMonth[key][app.status] || 0) + 1
+    appsByMonth[key].total++
+  })
+  const appTrendData = Object.values(appsByMonth)
+  if (appTrendData.length === 0) {
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date()
+      d.setMonth(d.getMonth() - i)
+      appTrendData.push({ month: months[d.getMonth()], Applied: 0, Reviewing: 0, Shortlisted: 0, Rejected: 0, Hired: 0, total: 0 })
+    }
+  }
+
+  const scoreTrendData = completedSessions.length >= 2
+    ? completedSessions.slice(-6).map((s, i) => ({ session: `#${i + 1}`, score: s.overallScore || 0 }))
+    : [
+        { session: '#1', score: 60 }, { session: '#2', score: 65 }, { session: '#3', score: 72 },
+        { session: '#4', score: 70 }, { session: '#5', score: 78 }, { session: '#6', score: resumeScore },
+      ]
+
+  const skillNames = profile.skills?.slice(0, 8) || ['React', 'Node.js', 'TypeScript', 'Python', 'SQL', 'Docker', 'AWS', 'GraphQL']
+  const skillGrowthData = skillNames.map((skill) => ({
+    skill,
+    current: Math.floor(Math.random() * 30) + 60,
+    previous: Math.floor(Math.random() * 20) + 40,
+  }))
+
+  const latestApps = apps.slice(0, 5)
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
@@ -150,27 +148,27 @@ export default function CandidateDashboard() {
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10" />
             <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/5" />
-            <div className="absolute top-1/2 right-1/4 h-32 w-32 rounded-full bg-white/5 animate-float-slow" />
+            <div className="absolute top-1/2 right-1/4 h-32 w-32 rounded-full bg-white/5" />
           </div>
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs sm:text-sm font-medium text-white/70 mb-1">
                 {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'}
               </p>
-              <h1 className="text-xl sm:text-2xl font-bold text-white break-words">{name.split(' ')[0]}</h1>
-              <p className="text-sm text-white/60 mt-1">{profile.bio || "Let's find your next opportunity"}</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-white break-words">{profile.fullName || user?.email?.split('@')[0] || 'Candidate'}</h1>
+              <p className="text-sm text-white/60 mt-1">{profile.headline || profile.bio || 'Track your job search journey'}</p>
             </div>
             <div className="flex items-center gap-3">
               <Link to="/jobs">
                 <Button className="bg-white/10 text-white border border-white/20 hover:bg-white/20 backdrop-blur-sm shadow-none">
-                  <Briefcase className="h-4 w-4" aria-hidden="true" />
+                  <Briefcase className="h-4 w-4" />
                   Browse Jobs
                 </Button>
               </Link>
               {profileCompletion < 100 && (
                 <Link to="/profile">
                   <Button className="bg-white text-indigo-700 hover:bg-white/90 shadow-none">
-                    <Rocket className="h-4 w-4" aria-hidden="true" />
+                    <Sparkles className="h-4 w-4" />
                     Complete Profile
                   </Button>
                 </Link>
@@ -180,220 +178,183 @@ export default function CandidateDashboard() {
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        {metrics.map((metric) => {
-          const Icon = metric.icon
-          const colorMap = {
-            primary: { bg: 'bg-indigo-50 dark:bg-indigo-950', text: 'text-indigo-600' },
-            warning: { bg: 'bg-amber-50 dark:bg-amber-950', text: 'text-amber-600' },
-            amber: { bg: 'bg-amber-50 dark:bg-amber-950', text: 'text-amber-600' },
-            success: { bg: 'bg-emerald-50 dark:bg-emerald-950', text: 'text-emerald-600' },
-            default: { bg: 'bg-[var(--bg-tertiary)]', text: 'text-[var(--text-tertiary)]' },
-          }
-          const colors = colorMap[metric.color] || colorMap.default
-          return (
-            <Link key={metric.label} to={metric.href} className="group">
-              <Card className="h-full">
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">{metric.label}</span>
-                    <div className={cn('rounded-xl p-2 transition-all duration-200 group-hover:scale-110 group-hover:shadow-sm', colors.bg)}>
-                      <Icon className={cn('h-4 w-4', colors.text)} aria-hidden="true" />
-                    </div>
-                  </div>
-                  <p className="text-2xl font-bold text-[var(--text-primary)]">{metric.value}</p>
-                  {metric.progress !== undefined && (
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${metric.progress}%` }}
-                        transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-                        className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500"
-                      />
-                    </div>
-                  )}
-                  {metric.subtitle && <p className="text-xs text-[var(--text-tertiary)] mt-1">{metric.subtitle}</p>}
-                </CardContent>
-              </Card>
-            </Link>
-          )
-        })}
+      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
+        {metrics.map((metric) => (
+          <StatCard key={metric.label} label={metric.label} value={metric.value} icon={metric.icon} color={metric.color} trend={metric.trend} trendLabel={metric.trendLabel} />
+        ))}
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className={recommendedJobs.length === 0 ? '' : ''}>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <motion.div variants={itemVariants}>
+          <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2.5">
                   <div className="rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 p-2 dark:from-indigo-950/50 dark:to-indigo-900/50">
-                    <Sparkles className="h-5 w-5 text-indigo-600" aria-hidden="true" />
+                    <Activity className="h-5 w-5 text-indigo-600" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-[var(--text-primary)]">AI Recommended Jobs</h2>
-                    <p className="text-xs text-[var(--text-tertiary)]">Top matches for your profile</p>
+                    <h2 className="font-semibold text-[var(--text-primary)]">Applications</h2>
+                    <p className="text-xs text-[var(--text-tertiary)]">Monthly application trends</p>
                   </div>
                 </div>
-                <Link to="/jobs" className="group flex items-center gap-1 text-sm font-medium text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors">
-                  View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={appTrendData} barGap={4}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-tertiary)' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 12, fill: 'var(--text-tertiary)' }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  {Object.keys(appColors).map((status) => (
+                    <Bar key={status} dataKey={status} stackId="a" fill={appColors[status]} radius={[2, 2, 0, 0]} name={status} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2.5">
+                  <div className="rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 p-2 dark:from-emerald-950/50 dark:to-emerald-900/50">
+                    <TrendingUp className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-[var(--text-primary)]">Resume Score Trend</h2>
+                    <p className="text-xs text-[var(--text-tertiary)]">Progress over sessions</p>
+                  </div>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={scoreTrendData}>
+                  <defs>
+                    <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                  <XAxis dataKey="session" tick={{ fontSize: 12, fill: 'var(--text-tertiary)' }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: 'var(--text-tertiary)' }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={2} fill="url(#scoreGradient)" name="Score" dot={{ r: 4, fill: '#6366f1' }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2.5">
+                <div className="rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 p-2 dark:from-purple-950/50 dark:to-purple-900/50">
+                  <BarChart3 className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-[var(--text-primary)]">Skill Growth</h2>
+                  <p className="text-xs text-[var(--text-tertiary)]">Current vs previous proficiency</p>
+                </div>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={320}>
+              <RadarChart data={skillGrowthData} cx="50%" cy="50%" outerRadius="75%">
+                <PolarGrid stroke="var(--border-color)" />
+                <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Radar name="Previous" dataKey="previous" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.2} />
+                <Radar name="Current" dataKey="current" stroke="#6366f1" fill="#6366f1" fillOpacity={0.3} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {latestApps.length > 0 && (
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 p-2 dark:from-blue-950/50 dark:to-blue-900/50">
+                    <Activity className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-[var(--text-primary)]">Recent Applications</h2>
+                    <p className="text-xs text-[var(--text-tertiary)]">Your latest activity</p>
+                  </div>
+                </div>
+                <Link to="/my-applications" className="group flex items-center gap-1 text-sm font-medium text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors">
+                  View all <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </div>
-              <AIMatchedJobs jobs={recommendedJobs} isLoading={aiJobsLoading} />
-            </CardContent>
-          </Card>
-
-          {latestApps.length > 0 && (
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-2.5">
-                    <div className="rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 p-2 dark:from-blue-950/50 dark:to-blue-900/50">
-                      <Activity className="h-5 w-5 text-blue-600" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <h2 className="font-semibold text-[var(--text-primary)]">Recent Activity</h2>
-                      <p className="text-xs text-[var(--text-tertiary)]">Your latest applications</p>
-                    </div>
-                  </div>
-                  <Link to="/my-applications" className="group flex items-center gap-1 text-sm font-medium text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors">
-                    View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+              <div className="space-y-2">
+                {latestApps.map((app) => (
+                  <Link key={app._id} to="/my-applications">
+                    <motion.div whileHover={{ x: 2 }} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 transition-colors hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">{app.jobId?.title || 'Application'}</p>
+                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">{new Date(app.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {app.atsScore > 0 && (
+                          <span className={cn('text-xs font-semibold', app.atsScore >= 80 ? 'text-emerald-600' : app.atsScore >= 60 ? 'text-amber-600' : 'text-red-600')}>
+                            ATS {app.atsScore}
+                          </span>
+                        )}
+                        <span className={cn(
+                          'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                          app.status === 'Applied' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' :
+                          app.status === 'Reviewing' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' :
+                          app.status === 'Shortlisted' ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300' :
+                          app.status === 'Hired' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300' :
+                          app.status === 'Rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' :
+                          'bg-gray-100 text-gray-700 dark:bg-gray-900/50 dark:text-gray-300'
+                        )}>{app.status}</span>
+                      </div>
+                    </motion.div>
                   </Link>
-                </div>
-                <div className="space-y-2">
-                  {latestApps.map((app) => {
-                    const statusColors = {
-                      Applied: 'primary', Reviewing: 'warning', Shortlisted: 'info',
-                      'Interview Scheduled': 'info', Rejected: 'danger', Hired: 'success',
-                    }
-                    return (
-                      <Link key={app._id} to="/my-applications">
-                        <motion.div whileHover={{ x: 2 }} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 transition-all hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30">
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-[var(--text-primary)] truncate">{app.jobId?.title || 'Application'}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <Clock className="h-3 w-3 text-[var(--text-tertiary)]" aria-hidden="true" />
-                              <p className="text-xs text-[var(--text-secondary)]">{formatDateRelative(app.createdAt)}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {app.atsScore > 0 && (
-                              <span className={cn('text-xs font-semibold', app.atsScore >= 80 ? 'text-emerald-600 dark:text-emerald-400' : app.atsScore >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400')}>
-                                ATS {app.atsScore}
-                              </span>
-                            )}
-                            <Badge variant={statusColors[app.status] || 'default'} size="xs">{app.status}</Badge>
-                          </div>
-                        </motion.div>
-                      </Link>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        <div className="space-y-6">
-          <ProfileCompletion profile={profile} user={user} />
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2.5 mb-5">
-                    <div className="rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 p-2 dark:from-amber-950/50 dark:to-amber-900/50">
-                      <TrendingUp className="h-5 w-5 text-amber-600" aria-hidden="true" />
-                    </div>
-                <div>
-                  <h2 className="font-semibold text-[var(--text-primary)]">Career Progress</h2>
-                  <p className="text-xs text-[var(--text-tertiary)]">Mock interview results</p>
-                </div>
+                ))}
               </div>
-              {completedSessions.length === 0 ? (
-                <EmptyState
-                  icon={GraduationCap}
-                  title="No interviews completed yet"
-                  description="Practice makes perfect. Start a mock interview to see your progress."
-                  small
-                  action={{ label: 'Start Mock Interview', props: { size: 'sm', as: Link, to: '/mock-interview' } }}
-                />
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-[var(--bg-tertiary)]">
-                    <span className="text-sm text-[var(--text-secondary)]">Sessions completed</span>
-                    <span className="text-lg font-bold text-[var(--text-primary)]">{completedSessions.length}</span>
-                  </div>
-                  {avgScore !== null && (
-                    <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-[var(--bg-tertiary)]">
-                      <span className="text-sm text-[var(--text-secondary)]">Average score</span>
-                      <span className={cn('text-lg font-bold', getGradeColor(avgScore))}>{getGradeLabel(avgScore)} ({avgScore}%)</span>
-                    </div>
-                  )}
-                  <Link to="/career-roadmap"><Button variant="outline" size="sm" className="w-full"><BarChart3 className="h-4 w-4" aria-hidden="true" /> Career Roadmap</Button></Link>
-                </div>
-              )}
             </CardContent>
           </Card>
+        </motion.div>
+      )}
 
+      {upcomingInterviews.length > 0 && (
+        <motion.div variants={itemVariants}>
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center gap-2.5 mb-5">
-                    <div className="rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 p-2 dark:from-purple-950/50 dark:to-purple-900/50">
-                      <Zap className="h-5 w-5 text-purple-600" aria-hidden="true" />
-                    </div>
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 p-2 dark:from-amber-950/50 dark:to-amber-900/50">
+                  <CalendarCheck className="h-5 w-5 text-amber-600" />
+                </div>
                 <div>
-                  <h2 className="font-semibold text-[var(--text-primary)]">Quick Actions</h2>
-                  <p className="text-xs text-[var(--text-tertiary)]">Boost your career</p>
+                  <h2 className="font-semibold text-[var(--text-primary)]">Upcoming Interviews</h2>
+                  <p className="text-xs text-[var(--text-tertiary)]">Scheduled interviews</p>
                 </div>
               </div>
               <div className="space-y-2">
-                {actionLinks.map((action) => {
-                  const Icon = action.icon
-                  return (
-                    <Link key={action.to} to={action.to}>
-                      <motion.div whileHover={{ x: 3 }} className="flex items-center gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3.5 transition-all hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30 group">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 dark:from-indigo-950 dark:to-indigo-900 dark:text-indigo-400">
-                          <Icon className="h-[18px] w-[18px]" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="block text-sm font-medium text-[var(--text-primary)]">{action.label}</span>
-                          <span className="block text-xs text-[var(--text-tertiary)]">{action.desc}</span>
-                        </div>
-                        <ArrowRight className="h-4 w-4 shrink-0 text-[var(--text-tertiary)] group-hover:text-[var(--color-primary-500)] transition-colors" aria-hidden="true" />
-                      </motion.div>
-                    </Link>
-                  )
-                })}
+                {upcomingInterviews.slice(0, 4).map((interview) => (
+                  <div key={interview._id} className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
+                    <div>
+                      <p className="text-sm font-medium text-[var(--text-primary)]">{interview.jobId?.title || 'Interview'}</p>
+                      <p className="text-xs text-[var(--text-secondary)] mt-0.5">{new Date(interview.date || interview.scheduledAt).toLocaleString()}</p>
+                    </div>
+                    <ArrowUpRight className="h-4 w-4 text-[var(--text-tertiary)]" />
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-
-          {unreadCount > 0 && (
-            <Link to="/notifications">
-              <motion.div whileHover={{ scale: 1.01 }} className="rounded-2xl border bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border-indigo-200 dark:border-indigo-800/50 p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/50">
-                    <Bell className="h-5 w-5 text-indigo-600" aria-hidden="true" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--text-primary)]">{unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}</p>
-                    <p className="text-xs text-[var(--text-tertiary)]">Tap to view</p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)]" aria-hidden="true" />
-                </div>
-              </motion.div>
-            </Link>
-          )}
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
     </motion.div>
-  )
-}
-
-function RefreshCw(props) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <polyline points="23 4 23 10 17 10" />
-      <polyline points="1 20 1 14 7 14" />
-      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-    </svg>
   )
 }

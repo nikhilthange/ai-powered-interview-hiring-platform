@@ -37,6 +37,7 @@ const app = require('./app');
 const connectDB = require('./config/db');
 const { initSocket } = require('./sockets/socketManager');
 const { startSubscriptionJobs } = require('./jobs/subscriptionJobs');
+const { startEmailJobs } = require('./jobs/emailJobs');
 
 connectDB();
 
@@ -131,6 +132,7 @@ try {
 // Start scheduled background jobs (subscription expiry, cleanup, etc.)
 try {
   startSubscriptionJobs();
+  startEmailJobs();
 } catch (err) {
   console.error('Failed to start background jobs:', err.message);
 }

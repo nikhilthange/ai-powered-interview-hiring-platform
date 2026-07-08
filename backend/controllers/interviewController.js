@@ -1,10 +1,12 @@
 const Interview = require('../models/Interview');
 const Application = require('../models/Application');
 const Profile = require('../models/Profile');
+const User = require('../models/User');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
 const { createAndSend } = require('../utils/notificationHelper');
 const { extractText, cleanup } = require('../services/resumeService');
+const { sendInterviewScheduledEmail } = require('../services/emailService');
 const {
   generateMockInterviewQuestions,
   analyzeInterviewFeedback,
@@ -40,8 +42,29 @@ exports.scheduleInterview = asyncHandler(async (req, res, next) => {
     type: 'interview_scheduled',
     title: 'Interview Scheduled',
     message: `An interview has been scheduled for ${new Date(scheduledAt).toLocaleString()}.`,
-    sendEmail: true
+    sendEmail: false
   });
+
+  // Send detailed interview email
+  try {
+    const [candidate, candidateProfile] = await Promise.all([
+      User.findById(application.candidateId).select('email name'),
+      Profile.findOne({ userId: application.candidateId }).select('fullName')
+    ]);
+    const candidateName = candidateProfile?.fullName || candidate?.name || 'Candidate';
+    const jobTitle = application.jobId?.title || 'the position';
+    const dateTime = new Date(scheduledAt).toLocaleString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+
+    if (candidate?.email) {
+      await sendInterviewScheduledEmail(
+        candidate.email, candidateName, jobTitle, dateTime, meetLink || '', application.candidateId
+      );
+    }
+  } catch (err) {
+    console.error(`Interview scheduled email failed: ${err.message}`);
+  }
 
   res.status(201).json({
     status: 'success',

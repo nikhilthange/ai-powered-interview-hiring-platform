@@ -1,10 +1,17 @@
 const Application = require('../models/Application');
 const Job = require('../models/Job');
+const User = require('../models/User');
+const Profile = require('../models/Profile');
 const aiService = require('../services/aiService');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
 const { createAndSend } = require('../utils/notificationHelper');
 const { extractText, cleanup, extractTextFromUrl } = require('../services/resumeService');
+const {
+  sendApplicationSubmittedEmail,
+  sendApplicationAcceptedEmail,
+  sendApplicationRejectedEmail
+} = require('../services/emailService');
 
 /**
  * SUBMIT APPLICATION (Candidate)
@@ -41,6 +48,24 @@ exports.submitApplication = asyncHandler(async (req, res, next) => {
     message: `A new candidate has applied to "${job.title}".`,
     sendEmail: true
   });
+
+  // Send confirmation email to candidate
+  try {
+    const [candidate, candidateProfile, recruiterProfile] = await Promise.all([
+      User.findById(req.user._id).select('email name'),
+      Profile.findOne({ userId: req.user._id }).select('fullName'),
+      Profile.findOne({ userId: job.recruiterId }).select('company')
+    ]);
+    const candidateName = candidateProfile?.fullName || candidate?.name;
+    const companyName = recruiterProfile?.company?.name || '';
+    if (candidate?.email) {
+      await sendApplicationSubmittedEmail(
+        candidate.email, candidateName, job.title, companyName || 'the company', req.user._id
+      );
+    }
+  } catch (err) {
+    console.error(`Application confirmation email failed: ${err.message}`);
+  }
 
   let resumeText = '';
   if (req.file) {
@@ -148,7 +173,10 @@ exports.updateApplicationStatus = asyncHandler(async (req, res, next) => {
     return next(new AppError(`Invalid status. Must be one of: ${validStatuses.join(', ')}`, 400));
   }
 
-  const application = await Application.findById(req.params.id);
+  const application = await Application.findById(req.params.id).populate({
+    path: 'jobId',
+    select: 'title recruiterId'
+  });
   if (!application) {
     return next(new AppError('No application found with that ID.', 404));
   }
@@ -162,8 +190,33 @@ exports.updateApplicationStatus = asyncHandler(async (req, res, next) => {
     type: 'application_update',
     title: 'Application Status Updated',
     message: `Your application status has been updated to: ${status}.`,
-    sendEmail: true
+    sendEmail: false
   });
+
+  // Send status-specific email to candidate
+  try {
+    const [candidate, candidateProfile, recruiterProfile] = await Promise.all([
+      User.findById(application.candidateId).select('email name'),
+      Profile.findOne({ userId: application.candidateId }).select('fullName'),
+      Profile.findOne({ userId: application.jobId?.recruiterId }).select('company')
+    ]);
+    const candidateName = candidateProfile?.fullName || candidate?.name;
+    const jobData = application.jobId || {};
+    const companyName = recruiterProfile?.company?.name || '';
+    if (candidate?.email) {
+      if (status === 'Shortlisted' || status === 'Hired') {
+        await sendApplicationAcceptedEmail(
+          candidate.email, candidateName, jobData.title, companyName || 'the company', application.candidateId
+        );
+      } else if (status === 'Rejected') {
+        await sendApplicationRejectedEmail(
+          candidate.email, candidateName, jobData.title, companyName || 'the company', application.candidateId
+        );
+      }
+    }
+  } catch (err) {
+    console.error(`Application status email failed: ${err.message}`);
+  }
 
   res.status(200).json({
     status: 'success',

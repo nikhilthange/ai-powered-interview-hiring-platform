@@ -4,7 +4,7 @@ const User = require('../models/User');
 const Profile = require('../models/Profile');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
-const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
+const { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } = require('../services/emailService');
 const { createAndSend } = require('../utils/notificationHelper');
 
 /**
@@ -68,7 +68,7 @@ exports.register = asyncHandler(async (req, res, next) => {
   });
 
   try {
-    await sendVerificationEmail(newUser.email, verificationToken);
+    await sendVerificationEmail(newUser.email, verificationToken, newUser.name);
   } catch (err) {
     console.error(`Mail sending failed for registration: ${err.message}`);
   }
@@ -127,6 +127,13 @@ exports.verifyEmail = asyncHandler(async (req, res, next) => {
   user.verificationToken = undefined;
   user.verificationTokenExpires = undefined;
   await user.save();
+
+  // 4. Send welcome email
+  try {
+    await sendWelcomeEmail(user.email, user.name);
+  } catch (err) {
+    console.error(`Welcome email failed: ${err.message}`);
+  }
 
   res.status(200).json({
     status: 'success',
@@ -250,7 +257,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
   // 3. Send reset link
   try {
-    await sendPasswordResetEmail(user.email, resetToken);
+    await sendPasswordResetEmail(user.email, resetToken, user.name);
   } catch (err) {
     // Rollback DB token state if mail fails
     user.passwordResetToken = undefined;

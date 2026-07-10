@@ -12,7 +12,7 @@ import { Brain, RefreshCw, Activity, Clock, AlertTriangle, CheckCircle, Server, 
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 2, transition: { staggerChildren: 0.08 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
 }
 
 const itemVariants = {

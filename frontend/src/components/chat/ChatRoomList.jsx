@@ -4,15 +4,16 @@ import { useAuth } from '../../hooks/useAuth'
 
 const ChatRoomItem = memo(function ChatRoomItem({ room, isSelected, onSelect }) {
   const { user } = useAuth()
-  const unread = room.unreadCount || 0
-
   const otherUser = useMemo(() => {
+    const isCandidate = user?._id === room.candidateId?._id
     const candidateEmail = room.candidateId?.email || ''
     const recruiterEmail = room.recruiterId?.email || ''
-    return user?._id === room.candidateId?._id
+    return isCandidate
       ? { name: recruiterEmail?.split('@')[0] || 'Recruiter', email: recruiterEmail }
       : { name: candidateEmail?.split('@')[0] || 'Candidate', email: candidateEmail }
   }, [room.candidateId, room.recruiterId, user?._id])
+
+  const unread = user?._id === room.candidateId?._id ? (room.unreadCountCandidate || 0) : (room.unreadCountRecruiter || 0)
 
   return (
     <button
@@ -38,7 +39,7 @@ const ChatRoomItem = memo(function ChatRoomItem({ room, isSelected, onSelect }) 
         </div>
         <div className="flex items-center justify-between mt-0.5">
           <p className="text-xs text-[var(--text-secondary)] truncate">
-            No messages yet
+            {room.lastMessageText || 'No messages yet'}
           </p>
           {unread > 0 && (
             <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-indigo-500 px-1.5 text-[10px] font-bold text-white ml-2">

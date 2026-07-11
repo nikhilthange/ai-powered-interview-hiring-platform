@@ -9,6 +9,7 @@ export default function ChatMessages({ roomId }) {
   const bottomRef = useRef(null)
   const socket = useSocket()
   const [liveMessages, setLiveMessages] = useState([])
+  const { typingUsers } = useSocket()
 
   const { data, isLoading } = useQuery({
     queryKey: ['chat-messages', roomId],
@@ -62,6 +63,17 @@ export default function ChatMessages({ roomId }) {
       {messages.map((msg) => (
         <ChatMessage key={msg._id || msg.id} message={msg} />
       ))}
+      
+      {Object.values(typingUsers).some((isTyping) => isTyping) && (
+        <div className="flex justify-start">
+          <div className="bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-2xl rounded-tl-md px-4 py-3 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+            <span className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+            <span className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce"></span>
+          </div>
+        </div>
+      )}
+      
       <div ref={bottomRef} />
     </div>
   )

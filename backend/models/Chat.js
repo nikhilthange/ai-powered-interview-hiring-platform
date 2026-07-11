@@ -10,6 +10,20 @@ const ChatRoomSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  lastMessageText: {
+    type: String
+  },
+  lastMessageAt: {
+    type: Date
+  },
+  unreadCountCandidate: {
+    type: Number,
+    default: 0
+  },
+  unreadCountRecruiter: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true
@@ -37,7 +51,12 @@ const ChatMessageSchema = new mongoose.Schema({
   isRead: {
     type: Boolean,
     default: false
-  }
+  },
+  attachments: [{
+    url: String,
+    resourceType: String,
+    name: String
+  }]
 }, {
   timestamps: true
 });

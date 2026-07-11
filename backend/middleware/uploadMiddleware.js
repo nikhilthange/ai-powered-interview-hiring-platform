@@ -23,15 +23,15 @@ const storage = multer.diskStorage({
   }
 });
 
-// File Filter (Restrict to resumes: PDFs, doc, docx formats)
+// File Filter (Restrict to documents and images)
 const fileFilter = (req, file, cb) => {
-  const allowedExtensions = ['.pdf', '.doc', '.docx'];
+  const allowedExtensions = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg', '.gif', '.webp'];
   const ext = path.extname(file.originalname).toLowerCase();
   
   if (allowedExtensions.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new AppError('Only .pdf, .doc, and .docx formats are allowed for resumes!', 400), false);
+    cb(new AppError('Invalid file type! Allowed types: PDF, DOC, DOCX, PNG, JPG, JPEG, GIF, WEBP', 400), false);
   }
 };
 

@@ -17,7 +17,20 @@ function ChatMessageInner({ message }) {
             : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-tl-md'
         )}
       >
-        <p className="text-sm leading-relaxed">{message.content || message.text}</p>
+        {message.attachments?.length > 0 && (
+          <div className="mb-2 space-y-2">
+            {message.attachments.map((att, i) => (
+              att.resourceType === 'image' ? (
+                <img key={i} src={att.url} alt={att.name} className="max-w-full rounded-lg max-h-48 object-cover" />
+              ) : (
+                <a key={i} href={att.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 underline text-sm">
+                  📄 {att.name}
+                </a>
+              )
+            ))}
+          </div>
+        )}
+        <p className="text-sm leading-relaxed">{message.messageText || message.content || message.text}</p>
         <p className={cn(
           'text-[10px] mt-1',
           isOwn ? 'text-white/60' : 'text-[var(--text-tertiary)]'

@@ -64,12 +64,13 @@ const initSocket = (server) => {
       socket.join(roomId);
     });
 
-    socket.on('send_message', async ({ roomId, messageText }) => {
+    socket.on('send_message', async ({ roomId, messageText, attachments }) => {
       try {
         const message = await ChatMessage.create({
           chatRoomId: roomId,
           senderId: socket.user._id,
-          messageText
+          messageText: messageText || '',
+          attachments: attachments || []
         });
 
         const payload = {
@@ -77,6 +78,7 @@ const initSocket = (server) => {
           chatRoomId: roomId,
           senderId: socket.user._id,
           messageText: message.messageText,
+          attachments: message.attachments || [],
           createdAt: message.createdAt
         };
 
@@ -84,9 +86,19 @@ const initSocket = (server) => {
 
         const chatRoom = await ChatRoom.findById(roomId);
         if (chatRoom) {
-          const otherUserId = chatRoom.candidateId.toString() !== userId
-            ? chatRoom.candidateId
-            : chatRoom.recruiterId;
+          const isSenderCandidate = chatRoom.candidateId.toString() === userId;
+          const otherUserId = isSenderCandidate ? chatRoom.recruiterId : chatRoom.candidateId;
+          
+          // Update last message and unread count
+          if (isSenderCandidate) {
+            chatRoom.unreadCountRecruiter += 1;
+          } else {
+            chatRoom.unreadCountCandidate += 1;
+          }
+          chatRoom.lastMessageText = messageText;
+          chatRoom.lastMessageAt = message.createdAt;
+          await chatRoom.save();
+          
           if (otherUserId) {
             const notif = await Notification.create({
               recipientId: otherUserId,
@@ -115,6 +127,17 @@ const initSocket = (server) => {
           { chatRoomId: roomId, senderId: { $ne: socket.user._id }, isRead: false },
           { $set: { isRead: true } }
         );
+        
+        const chatRoom = await ChatRoom.findById(roomId);
+        if (chatRoom) {
+          if (chatRoom.candidateId.toString() === socket.user._id.toString()) {
+            chatRoom.unreadCountCandidate = 0;
+          } else {
+            chatRoom.unreadCountRecruiter = 0;
+          }
+          await chatRoom.save();
+        }
+
         socket.to(roomId).emit('messages_read', { roomId, userId: socket.user._id });
       } catch (err) {
         console.error('WebSocket mark_read error:', err.message);

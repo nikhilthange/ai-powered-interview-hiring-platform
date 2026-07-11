@@ -1,6 +1,9 @@
 const { ChatRoom, ChatMessage } = require('../models/Chat');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
+const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * CREATE OR GET CHAT ROOM
@@ -41,8 +44,8 @@ exports.getMyRooms = asyncHandler(async (req, res, next) => {
     : { recruiterId: req.user._id };
 
   const rooms = await ChatRoom.find(query)
-    .populate('candidateId', 'email')
-    .populate('recruiterId', 'email')
+    .populate('candidateId', 'name email role')
+    .populate('recruiterId', 'name email role')
     .sort({ updatedAt: -1 });
 
   res.status(200).json({
@@ -109,5 +112,67 @@ exports.getUnreadCount = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     data: { count }
+  });
+});
+
+/**
+ * UPLOAD ATTACHMENT
+ */
+exports.uploadAttachment = asyncHandler(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError('No file uploaded.', 400));
+  }
+  
+  try {
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    const isImage = ['.png', '.jpg', '.jpeg', '.gif', '.webp'].includes(ext);
+    const resourceType = isImage ? 'image' : 'raw';
+
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: resourceType,
+      folder: 'hiremate/chat_attachments'
+    });
+
+    // Cleanup local file
+    fs.unlinkSync(req.file.path);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        url: result.secure_url,
+        resourceType,
+        name: req.file.originalname
+      }
+    });
+  } catch (err) {
+    if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    return next(new AppError('File upload to Cloudinary failed.', 500));
+  }
+});
+
+/**
+ * DELETE MESSAGE
+ */
+exports.deleteMessage = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const message = await ChatMessage.findById(id);
+  if (!message) {
+    return next(new AppError('Message not found', 404));
+  }
+
+  // Check if sender
+  if (message.senderId.toString() !== req.user._id.toString()) {
+    // Check if admin
+    if (req.user.role !== 'admin') {
+      return next(new AppError('You are not authorized to delete this message.', 403));
+    }
+  }
+
+  await ChatMessage.findByIdAndDelete(id);
+
+  res.status(204).json({
+    status: 'success',
+    data: null
   });
 });

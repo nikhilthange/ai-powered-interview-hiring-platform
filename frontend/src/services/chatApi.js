@@ -10,4 +10,11 @@ export const chatApi = {
 
   getUnreadCount: () => api.get('/chats/rooms/unread-count'),
 
+  deleteMessage: (messageId) => api.delete(`/chats/messages/${messageId}`),
+
+  uploadAttachment: (formData, onProgress) =>
+    api.post('/chats/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: onProgress,
+    }).then((r) => r.data),
 }

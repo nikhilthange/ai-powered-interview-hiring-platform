@@ -39,8 +39,8 @@ export function SocketProvider({ children }) {
     getSocket()?.emit('join_room', { roomId })
   }, [])
 
-  const sendMessage = useCallback((roomId, messageText) => {
-    getSocket()?.emit('send_message', { roomId, messageText })
+  const sendMessage = useCallback((roomId, messageText, attachments = []) => {
+    getSocket()?.emit('send_message', { roomId, messageText, attachments })
   }, [])
 
   const emitTyping = useCallback((roomId, isTyping) => {

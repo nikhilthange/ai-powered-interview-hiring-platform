@@ -61,11 +61,7 @@ const ChatInput = memo(function ChatInput({ roomId }) {
     // but I didn't update the `ChatMessage.create` call to include `attachments` from the socket payload.
     // I should probably just send it via socket.
     
-    socket.getSocket?.().emit('send_message', { 
-      roomId, 
-      messageText: text.trim(),
-      attachments: attachment ? [attachment] : [] 
-    })
+    socket.sendMessage(roomId, text.trim(), attachment ? [attachment] : [])
     
     setText('')
     setAttachment(null)

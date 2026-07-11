@@ -24,9 +24,15 @@ exports.getOrCreateRoom = asyncHandler(async (req, res, next) => {
     recruiterId = req.user._id;
   }
 
-  let room = await ChatRoom.findOne({ candidateId, recruiterId });
+  let room = await ChatRoom.findOne({ candidateId, recruiterId })
+    .populate('candidateId', 'name email role')
+    .populate('recruiterId', 'name email role');
+  
   if (!room) {
     room = await ChatRoom.create({ candidateId, recruiterId });
+    room = await ChatRoom.findById(room._id)
+      .populate('candidateId', 'name email role')
+      .populate('recruiterId', 'name email role');
   }
 
   res.status(200).json({

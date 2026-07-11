@@ -63,6 +63,8 @@ const NotificationsPage = () => lazyLoad(() => import('../pages/notifications/No
 const PlansPage = () => lazyLoad(() => import('../pages/profile/PlansPage'))
 const SubscriptionPage = () => lazyLoad(() => import('../pages/profile/SubscriptionPage'))
 const PublicPortfolio = () => lazyLoad(() => import('../pages/PublicPortfolio'))
+const ResumeList = () => lazyLoad(() => import('../pages/resume-builder/ResumeList'))
+const ResumeEditor = () => lazyLoad(() => import('../pages/resume-builder/ResumeEditor'))
 
 export const router = createBrowserRouter([
   {
@@ -87,6 +89,8 @@ export const router = createBrowserRouter([
         { path: 'applications/:id/analysis', element: <ApplicationAnalysis /> },
         { path: 'saved-jobs', element: <SavedJobs /> },
         { path: 'resume-analyzer', element: <ResumeAnalyzer /> },
+        { path: 'resume-builder', element: <ResumeList /> },
+        { path: 'resume-builder/:id', element: <ResumeEditor /> },
         { path: 'skill-gap-analysis', element: <SkillGapAnalysis /> },
         { path: 'mock-interview', element: <MockInterview /> },
         { path: 'career-roadmap', element: <CareerRoadmap /> },

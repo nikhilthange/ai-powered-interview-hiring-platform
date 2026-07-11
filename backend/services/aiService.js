@@ -870,3 +870,89 @@ exports.generateOverallFeedback = async (questions, targetRole) => {
 
   return callAI(mockFn, aiCall, { name: 'generateOverallFeedback' });
 };
+
+exports.parseResumeToJson = async (resumeText) => {
+  const mockFn = async () => {
+    await delay(1500);
+    return {
+      personalInfo: {
+        fullName: 'John Doe',
+        email: 'john@example.com',
+        phone: '123-456-7890',
+        location: 'New York, NY'
+      },
+      summary: 'Experienced professional imported from parsed text.',
+      experience: [{
+        id: '1',
+        company: 'Tech Corp',
+        position: 'Software Engineer',
+        startDate: 'Jan 2020',
+        endDate: 'Present',
+        current: true,
+        description: 'Developed scalable web applications.'
+      }],
+      education: [{
+        id: 'e1',
+        institution: 'State University',
+        degree: 'BS',
+        field: 'Computer Science',
+        startDate: '2015',
+        endDate: '2019',
+        description: 'Graduated with honors.'
+      }],
+      skills: [{
+        id: 's1',
+        category: 'Core',
+        items: 'JavaScript, React, Node.js'
+      }],
+      projects: [],
+      customSections: []
+    };
+  };
+
+  const aiCall = async () => {
+    const content = await callNvidia([
+      { role: 'system', content: `You are an expert resume parser. Extract the structured information from the provided resume text and return it as a JSON object matching this schema:
+{
+  "personalInfo": { "fullName": "", "email": "", "phone": "", "location": "", "website": "", "linkedin": "", "github": "" },
+  "summary": "",
+  "experience": [{ "id": "uuid-string", "company": "", "position": "", "startDate": "", "endDate": "", "current": boolean, "description": "" }],
+  "education": [{ "id": "uuid-string", "institution": "", "degree": "", "field": "", "startDate": "", "endDate": "", "current": boolean, "description": "" }],
+  "skills": [{ "id": "uuid-string", "category": "", "items": "comma separated string" }],
+  "projects": [{ "id": "uuid-string", "title": "", "technologies": "comma separated", "url": "", "description": "" }]
+}
+For all IDs, generate a short random alphanumeric string. If any field is missing in the text, leave it empty.` },
+      { role: 'user', content: `Resume Text:\n${resumeText}` }
+    ], { responseFormat: 'json_object', maxTokens: 4096 });
+    return JSON.parse(content);
+  };
+
+  return callAI(mockFn, aiCall, { name: 'parseResumeToJson' });
+};
+
+exports.enhanceResumeContent = async (text, action) => {
+  const mockFn = async () => {
+    await delay(1000);
+    if (action === 'grammar') return `[Grammar Fixed]: ${text}`;
+    if (action === 'rewrite') return `[Professionally Rewritten]: ${text}`;
+    if (action === 'ats') return `[ATS Optimized]: ${text}`;
+    return text;
+  };
+
+  const prompts = {
+    grammar: 'You are an expert copy editor. Fix all grammar and spelling errors in the following text. Do not change the meaning or add new information. Return only the corrected text without quotes or explanations.',
+    rewrite: 'You are an expert resume writer. Rewrite the following text to be more impactful, professional, and action-oriented. Use strong action verbs. Return only the rewritten text without quotes or explanations.',
+    ats: 'You are an ATS optimization expert. Rewrite the following resume bullet point to include more standard industry keywords and metrics where implied, making it highly optimized for ATS parsers. Return only the optimized text without quotes or explanations.'
+  };
+
+  const aiCall = async () => {
+    const systemPrompt = prompts[action] || prompts.rewrite;
+    const content = await callNvidia([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: text }
+    ], { temperature: 0.4, maxTokens: 1024 });
+    return content.replace(/^["']|["']$/g, '').trim();
+  };
+
+  return callAI(mockFn, aiCall, { name: 'enhanceResumeContent' });
+};

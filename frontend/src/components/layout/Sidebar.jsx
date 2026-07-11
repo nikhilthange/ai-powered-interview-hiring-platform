@@ -20,6 +20,7 @@ const candidateLinks = [
   { to: '/my-applications', label: 'Applications', icon: FileText },
   { to: '/my-interviews', label: 'Interviews', icon: Calendar },
   { to: '/saved-jobs', label: 'Saved Jobs', icon: Bookmark },
+  { to: '/resume-builder', label: 'Resume Builder', icon: FileText },
   { to: '/resume-analyzer', label: 'Resume AI', icon: Search },
   { to: '/skill-gap-analysis', label: 'Skill Gap', icon: Target },
   { to: '/mock-interview', label: 'Mock Interview', icon: GraduationCap },

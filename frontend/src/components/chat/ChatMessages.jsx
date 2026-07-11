@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { chatApi } from '../../services/chatApi'
 import { useSocket } from '../../hooks/useSocket'
 import ChatMessage from './ChatMessage'
@@ -8,6 +8,7 @@ import { Loader2, MessageCircle } from 'lucide-react'
 export default function ChatMessages({ roomId }) {
   const bottomRef = useRef(null)
   const socket = useSocket()
+  const queryClient = useQueryClient()
   const [liveMessages, setLiveMessages] = useState([])
   const { typingUsers } = useSocket()
 
@@ -24,14 +25,39 @@ export default function ChatMessages({ roomId }) {
   useEffect(() => {
     if (!roomId) return
     socket.joinRoom(roomId)
-    const unsub = socket.onMessage((msg) => {
+    socket.markRead(roomId)
+    const unsubMessage = socket.onMessage((msg) => {
       if (msg.chatRoomId === roomId) {
         setLiveMessages((prev) => [...prev, msg])
+        // If we receive a message in our active room, mark it read immediately
+        if (msg.senderId !== socket.user?._id) {
+           socket.markRead(roomId)
+        }
       }
     })
-    return () => unsub && unsub()
+
+    const unsubRead = socket.onMessagesRead(({ roomId: readRoomId }) => {
+      if (readRoomId === roomId) {
+        setLiveMessages((prev) => prev.map(m => ({ ...m, isRead: true })))
+        queryClient.setQueryData(['chat-messages', roomId], (oldData) => {
+          if (!oldData) return oldData
+          const messages = Array.isArray(oldData) ? oldData : oldData.data?.messages || oldData.messages
+          if (!messages) return oldData
+          const updated = messages.map(m => ({ ...m, isRead: true }))
+          if (Array.isArray(oldData)) return updated
+          if (oldData.data?.messages) return { ...oldData, data: { ...oldData.data, messages: updated } }
+          return { ...oldData, messages: updated }
+        })
+      }
+    })
+
+    return () => {
+      unsubMessage && unsubMessage()
+      unsubRead && unsubRead()
+    }
   }, [roomId, socket])
 
+  // Merge data and apply isRead to all data messages if we received an onMessagesRead event for data
   const messages = [...(Array.isArray(data) ? data : []), ...liveMessages]
 
   useEffect(() => {

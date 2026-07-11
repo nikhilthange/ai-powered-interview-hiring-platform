@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Save, Upload, Link as LinkIcon, Users, Image as ImageIcon, MapPin } from 'lucide-react';
+import { Building2, Save, Upload, Link as LinkIcon, Users, Image as ImageIcon, CheckCircle2, ChevronRight, ChevronLeft } from 'lucide-react';
 import companyService from '../../services/companyService';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '../../lib/utils';
+
+const steps = [
+  { id: 1, name: 'Basic Details', icon: Building2 },
+  { id: 2, name: 'Branding', icon: ImageIcon },
+  { id: 3, name: 'Culture & Perks', icon: Users },
+];
 
 const CompanyProfileForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [currentStep, setCurrentStep] = useState(1);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -16,7 +25,7 @@ const CompanyProfileForm = () => {
     industry: '',
     employeeCount: '1-10',
     culture: '',
-    benefits: '', // we will store as comma separated string for the form
+    benefits: '',
     linkedin: '',
     twitter: '',
   });
@@ -78,7 +87,7 @@ const CompanyProfileForm = () => {
     if (!selectedFiles || selectedFiles.length === 0) return;
 
     if (type === 'officePhotos') {
-      const newFiles = Array.from(selectedFiles).slice(0, 5); // limit to 5
+      const newFiles = Array.from(selectedFiles).slice(0, 5);
       setFiles(prev => ({ ...prev, officePhotos: newFiles }));
       
       const newPreviews = newFiles.map(file => URL.createObjectURL(file));
@@ -90,24 +99,38 @@ const CompanyProfileForm = () => {
     }
   };
 
+  const nextStep = () => {
+    if (currentStep === 1 && (!formData.name || !formData.industry)) {
+      toast.error('Please fill in required fields (Name, Industry)');
+      return;
+    }
+    setCurrentStep(prev => Math.min(prev + 1, steps.length));
+  };
+
+  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.about) {
+      toast.error('Please provide an About section');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const data = new FormData();
-      data.append('name', formData.name);
-      data.append('about', formData.about);
-      data.append('website', formData.website);
-      data.append('industry', formData.industry);
-      data.append('employeeCount', formData.employeeCount);
-      data.append('culture', formData.culture);
-      
-      // Parse benefits
-      const benefitsArr = formData.benefits.split(',').map(b => b.trim()).filter(b => b);
-      data.append('benefits', JSON.stringify(benefitsArr));
+      Object.keys(formData).forEach(key => {
+        if (key === 'benefits') {
+          const benefitsArr = formData.benefits.split(',').map(b => b.trim()).filter(b => b);
+          data.append('benefits', JSON.stringify(benefitsArr));
+        } else if (key === 'linkedin' || key === 'twitter') {
+           // wait to handle below
+        } else {
+          data.append(key, formData[key]);
+        }
+      });
 
-      // Parse social
       const socialLinks = {
         linkedin: formData.linkedin,
         twitter: formData.twitter
@@ -134,299 +157,210 @@ const CompanyProfileForm = () => {
 
   if (fetching) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      <div className="flex justify-center items-center h-[calc(100vh-10rem)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-          <Building2 className="mr-3 h-8 w-8 text-primary-600" />
-          Company Profile
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Set up your company's branding and information to attract top talent.
-        </p>
+    <div className="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+      <div className="mb-10 text-center">
+        <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Company Profile</h1>
+        <p className="mt-2 text-[var(--text-secondary)]">Create a compelling profile to attract top talent to your team.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8 divide-y divide-gray-200">
-        
-        {/* Branding Section */}
-        <div className="space-y-6 pt-8 sm:pt-10 sm:space-y-5">
-          <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
-              <ImageIcon className="mr-2 h-5 w-5 text-gray-400" />
-              Branding
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
-              Upload your logo and cover image.
-            </p>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              Logo
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
+      {/* Stepper */}
+      <nav aria-label="Progress" className="mb-12">
+        <ol role="list" className="flex items-center justify-center">
+          {steps.map((step, stepIdx) => (
+            <li key={step.name} className={cn(stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : '', 'relative')}>
               <div className="flex items-center">
-                <span className="h-16 w-16 rounded-full overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
-                  {previews.logo ? (
-                    <img src={previews.logo} alt="Logo" className="h-full w-full object-cover" />
+                <div className={cn(
+                  "relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors duration-300 z-10",
+                  currentStep > step.id ? "border-indigo-600 bg-indigo-600" : currentStep === step.id ? "border-indigo-600 bg-[var(--bg-primary)]" : "border-gray-300 dark:border-gray-600 bg-[var(--bg-primary)]"
+                )}>
+                  {currentStep > step.id ? (
+                    <CheckCircle2 className="h-6 w-6 text-white" aria-hidden="true" />
                   ) : (
-                    <Building2 className="h-full w-full p-3 text-gray-300" />
+                    <step.icon className={cn("h-5 w-5", currentStep === step.id ? "text-indigo-600" : "text-gray-400 dark:text-gray-500")} />
                   )}
-                </span>
-                <label className="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
-                  <span>Change</span>
-                  <input type="file" className="sr-only" accept="image/*" onChange={(e) => handleFileChange(e, 'logo')} />
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              Cover Image
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
-              <div className="max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative group overflow-hidden">
-                {previews.coverImage ? (
-                  <>
-                    <img src={previews.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" />
-                    <div className="relative z-10 text-center">
-                      <label className="cursor-pointer bg-white/80 rounded-md px-3 py-2 text-sm font-medium text-primary-600 hover:text-primary-500">
-                        <span>Change Cover</span>
-                        <input type="file" className="sr-only" accept="image/*" onChange={(e) => handleFileChange(e, 'coverImage')} />
-                      </label>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-1 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex text-sm text-gray-600 justify-center">
-                      <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
-                        <span>Upload a file</span>
-                        <input type="file" className="sr-only" accept="image/*" onChange={(e) => handleFileChange(e, 'coverImage')} />
-                      </label>
-                    </div>
-                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
-                  </div>
+                </div>
+                {stepIdx !== steps.length - 1 && (
+                  <div className={cn("absolute left-5 top-5 -ml-px mt-0.5 h-0.5 w-full bg-gray-200 dark:bg-gray-700 transition-colors duration-300 -z-10", currentStep > step.id ? "bg-indigo-600" : "")} aria-hidden="true" />
                 )}
               </div>
-            </div>
-          </div>
-        </div>
+              <span className={cn("absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium whitespace-nowrap", currentStep === step.id ? "text-indigo-600 dark:text-indigo-400" : "text-gray-500 dark:text-gray-400")}>
+                {step.name}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </nav>
 
-        {/* Basic Info Section */}
-        <div className="space-y-6 pt-8 sm:pt-10 sm:space-y-5">
-          <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Basic Information</h3>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              Company Name *
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
-              <input
-                type="text"
-                name="name"
-                id="name"
-                required
-                value={formData.name}
-                onChange={handleChange}
-                className="max-w-lg block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-              />
-            </div>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label htmlFor="industry" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              Industry *
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
-              <input
-                type="text"
-                name="industry"
-                id="industry"
-                required
-                placeholder="e.g. Information Technology"
-                value={formData.industry}
-                onChange={handleChange}
-                className="max-w-lg block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-              />
-            </div>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label htmlFor="employeeCount" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              Company Size
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
-              <select
-                id="employeeCount"
-                name="employeeCount"
-                value={formData.employeeCount}
-                onChange={handleChange}
-                className="max-w-lg block focus:ring-primary-500 focus:border-primary-500 w-full shadow-sm sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-              >
-                <option value="1-10">1-10 employees</option>
-                <option value="11-50">11-50 employees</option>
-                <option value="51-200">51-200 employees</option>
-                <option value="201-500">201-500 employees</option>
-                <option value="501-1000">501-1000 employees</option>
-                <option value="1000+">1000+ employees</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label htmlFor="about" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              About *
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
-              <textarea
-                id="about"
-                name="about"
-                rows={4}
-                required
-                value={formData.about}
-                onChange={handleChange}
-                className="max-w-lg shadow-sm block w-full focus:ring-primary-500 focus:border-primary-500 sm:text-sm border border-gray-300 rounded-md"
-                placeholder="Tell candidates what your company does..."
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Culture & Perks Section */}
-        <div className="space-y-6 pt-8 sm:pt-10 sm:space-y-5">
-          <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
-              <Users className="mr-2 h-5 w-5 text-gray-400" />
-              Culture & Benefits
-            </h3>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label htmlFor="culture" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              Company Culture
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
-              <textarea
-                id="culture"
-                name="culture"
-                rows={3}
-                value={formData.culture}
-                onChange={handleChange}
-                className="max-w-lg shadow-sm block w-full focus:ring-primary-500 focus:border-primary-500 sm:text-sm border border-gray-300 rounded-md"
-                placeholder="Describe the work environment, values, etc."
-              />
-            </div>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label htmlFor="benefits" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              Benefits & Perks
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
-              <input
-                type="text"
-                name="benefits"
-                id="benefits"
-                value={formData.benefits}
-                onChange={handleChange}
-                className="max-w-lg block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-                placeholder="e.g. Health Insurance, 401k, Remote Work (comma separated)"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Links & Socials Section */}
-        <div className="space-y-6 pt-8 sm:pt-10 sm:space-y-5">
-          <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
-              <LinkIcon className="mr-2 h-5 w-5 text-gray-400" />
-              Links & Social
-            </h3>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label htmlFor="website" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              Website
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
-              <input
-                type="url"
-                name="website"
-                id="website"
-                value={formData.website}
-                onChange={handleChange}
-                className="max-w-lg block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-                placeholder="https://example.com"
-              />
-            </div>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              LinkedIn
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
-              <input
-                type="url"
-                name="linkedin"
-                id="linkedin"
-                value={formData.linkedin}
-                onChange={handleChange}
-                className="max-w-lg block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-                placeholder="https://linkedin.com/company/yourcompany"
-              />
-            </div>
-          </div>
+      <div className="bg-[var(--bg-primary)] shadow-xl shadow-black/5 rounded-3xl border border-[var(--border-color)] overflow-hidden">
+        <form onSubmit={handleSubmit} className="p-8 sm:p-10">
           
-          <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
-            <label htmlFor="twitter" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-              Twitter
-            </label>
-            <div className="mt-1 sm:mt-0 sm:col-span-2">
-              <input
-                type="url"
-                name="twitter"
-                id="twitter"
-                value={formData.twitter}
-                onChange={handleChange}
-                className="max-w-lg block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-                placeholder="https://twitter.com/yourcompany"
-              />
-            </div>
-          </div>
-        </div>
+          <AnimatePresence mode="wait">
+            {currentStep === 1 && (
+              <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold text-[var(--text-primary)]">Basic Details</h3>
+                  <p className="text-sm text-[var(--text-secondary)] mt-1">Provide the essential information about your company.</p>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-semibold text-[var(--text-primary)]">Company Name *</label>
+                    <input type="text" name="name" required value={formData.name} onChange={handleChange} className="mt-2 block w-full rounded-xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-[var(--bg-secondary)] px-4 py-3" placeholder="Acme Corp" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--text-primary)]">Industry *</label>
+                    <input type="text" name="industry" required value={formData.industry} onChange={handleChange} className="mt-2 block w-full rounded-xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-[var(--bg-secondary)] px-4 py-3" placeholder="e.g. Technology" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--text-primary)]">Company Size</label>
+                    <select name="employeeCount" value={formData.employeeCount} onChange={handleChange} className="mt-2 block w-full rounded-xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-[var(--bg-secondary)] px-4 py-3">
+                      <option value="1-10">1-10 employees</option>
+                      <option value="11-50">11-50 employees</option>
+                      <option value="51-200">51-200 employees</option>
+                      <option value="201-500">201-500 employees</option>
+                      <option value="501-1000">501-1000 employees</option>
+                      <option value="1000+">1000+ employees</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--text-primary)]">Website</label>
+                    <div className="mt-2 relative rounded-xl shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <LinkIcon className="h-4 w-4 text-gray-400" />
+                      </div>
+                      <input type="url" name="website" value={formData.website} onChange={handleChange} className="block w-full pl-10 rounded-xl border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-indigo-500 bg-[var(--bg-secondary)] px-4 py-3" placeholder="https://example.com" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--text-primary)]">LinkedIn</label>
+                    <input type="url" name="linkedin" value={formData.linkedin} onChange={handleChange} className="mt-2 block w-full rounded-xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-[var(--bg-secondary)] px-4 py-3" placeholder="https://linkedin.com/company/acme" />
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-        <div className="pt-5">
-          <div className="flex justify-end">
+            {currentStep === 2 && (
+              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold text-[var(--text-primary)]">Visual Branding</h3>
+                  <p className="text-sm text-[var(--text-secondary)] mt-1">Upload your logo and cover image to make your profile stand out.</p>
+                </div>
+                
+                <div className="space-y-8">
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-3">Company Logo</label>
+                    <div className="flex items-center gap-6">
+                      <div className="h-24 w-24 rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center relative group">
+                        {previews.logo ? (
+                          <img src={previews.logo} alt="Logo preview" className="h-full w-full object-contain p-2 bg-white" />
+                        ) : (
+                          <Building2 className="h-8 w-8 text-gray-400" />
+                        )}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Upload className="h-6 w-6 text-white" />
+                        </div>
+                        <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onChange={(e) => handleFileChange(e, 'logo')} />
+                      </div>
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        <p className="font-medium text-[var(--text-primary)]">Upload a high-res logo</p>
+                        <p>PNG, JPG, or SVG up to 2MB.</p>
+                        <p>Square ratio recommended.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-3">Cover Image</label>
+                    <div className="relative w-full h-48 sm:h-64 rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border-2 border-dashed border-gray-300 dark:border-gray-700 group flex flex-col items-center justify-center">
+                      {previews.coverImage ? (
+                        <>
+                          <img src={previews.coverImage} alt="Cover preview" className="absolute inset-0 w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span className="bg-white/90 text-gray-900 px-4 py-2 rounded-full font-semibold text-sm shadow-lg">Change Cover</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="h-12 w-12 text-gray-400 mb-3" />
+                          <p className="font-medium text-[var(--text-primary)]">Upload a cover image</p>
+                          <p className="text-sm text-[var(--text-secondary)] mt-1">1200 x 400px recommended</p>
+                        </>
+                      )}
+                      <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onChange={(e) => handleFileChange(e, 'coverImage')} />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {currentStep === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold text-[var(--text-primary)]">Culture & Perks</h3>
+                  <p className="text-sm text-[var(--text-secondary)] mt-1">Tell candidates what it's like to work at your company.</p>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--text-primary)]">About Us *</label>
+                    <textarea name="about" required rows={4} value={formData.about} onChange={handleChange} className="mt-2 block w-full rounded-xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-[var(--bg-secondary)] px-4 py-3" placeholder="Provide a detailed overview of your company..." />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--text-primary)]">Company Culture</label>
+                    <textarea name="culture" rows={3} value={formData.culture} onChange={handleChange} className="mt-2 block w-full rounded-xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-[var(--bg-secondary)] px-4 py-3" placeholder="Describe your team's values and work environment..." />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--text-primary)]">Benefits & Perks</label>
+                    <input type="text" name="benefits" value={formData.benefits} onChange={handleChange} className="mt-2 block w-full rounded-xl border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-[var(--bg-secondary)] px-4 py-3" placeholder="e.g. Health Insurance, Remote Work, 401k (comma separated)" />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="mt-10 pt-6 border-t border-[var(--border-color)] flex items-center justify-between">
             <button
               type="button"
-              onClick={() => navigate('/recruiter/dashboard')}
-              className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              onClick={prevStep}
+              disabled={currentStep === 1}
+              className={cn(
+                "inline-flex items-center px-5 py-2.5 rounded-full text-sm font-semibold transition-colors",
+                currentStep === 1 ? "opacity-0 pointer-events-none" : "text-[var(--text-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-gray-300 dark:border-gray-700"
+              )}
             >
-              Cancel
+              <ChevronLeft className="mr-1 h-4 w-4" /> Back
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Save Profile'}
-              <Save className="ml-2 h-4 w-4" />
-            </button>
+            
+            {currentStep < steps.length ? (
+              <button
+                type="button"
+                onClick={nextStep}
+                className="inline-flex items-center px-6 py-2.5 rounded-full text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all hover:-translate-y-0.5"
+              >
+                Next Step <ChevronRight className="ml-1 h-4 w-4" />
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex items-center px-6 py-2.5 rounded-full text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:transform-none"
+              >
+                {loading ? 'Saving...' : 'Save & Publish Profile'}
+                <Save className="ml-2 h-4 w-4" />
+              </button>
+            )}
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };

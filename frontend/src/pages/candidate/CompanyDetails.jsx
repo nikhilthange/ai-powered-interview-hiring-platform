@@ -7,7 +7,8 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { chatApi } from '../../services/chatApi';
 import { getMediaUrl, cn } from '../../lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import companyService from '../../services/companyService';
 
 const CompanyDetails = () => {
   const { id } = useParams();
@@ -97,11 +98,17 @@ const CompanyDetails = () => {
       <div className="max-w-7xl mx-auto md:mt-6 md:px-6 lg:px-8">
         <div className="bg-[var(--bg-primary)] md:rounded-2xl shadow-sm border-x md:border border-b border-[var(--border-color)] overflow-hidden">
           
-          <div className="h-48 md:h-64 lg:h-80 w-full relative bg-gray-100 dark:bg-gray-800">
+          <div className="h-48 md:h-72 lg:h-96 w-full relative bg-gray-100 dark:bg-gray-800">
             {company.coverImage && company.coverImage !== 'default-company-cover.png' ? (
-              <img src={getMediaUrl(company.coverImage)} alt="Cover" className="w-full h-full object-cover" />
+              <>
+                <img src={getMediaUrl(company.coverImage)} alt="Cover" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+              </>
             ) : (
-              <div className="w-full h-full bg-gradient-to-r from-indigo-600 to-purple-800 opacity-90"></div>
+              <div className="w-full h-full bg-gradient-to-tr from-indigo-900 via-purple-900 to-indigo-600 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+              </div>
             )}
           </div>
 
@@ -109,29 +116,30 @@ const CompanyDetails = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between -mt-16 md:-mt-20 pb-6 gap-6">
               
               <div className="flex flex-col md:flex-row items-start md:items-end gap-6 w-full">
-                <div className="h-32 w-32 md:h-40 md:w-40 rounded-2xl shadow-lg border-4 border-[var(--bg-primary)] bg-white dark:bg-gray-800 overflow-hidden shrink-0 z-10">
+                <div className="h-32 w-32 md:h-44 md:w-44 rounded-3xl shadow-2xl shadow-black/10 border-4 border-[var(--bg-primary)] bg-white dark:bg-gray-800 overflow-hidden shrink-0 z-10 relative group">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   {company.logo && company.logo !== 'default-company-logo.png' ? (
-                    <img src={getMediaUrl(company.logo)} alt="Logo" className="w-full h-full object-cover" />
+                    <img src={getMediaUrl(company.logo)} alt="Logo" className="w-full h-full object-contain p-2 bg-white" />
                   ) : (
-                    <Building2 className="h-full w-full p-8 text-gray-400 bg-gray-50 dark:bg-gray-800" />
+                    <Building2 className="h-full w-full p-10 text-gray-400 bg-gray-50 dark:bg-gray-800" />
                   )}
                 </div>
                 
-                <div className="flex-1 pb-1">
-                  <h1 className="text-3xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+                <div className="flex-1 pb-1 z-10">
+                  <h1 className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] flex items-center gap-2 tracking-tight">
                     {company.name}
-                    {company.isVerified && <BadgeCheck className="h-6 w-6 text-blue-500 mt-1" title="Verified" />}
+                    {company.isVerified && <BadgeCheck className="h-7 w-7 text-blue-500 drop-shadow-sm" title="Verified" />}
                   </h1>
-                  <p className="text-lg text-[var(--text-secondary)] mt-1 font-medium">{company.industry}</p>
-                  <div className="mt-2.5 flex flex-wrap items-center text-sm text-[var(--text-tertiary)] gap-x-4 gap-y-2">
+                  <p className="text-lg md:text-xl text-[var(--text-secondary)] mt-1 font-medium">{company.industry}</p>
+                  <div className="mt-4 flex flex-wrap items-center text-sm font-medium text-[var(--text-tertiary)] gap-x-5 gap-y-3">
                     {company.location && (
-                      <span className="flex items-center"><MapPin className="mr-1.5 h-4 w-4" />{company.location}</span>
+                      <span className="flex items-center"><MapPin className="mr-1.5 h-4 w-4 text-indigo-500" />{company.location}</span>
                     )}
-                    <span className="flex items-center"><Users className="mr-1.5 h-4 w-4" />{company.employeeCount} employees</span>
-                    <span className="flex items-center"><Users className="mr-1.5 h-4 w-4" />{company.followersCount || 0} followers</span>
+                    <span className="flex items-center"><Users className="mr-1.5 h-4 w-4 text-purple-500" />{company.employeeCount} employees</span>
+                    <span className="flex items-center"><Heart className="mr-1.5 h-4 w-4 text-pink-500" />{company.followersCount || 0} followers</span>
                     {company.rating > 0 && (
-                      <span className="flex items-center text-amber-500 font-semibold bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded text-xs">
-                        <Star className="mr-1 h-3 w-3 fill-current" />{company.rating} Rating
+                      <span className="flex items-center text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 rounded-md text-xs font-bold border border-amber-200 dark:border-amber-900/50">
+                        <Star className="mr-1.5 h-3.5 w-3.5 fill-current" />{company.rating} Rating
                       </span>
                     )}
                   </div>
@@ -179,20 +187,26 @@ const CompanyDetails = () => {
             </div>
 
             {/* Tabs */}
-            <div className="border-t border-[var(--border-color)]">
-              <nav className="flex -mb-px space-x-8 overflow-x-auto scrollbar-none" aria-label="Tabs">
+            <div className="border-t border-[var(--border-color)] relative">
+              <nav className="flex space-x-8 overflow-x-auto scrollbar-none" aria-label="Tabs">
                 {['about', 'jobs', 'life'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={cn(
-                      "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors",
+                      "relative whitespace-nowrap py-4 px-1 font-semibold text-sm transition-colors",
                       activeTab === tab
-                        ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
-                        : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-gray-300 dark:hover:border-gray-600"
+                        ? "text-indigo-600 dark:text-indigo-400"
+                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                     )}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)} {tab === 'jobs' && company.jobs && company.jobs.length > 0 && `(${company.jobs.length})`}
+                    {activeTab === tab && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-t-full"
+                      />
+                    )}
                   </button>
                 ))}
               </nav>
@@ -204,40 +218,61 @@ const CompanyDetails = () => {
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             
+            <AnimatePresence mode="wait">
             {activeTab === 'about' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <section className="bg-[var(--bg-primary)] rounded-2xl shadow-sm border border-[var(--border-color)] p-6 lg:p-8">
-                  <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">Overview</h2>
+              <motion.div key="about" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
+                <section className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 lg:p-8 hover:shadow-md transition-shadow">
+                  <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-indigo-500" />
+                    Overview
+                  </h2>
                   <div className="prose prose-indigo dark:prose-invert max-w-none text-[var(--text-secondary)]">
-                    <p className="whitespace-pre-line leading-relaxed">{company.about}</p>
+                    <p className="whitespace-pre-line leading-relaxed text-base">{company.about}</p>
                   </div>
                 </section>
               </motion.div>
             )}
 
             {activeTab === 'jobs' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                <section className="bg-[var(--bg-primary)] rounded-2xl shadow-sm border border-[var(--border-color)] p-6 lg:p-8">
-                  <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Open Roles</h2>
+              <motion.div key="jobs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+                <section className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 lg:p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+                      <Briefcase className="h-5 w-5 text-indigo-500" />
+                      Open Roles
+                    </h2>
+                    <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold px-2.5 py-1 rounded-full">
+                      {company.jobs?.length || 0} Openings
+                    </span>
+                  </div>
                   {company.jobs && company.jobs.length > 0 ? (
                     <div className="space-y-4">
                       {company.jobs.map(job => (
-                        <div key={job.id} className="p-4 border border-[var(--border-color)] rounded-xl hover:shadow-md transition-shadow">
-                          <Link to={`/jobs/${job.id}`} className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
-                            {job.title}
-                          </Link>
-                          <div className="mt-2 flex items-center gap-4 text-sm text-[var(--text-secondary)]">
-                            <span className="flex items-center"><MapPin className="mr-1 h-4 w-4" /> {job.location || 'Remote'}</span>
-                            <span className="flex items-center"><Briefcase className="mr-1 h-4 w-4" /> {job.type}</span>
+                        <div key={job.id} className="group p-5 border border-gray-100 dark:border-gray-800 rounded-xl hover:shadow-lg hover:border-indigo-100 dark:hover:border-indigo-900/30 bg-[var(--bg-primary)] transition-all relative overflow-hidden">
+                          <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                          <div className="flex justify-between items-start mb-2">
+                            <Link to={`/jobs/${job.id}`} className="text-lg font-bold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                              {job.title}
+                            </Link>
+                            <span className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-semibold px-2.5 py-0.5 rounded">Active</span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-[var(--text-secondary)] font-medium">
+                            <span className="flex items-center"><MapPin className="mr-1.5 h-4 w-4 text-gray-400" /> {job.location || 'Remote'}</span>
+                            <span className="flex items-center"><Briefcase className="mr-1.5 h-4 w-4 text-gray-400" /> {job.jobType}</span>
+                            {job.salaryRange && (job.salaryRange.min > 0 || job.salaryRange.max > 0) && (
+                               <span className="flex items-center"><Star className="mr-1.5 h-4 w-4 text-gray-400" /> ${job.salaryRange.min.toLocaleString()} - ${job.salaryRange.max.toLocaleString()}</span>
+                            )}
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-12">
-                      <Briefcase className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" />
-                      <h3 className="text-lg font-medium text-[var(--text-primary)]">No open jobs</h3>
-                      <p className="text-[var(--text-secondary)] mt-1">This company is not hiring currently.</p>
+                    <div className="text-center py-16 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                      <div className="mx-auto h-16 w-16 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm mb-4">
+                        <Briefcase className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+                      </div>
+                      <h3 className="text-lg font-bold text-[var(--text-primary)]">No open jobs</h3>
+                      <p className="text-[var(--text-secondary)] mt-1 max-w-sm mx-auto">This company currently doesn't have any open positions listed on the platform.</p>
                     </div>
                   )}
                 </section>
@@ -245,34 +280,48 @@ const CompanyDetails = () => {
             )}
 
             {activeTab === 'life' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+              <motion.div key="life" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
                 {company.culture && (
-                  <section className="bg-[var(--bg-primary)] rounded-2xl shadow-sm border border-[var(--border-color)] p-6 lg:p-8">
-                    <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">Culture</h2>
+                  <section className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 lg:p-8 hover:shadow-md transition-shadow">
+                    <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                      <Heart className="h-5 w-5 text-pink-500" />
+                      Culture & Values
+                    </h2>
                     <div className="prose prose-indigo dark:prose-invert max-w-none text-[var(--text-secondary)]">
-                      <p className="whitespace-pre-line leading-relaxed">{company.culture}</p>
+                      <p className="whitespace-pre-line leading-relaxed text-base">{company.culture}</p>
                     </div>
                   </section>
                 )}
                 {company.officePhotos && company.officePhotos.length > 0 && (
-                  <section className="bg-[var(--bg-primary)] rounded-2xl shadow-sm border border-[var(--border-color)] p-6 lg:p-8">
-                    <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">Photos</h2>
-                    <div className="grid grid-cols-2 gap-4">
+                  <section className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 lg:p-8">
+                    <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
+                      <Building2 className="h-5 w-5 text-indigo-500" />
+                      Office & Environment
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {company.officePhotos.map((photo, idx) => (
-                        <div key={idx} className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
-                          <img src={getMediaUrl(photo)} alt={`Office ${idx + 1}`} className="object-cover w-full h-full hover:scale-105 transition-transform duration-300" />
+                        <div key={idx} className="aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 relative group shadow-sm border border-gray-200 dark:border-gray-700">
+                          <img src={getMediaUrl(photo)} alt={`Office ${idx + 1}`} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <span className="text-white text-sm font-semibold tracking-wider">VIEW</span>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </section>
                 )}
                 {!company.culture && (!company.officePhotos || company.officePhotos.length === 0) && (
-                   <div className="bg-[var(--bg-primary)] rounded-2xl shadow-sm border border-[var(--border-color)] p-12 text-center text-[var(--text-secondary)]">
-                      Nothing shared yet.
+                   <div className="text-center py-16 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                     <div className="mx-auto h-16 w-16 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm mb-4">
+                       <Heart className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+                     </div>
+                     <h3 className="text-lg font-bold text-[var(--text-primary)]">Nothing shared yet</h3>
+                     <p className="text-[var(--text-secondary)] mt-1 max-w-sm mx-auto">This company hasn't shared details about their culture or office environment.</p>
                    </div>
                 )}
               </motion.div>
             )}
+            </AnimatePresence>
           </div>
 
           <div className="space-y-6">

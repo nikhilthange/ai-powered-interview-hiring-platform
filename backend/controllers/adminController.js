@@ -80,14 +80,14 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.suspendUser = asyncHandler(async (req, res, next) => {
-  const user = await User.findByIdAndUpdate(req.params.id, { $set: { isSuspended: true } }, { new: true });
+  const user = await User.findByIdAndUpdate(req.params.id, { $set: { status: 'suspended' } }, { new: true });
   if (!user) return next(new AppError('User not found', 404));
   await logAdminAction(req, 'user_suspended', user._id, 'user');
   res.json({ status: 'success', message: 'User suspended.' });
 });
 
 exports.activateUser = asyncHandler(async (req, res, next) => {
-  const user = await User.findByIdAndUpdate(req.params.id, { $set: { isSuspended: false } }, { new: true });
+  const user = await User.findByIdAndUpdate(req.params.id, { $set: { status: 'active' } }, { new: true });
   if (!user) return next(new AppError('User not found', 404));
   await logAdminAction(req, 'user_activated', user._id, 'user');
   res.json({ status: 'success', message: 'User activated.' });
@@ -127,7 +127,7 @@ exports.bulkSuspendUsers = asyncHandler(async (req, res, next) => {
   const { ids } = req.body;
   if (!Array.isArray(ids) || ids.length === 0) return next(new AppError('Provide an array of user IDs', 400));
   const filtered = ids.filter(id => id !== req.user._id.toString());
-  await User.updateMany({ _id: { $in: filtered } }, { $set: { isSuspended: true } });
+  await User.updateMany({ _id: { $in: filtered } }, { $set: { status: 'suspended' } });
   await logAdminAction(req, 'bulk_user_suspend', null, 'user', { count: filtered.length });
   res.json({ status: 'success', message: `${filtered.length} users suspended.` });
 });

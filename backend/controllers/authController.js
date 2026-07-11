@@ -154,6 +154,10 @@ exports.login = asyncHandler(async (req, res, next) => {
     return next(new AppError('Incorrect email or password.', 401));
   }
 
+  if (user.status === 'suspended') {
+    return next(new AppError('Your account has been suspended. Please contact support.', 403));
+  }
+
   // 2. Generate Access and Refresh tokens
   const accessToken = signAccessToken(user._id);
   const refreshToken = signRefreshToken(user._id);

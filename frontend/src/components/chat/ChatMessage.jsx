@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../hooks/useAuth'
 import { formatDateRelative } from '../../lib/utils'
+import { Check, CheckCheck } from 'lucide-react'
 
 function ChatMessageInner({ message }) {
   const { user } = useAuth()
@@ -31,12 +32,15 @@ function ChatMessageInner({ message }) {
           </div>
         )}
         <p className="text-sm leading-relaxed">{message.messageText || message.content || message.text}</p>
-        <p className={cn(
-          'text-[10px] mt-1',
-          isOwn ? 'text-white/60' : 'text-[var(--text-tertiary)]'
+        <div className={cn(
+          'flex items-center gap-1 text-[10px] mt-1',
+          isOwn ? 'text-white/70' : 'text-[var(--text-tertiary)]'
         )}>
-          {formatDateRelative(message.createdAt || message.timestamp)}
-        </p>
+          <span>{formatDateRelative(message.createdAt || message.timestamp)}</span>
+          {isOwn && (
+            message.isRead ? <CheckCheck className="h-3 w-3 text-sky-300" /> : <Check className="h-3 w-3" />
+          )}
+        </div>
       </div>
     </div>
   )

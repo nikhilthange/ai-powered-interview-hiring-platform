@@ -114,6 +114,10 @@ exports.getAllCompanies = catchAsync(async (req, res, next) => {
     query.$text = { $search: req.query.search };
   }
 
+  if (req.query.recruiterId) {
+    query.recruiterId = req.query.recruiterId;
+  }
+
   if (req.query.industry) {
     query.industry = { $in: req.query.industry.split(',') };
   }
@@ -153,7 +157,11 @@ exports.getAllCompanies = catchAsync(async (req, res, next) => {
  * @access  Public
  */
 exports.getCompanyById = catchAsync(async (req, res, next) => {
-  const company = await Company.findById(req.params.id).populate('jobs');
+  const company = await Company.findById(req.params.id).populate({
+    path: 'jobs',
+    match: { status: 'Active' },
+    select: 'title location jobType experienceLevel salaryRange createdAt'
+  });
 
   if (!company) {
     return next(new AppError('No company found with that ID', 404));

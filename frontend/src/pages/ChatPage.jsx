@@ -3,6 +3,8 @@ import { useState, useMemo, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { chatApi } from '../services/chatApi'
 import { userApi } from '../services/userApi'
+import { profileApi } from '../services/profileApi'
+import { companyService } from '../services/companyService'
 import { useAuth } from '../hooks/useAuth'
 import { useSocket } from '../hooks/useSocket'
 import ChatRoomList from '../components/chat/ChatRoomList'
@@ -79,6 +81,18 @@ export default function ChatPage() {
 
   const otherUserName = otherUser?.name || otherUser?.email?.split('@')[0] || 'User'
   const isOnline = otherUser ? isUserOnline(otherUser._id) : false
+
+  const { data: otherUserProfile } = useQuery({
+    queryKey: ['profile', otherUser?._id],
+    queryFn: () => profileApi.getProfileByUserId(otherUser._id).then(r => r.data?.data?.profile),
+    enabled: !!otherUser?._id && otherUser.role === 'candidate'
+  })
+
+  const { data: otherUserCompany } = useQuery({
+    queryKey: ['company', otherUser?._id],
+    queryFn: () => import('../services/companyService').then(m => m.default.getAllCompanies({ recruiterId: otherUser._id })).then(r => r.data?.companies?.[0]),
+    enabled: !!otherUser?._id && otherUser.role === 'recruiter'
+  })
 
   if (isLoading) {
     return (
@@ -167,12 +181,20 @@ export default function ChatPage() {
                   </div>
                 ) : rooms.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-                    <div className="h-16 w-16 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center mb-4">
-                      <MessageCircle className="h-8 w-8 text-indigo-500" />
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 bg-indigo-500 blur-xl opacity-20 rounded-full animate-pulse-slow"></div>
+                      <div className="relative h-20 w-20 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/40 dark:to-purple-900/40 border border-indigo-100 dark:border-indigo-800 rounded-full flex items-center justify-center shadow-sm">
+                        <MessageCircle className="h-10 w-10 text-indigo-500 drop-shadow-sm" />
+                      </div>
                     </div>
-                    <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No messages yet</h3>
-                    <p className="text-sm text-[var(--text-secondary)] mb-6">Connect with recruiters and candidates instantly.</p>
-                    <Button onClick={() => setIsSearchingGlobal(true)}>Start New Conversation</Button>
+                    <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">No Conversations Yet</h3>
+                    <p className="text-sm text-[var(--text-secondary)] mb-8 max-w-[200px] leading-relaxed">Network with top professionals and start building connections today.</p>
+                    <Button 
+                      onClick={() => setIsSearchingGlobal(true)}
+                      className="rounded-full shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all hover:-translate-y-0.5"
+                    >
+                      Find Connections
+                    </Button>
                   </div>
                 ) : (
                   <ChatRoomList
@@ -238,14 +260,19 @@ export default function ChatPage() {
               </CardContent>
             </Card>
           ) : (
-            <Card className="h-full">
-              <CardContent className="h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--bg-tertiary)]">
-                    <MessageCircle className="h-8 w-8 text-[var(--text-tertiary)]" />
+            <Card className="h-full border-none shadow-none bg-transparent lg:bg-[var(--bg-primary)]">
+              <CardContent className="h-full flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-gradient-to-tr from-indigo-500/5 to-purple-500/5 blur-3xl" />
+                </div>
+                <div className="text-center relative z-10 max-w-md mx-auto p-8 rounded-3xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl border border-white/20 dark:border-gray-800/50 shadow-xl shadow-black/5">
+                  <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30 transform -rotate-6 hover:rotate-0 transition-transform duration-300">
+                    <MessageCircle className="h-10 w-10" />
                   </div>
-                  <p className="text-lg font-medium text-[var(--text-primary)]">Select a conversation</p>
-                  <p className="text-sm text-[var(--text-secondary)] mt-1">Choose a chat from the left to start messaging</p>
+                  <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-3 tracking-tight">Your Messages</h2>
+                  <p className="text-[var(--text-secondary)] leading-relaxed">
+                    Select a conversation from the sidebar to view chat history and start communicating with your network in real-time.
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -277,22 +304,34 @@ export default function ChatPage() {
                     </div>
                   </div>
 
-                  {otherUser.role === 'candidate' && (
+                  {otherUser.role === 'candidate' && otherUserProfile && (
                     <div>
                       <h4 className="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Skills</h4>
                       <div className="flex flex-wrap gap-1.5">
-                        <span className="inline-flex items-center rounded-md bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400">React</span>
-                        <span className="inline-flex items-center rounded-md bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400">Node.js</span>
+                        {otherUserProfile.skills && otherUserProfile.skills.length > 0 ? (
+                          otherUserProfile.skills.slice(0, 5).map(skill => (
+                            <span key={skill} className="inline-flex items-center rounded-md bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                              {skill}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-[var(--text-tertiary)]">No skills listed</span>
+                        )}
+                        {otherUserProfile.skills?.length > 5 && (
+                          <span className="inline-flex items-center rounded-md bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                            +{otherUserProfile.skills.length - 5}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {otherUser.role === 'recruiter' && (
+                  {otherUser.role === 'recruiter' && otherUserCompany && (
                     <div>
                       <h4 className="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Company</h4>
                       <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                         <Briefcase className="h-4 w-4 text-[var(--text-tertiary)]" />
-                        <span>HireMate Inc.</span>
+                        <span className="truncate">{otherUserCompany.name}</span>
                       </div>
                     </div>
                   )}

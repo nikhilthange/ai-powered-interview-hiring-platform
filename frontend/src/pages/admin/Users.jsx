@@ -191,52 +191,59 @@ export default function AdminUsers() {
             emptyMessage="No users found"
             emptyIcon={UsersIcon}
             renderActions={(row) => (
-              <div className="flex items-center gap-0.5">
+              <div className="relative group/actions">
                 <button
-                  title="View user details"
-                  onClick={() => window.open(`/admin/users/${row._id}`, '_blank')}
-                  className="rounded-lg p-1.5 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border-color)] transition-colors flex items-center gap-1.5"
                 >
-                  <Eye className="h-3.5 w-3.5" />
+                  Actions
+                  <svg className="w-4 h-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
-                <button
-                  title="Change role"
-                  onClick={() => { setChangeRoleUser(row); setNewRole(row.role) }}
-                  className="rounded-lg p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors"
-                >
-                  <Edit2 className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  title="Reset password"
-                  onClick={() => resetPasswordMutation.mutate(row._id)}
-                  className="rounded-lg p-1.5 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
-                >
-                  <Key className="h-3.5 w-3.5" />
-                </button>
-                {!row.isSuspended ? (
-                  <button
-                    title="Suspend user"
-                    onClick={() => suspendMutation.mutate(row._id)}
-                    className="rounded-lg p-1.5 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors"
-                  >
-                    <Ban className="h-3.5 w-3.5" />
-                  </button>
-                ) : (
-                  <button
-                    title="Activate user"
-                    onClick={() => activateMutation.mutate(row._id)}
-                    className="rounded-lg p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" />
-                  </button>
-                )}
-                <button
-                  title="Delete user"
-                  onClick={() => setConfirmDelete(row)}
-                  className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-[var(--border-color)] overflow-hidden opacity-0 invisible group-hover/actions:opacity-100 group-hover/actions:visible transition-all z-20 origin-top-right">
+                  <div className="py-1">
+                    <button
+                      onClick={() => window.open(`/admin/users/${row._id}`, '_blank')}
+                      className="w-full text-left px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center gap-2"
+                    >
+                      <Eye className="h-4 w-4" /> View Details
+                    </button>
+                    <button
+                      onClick={() => { setChangeRoleUser(row); setNewRole(row.role) }}
+                      className="w-full text-left px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 flex items-center gap-2"
+                    >
+                      <Edit2 className="h-4 w-4" /> Change Role
+                    </button>
+                    <button
+                      onClick={() => resetPasswordMutation.mutate(row._id)}
+                      className="w-full text-left px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 flex items-center gap-2"
+                    >
+                      <Key className="h-4 w-4" /> Reset Password
+                    </button>
+                    <div className="h-px bg-[var(--border-color)] my-1" />
+                    {row.status !== 'suspended' ? (
+                      <button
+                        onClick={() => suspendMutation.mutate(row._id)}
+                        className="w-full text-left px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/30 flex items-center gap-2"
+                      >
+                        <Ban className="h-4 w-4" /> Suspend User
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => activateMutation.mutate(row._id)}
+                        className="w-full text-left px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 flex items-center gap-2"
+                      >
+                        <RotateCcw className="h-4 w-4" /> Activate User
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setConfirmDelete(row)}
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" /> Delete User
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           />

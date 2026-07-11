@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useMemo, useRef } from 'react'
+import { memo, useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'

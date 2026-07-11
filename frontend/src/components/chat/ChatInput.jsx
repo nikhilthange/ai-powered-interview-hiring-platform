@@ -47,9 +47,6 @@ const ChatInput = memo(function ChatInput({ roomId }) {
   const handleSubmit = useCallback((e) => {
     e.preventDefault()
     if ((!text.trim() && !attachment) || !roomId) return
-    
-    const socketPayload = { roomId, messageText: text.trim() }
-    
     // We send attachments via REST right now, but Socket needs to know about it.
     // In our backend socketManager, send_message only accepts messageText.
     // Wait, we need to make sure backend socketManager handles attachments if we pass them.

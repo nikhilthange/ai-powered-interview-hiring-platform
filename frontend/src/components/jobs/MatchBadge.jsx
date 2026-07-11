@@ -42,7 +42,6 @@ export default function MatchBadge({ score, size = 'md' }) {
 }
 
 export function MatchScoreBar({ score }) {
-  const level = getLevel(score)
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-2 rounded-full bg-[var(--bg-tertiary)] overflow-hidden">

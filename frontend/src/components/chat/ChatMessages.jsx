@@ -55,7 +55,7 @@ export default function ChatMessages({ roomId }) {
       unsubMessage && unsubMessage()
       unsubRead && unsubRead()
     }
-  }, [roomId, socket])
+  }, [roomId, socket, queryClient])
 
   // Merge data and apply isRead to all data messages if we received an onMessagesRead event for data
   const messages = [...(Array.isArray(data) ? data : []), ...liveMessages]

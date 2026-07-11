@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { aiChatApi } from '../../services/aiChatApi'
 import { useAuth } from '../../hooks/useAuth'
 import AIChatSidebar from './AIChatSidebar'
@@ -8,7 +8,7 @@ import AIChatMessage from './AIChatMessage'
 import AIChatInput from './AIChatInput'
 import SuggestedPrompts from './SuggestedPrompts'
 import { useToast } from '../ui/Toast'
-import { Bot, Loader2, AlertCircle, X, MessageSquare, History, Maximize2, Minimize2, ChevronLeft } from 'lucide-react'
+import { Bot, AlertCircle, X, History, Maximize2, Minimize2, ChevronLeft } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 function TypingDots() {
@@ -50,7 +50,7 @@ export default function FloatingAIChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false) // For mobile full screen or desktop expand
   const [showHistory, setShowHistory] = useState(false)
-  const [hasUnread, setHasUnread] = useState(false) // Optional badging
+  const [hasUnread] = useState(false) // Optional badging
 
   const messagesEndRef = useRef(null)
   const abortControllerRef = useRef(null)
@@ -76,7 +76,7 @@ export default function FloatingAIChatWidget() {
       setActiveId(convId)
       setIsOpen(true)
     }
-  }, [searchParams])
+  }, [searchParams, activeId])
 
   const { data: conversations = [], isLoading: convsLoading } = useQuery({
     queryKey: ['ai-conversations', searchQuery],
@@ -140,7 +140,7 @@ export default function FloatingAIChatWidget() {
       const context = { type: 'job', jobTitle, jobDescription }
       createMutation.mutate({ context })
     }
-  }, [jobContext, isOpen])
+  }, [jobContext, isOpen, activeId, conversations.length, createMutation, jobTitle, jobDescription])
 
   const handleSend = useCallback(async (content) => {
     if (!isOpen) setIsOpen(true)

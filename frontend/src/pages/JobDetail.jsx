@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'
 import { savedJobApi } from '../services/savedJobApi'
+import { chatApi } from '../services/chatApi'
 import { Card, CardContent } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
@@ -13,7 +14,7 @@ import { useAuth } from '../hooks/useAuth'
 import {
   MapPin, Briefcase, DollarSign,
   Share2, Bookmark, ArrowLeft, CheckCircle,
-  GraduationCap, Bot,
+  GraduationCap, Bot, MessageCircle
 } from 'lucide-react'
 
 const containerVariants = {
@@ -55,6 +56,16 @@ export default function JobDetail() {
     onError: (err) => {
       toast.error('Failed', err?.response?.data?.message || 'Please try again.')
     },
+  })
+
+  const messageMutation = useMutation({
+    mutationFn: (recruiterId) => chatApi.getOrCreateRoom(recruiterId),
+    onSuccess: () => {
+      navigate('/chat')
+    },
+    onError: () => {
+      toast.error('Failed to start conversation.')
+    }
   })
 
   const job = data?.data?.job || data?.data || data
@@ -158,6 +169,18 @@ export default function JobDetail() {
                     >
                       <Bot className="h-4 w-4" />
                       Ask AI
+                    </Button>
+                  )}
+                  {isAuthenticated && job?.recruiterId?._id && user?._id !== job.recruiterId._id && (
+                    <Button
+                      variant="outline"
+                      size="md"
+                      className="sm:px-5 sm:py-2.5"
+                      onClick={() => messageMutation.mutate(job.recruiterId._id)}
+                      disabled={messageMutation.isPending}
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      {messageMutation.isPending ? 'Starting...' : 'Message Recruiter'}
                     </Button>
                   )}
                 </div>

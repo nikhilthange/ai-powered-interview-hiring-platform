@@ -1,14 +1,17 @@
 import { motion } from 'framer-motion'
 import { useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { applicationApi } from '../../services/applicationApi'
+import { chatApi } from '../../services/chatApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import { SkeletonList } from '../../components/ui/Skeleton'
 import EmptyState from '../../components/ui/EmptyState'
 import { useAuth } from '../../hooks/useAuth'
+import { useToast } from '../../components/ui/Toast'
+import { useNavigate } from 'react-router-dom'
 import { cn } from '../../lib/utils'
 import {
   ArrowLeft, Users, Star, Clock, FileText, CheckCircle, MessageCircle,
@@ -40,6 +43,19 @@ export default function RecruiterJobApplications() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['job-applications', jobId],
     queryFn: () => applicationApi.getJobApplications(jobId).then((r) => r.data),
+  })
+
+  const { toast } = useToast()
+  const navigate = useNavigate()
+
+  const messageMutation = useMutation({
+    mutationFn: (candidateId) => chatApi.getOrCreateRoom(candidateId),
+    onSuccess: () => {
+      navigate('/chat')
+    },
+    onError: () => {
+      toast.error('Failed to start conversation.')
+    }
   })
 
   const toggleSelect = (id) => {
@@ -213,9 +229,14 @@ export default function RecruiterJobApplications() {
                           applicationId={app._id}
                           buttonProps={{ size: 'xs' }}
                         />
-                        <Button size="xs" variant="outline">
+                        <Button 
+                          size="xs" 
+                          variant="outline"
+                          onClick={() => messageMutation.mutate(app.candidateId._id)}
+                          disabled={messageMutation.isPending}
+                        >
                           <MessageCircle className="h-3 w-3" />
-                          Message
+                          {messageMutation.isPending ? 'Starting...' : 'Message'}
                         </Button>
                         {app.status !== 'Rejected' && (
                           <Button size="xs" variant="primary">

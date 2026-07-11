@@ -2,13 +2,17 @@ import { useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { profileApi } from '../services/profileApi'
+import { chatApi } from '../services/chatApi'
+import { useAuth } from '../hooks/useAuth'
+import { useNavigate } from 'react-router-dom'
+import { useMutation } from '@tanstack/react-query'
 import { getMediaUrl } from '../lib/utils'
 import { Card, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { SkeletonProfile } from '../components/ui/Skeleton'
 import {
   MapPin, Link as LinkIcon, Briefcase, 
-  GraduationCap, FolderGit2, Award, FileText, CheckCircle2, AlertCircle
+  GraduationCap, FolderGit2, Award, FileText, CheckCircle2, AlertCircle, MessageCircle
 } from 'lucide-react'
 
 export default function PublicPortfolio() {
@@ -18,6 +22,14 @@ export default function PublicPortfolio() {
     queryKey: ['publicProfile', username],
     queryFn: () => profileApi.getPublicProfile(username).then((res) => res.data.data.profile),
     retry: 1
+  })
+
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  const messageMutation = useMutation({
+    mutationFn: (userId) => chatApi.getOrCreateRoom(userId),
+    onSuccess: () => navigate('/chat')
   })
 
   // SEO Optimization
@@ -117,6 +129,19 @@ export default function PublicPortfolio() {
                       <FileText className="h-4 w-4 mr-2" /> Download Resume
                     </Button>
                   </a>
+                </div>
+              )}
+              {user && profile.userId && user._id !== profile.userId._id && user._id !== profile.userId && (
+                <div className="pb-2">
+                  <Button 
+                    variant="outline"
+                    className="w-full sm:w-auto shadow-md hover:shadow-lg transition-shadow"
+                    onClick={() => messageMutation.mutate(profile.userId._id || profile.userId)}
+                    disabled={messageMutation.isPending}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" /> 
+                    {messageMutation.isPending ? 'Starting...' : 'Message'}
+                  </Button>
                 </div>
               )}
             </div>

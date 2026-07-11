@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
-import { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useMemo, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { chatApi } from '../services/chatApi'
+import { userApi } from '../services/userApi'
 import { useAuth } from '../hooks/useAuth'
 import { useSocket } from '../hooks/useSocket'
 import ChatRoomList from '../components/chat/ChatRoomList'
@@ -9,8 +10,9 @@ import ChatMessages from '../components/chat/ChatMessages'
 import ChatInput from '../components/chat/ChatInput'
 import { Card, CardContent } from '../components/ui/Card'
 import { SkeletonList } from '../components/ui/Skeleton'
+import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
-import { MessageCircle, ArrowLeft, MoreHorizontal, Briefcase, Mail, Phone, Video } from 'lucide-react'
+import { MessageCircle, ArrowLeft, MoreHorizontal, Briefcase, Mail, Phone, Video, Search, Edit } from 'lucide-react'
 import { cn } from '../lib/utils'
 
 const containerVariants = {
@@ -21,24 +23,54 @@ const containerVariants = {
 export default function ChatPage() {
   const { user } = useAuth()
   const { isUserOnline } = useSocket()
+  const queryClient = useQueryClient()
+  
   const [selectedRoom, setSelectedRoom] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isSearchingGlobal, setIsSearchingGlobal] = useState(false)
+  const [globalResults, setGlobalResults] = useState([])
 
   const { data: roomsData, isLoading } = useQuery({
     queryKey: ['chat-rooms'],
     queryFn: () => chatApi.getMyRooms().then((r) => r.data?.data?.rooms || []),
   })
 
+  const createRoomMutation = useMutation({
+    mutationFn: (userId) => chatApi.getOrCreateRoom(userId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['chat-rooms'] })
+      setSelectedRoom(data.data.data?.room || data.data.room)
+      setIsSearchingGlobal(false)
+      setSearchQuery('')
+    }
+  })
+
   const allRooms = Array.isArray(roomsData) ? roomsData : []
   
   const rooms = useMemo(() => {
-    if (!searchQuery) return allRooms
+    if (!searchQuery || isSearchingGlobal) return allRooms
     return allRooms.filter((r) => {
       const otherUser = user?._id === r.candidateId?._id ? r.recruiterId : r.candidateId
       const name = otherUser?.name || otherUser?.email?.split('@')[0] || ''
       return name.toLowerCase().includes(searchQuery.toLowerCase())
     })
-  }, [allRooms, searchQuery, user?._id])
+  }, [allRooms, searchQuery, isSearchingGlobal, user?._id])
+
+  useEffect(() => {
+    if (!isSearchingGlobal || !searchQuery.trim()) {
+      setGlobalResults([])
+      return
+    }
+    const delay = setTimeout(async () => {
+      try {
+        const res = await userApi.searchUsers(searchQuery)
+        setGlobalResults(res.data?.data?.users || [])
+      } catch (err) {
+        console.error(err)
+      }
+    }, 400)
+    return () => clearTimeout(delay)
+  }, [searchQuery, isSearchingGlobal])
 
   const otherUser = useMemo(() => {
     if (!selectedRoom || !user) return null
@@ -67,31 +99,81 @@ export default function ChatPage() {
       <div className="flex h-full gap-4">
         {/* Left Panel: Room List */}
         <div className={cn(
-          'w-full sm:w-80 lg:w-80 shrink-0 flex flex-col',
+          'w-full sm:w-80 lg:w-[350px] shrink-0 flex flex-col',
           selectedRoom && 'hidden lg:flex'
         )}>
           <Card className="h-full flex flex-col">
             <CardContent className="p-0 flex-1 flex flex-col min-h-0">
               <div className="p-4 border-b border-[var(--border-color)]">
-                <h2 className="font-semibold text-lg text-[var(--text-primary)]">Messaging</h2>
-                <div className="mt-3">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-bold text-xl text-[var(--text-primary)]">Messaging</h2>
+                  <button 
+                    onClick={() => { setIsSearchingGlobal(true); setSearchQuery(''); setSelectedRoom(null); }}
+                    className="p-2 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] rounded-full transition-colors"
+                  >
+                    <Edit className="h-4 w-4 text-[var(--text-secondary)]" />
+                  </button>
+                </div>
+                
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-[var(--text-tertiary)]" />
                   <input
                     type="text"
-                    placeholder="Search messages..."
+                    placeholder={isSearchingGlobal ? "Search by name or email..." : "Search messages..."}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
+                  {isSearchingGlobal && (
+                    <button 
+                      onClick={() => { setIsSearchingGlobal(false); setSearchQuery(''); }}
+                      className="absolute right-3 top-2.5 text-xs font-medium text-indigo-500 hover:text-indigo-600"
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </div>
               </div>
+
               <div className="flex-1 overflow-y-auto">
-                {rooms.length === 0 ? (
-                  <EmptyState
-                    icon={MessageCircle}
-                    title="No conversations"
-                    description="You don't have any messages yet."
-                    small
-                  />
+                {isSearchingGlobal ? (
+                  <div className="divide-y divide-[var(--border-color)]">
+                    {searchQuery.trim() === '' ? (
+                      <div className="p-6 text-center text-sm text-[var(--text-secondary)]">
+                        Search for candidates or recruiters to start a chat.
+                      </div>
+                    ) : globalResults.length === 0 ? (
+                      <div className="p-6 text-center text-sm text-[var(--text-secondary)]">
+                        No users found matching "{searchQuery}"
+                      </div>
+                    ) : (
+                      globalResults.map((u) => (
+                        <button
+                          key={u._id}
+                          onClick={() => createRoomMutation.mutate(u._id)}
+                          disabled={createRoomMutation.isPending}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors text-left"
+                        >
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 text-indigo-700 flex items-center justify-center font-bold">
+                            {(u.name || u.email).charAt(0)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{u.name || u.email}</p>
+                            <p className="text-xs text-[var(--text-secondary)] capitalize">{u.role}</p>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                ) : rooms.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                    <div className="h-16 w-16 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center mb-4">
+                      <MessageCircle className="h-8 w-8 text-indigo-500" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No messages yet</h3>
+                    <p className="text-sm text-[var(--text-secondary)] mb-6">Connect with recruiters and candidates instantly.</p>
+                    <Button onClick={() => setIsSearchingGlobal(true)}>Start New Conversation</Button>
+                  </div>
                 ) : (
                   <ChatRoomList
                     rooms={rooms}

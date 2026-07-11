@@ -55,10 +55,11 @@ exports.register = asyncHandler(async (req, res, next) => {
     name: name || email.split('@')[0],
     email,
     password,
-    role
+    role,
+    isEmailVerified: true
   });
 
-  const verificationToken = newUser.createEmailVerificationToken();
+  // const verificationToken = newUser.createEmailVerificationToken();
   await newUser.save();
 
   await Profile.create({
@@ -67,11 +68,11 @@ exports.register = asyncHandler(async (req, res, next) => {
     skills: []
   });
 
-  try {
-    await sendVerificationEmail(newUser.email, verificationToken, newUser.name);
-  } catch (err) {
-    console.error(`Mail sending failed for registration: ${err.message}`);
-  }
+  // try {
+  //   await sendVerificationEmail(newUser.email, verificationToken, newUser.name);
+  // } catch (err) {
+  //   console.error(`Mail sending failed for registration: ${err.message}`);
+  // }
 
   if (newUser.role === 'recruiter') {
     try {
@@ -93,7 +94,7 @@ exports.register = asyncHandler(async (req, res, next) => {
 
   res.status(201).json({
     status: 'success',
-    message: 'Registration successful! Please check your email to verify your account.'
+    message: 'Registration successful! You can now log in.'
   });
 });
 

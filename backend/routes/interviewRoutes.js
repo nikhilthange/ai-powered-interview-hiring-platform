@@ -21,6 +21,7 @@ router.patch('/:id', restrictTo('recruiter', 'admin'), validateBody(updateInterv
 router.post('/generate-questions', interviewController.generateQuestions);
 router.post('/analyze-feedback', interviewController.analyzeFeedback);
 router.post('/career-roadmap', interviewController.careerRoadmap);
+router.get('/career-roadmap/my', interviewController.getMyRoadmap);
 router.post('/career-roadmap-upload', upload.single('resume'), interviewController.careerRoadmapUpload);
 
 // Mock interview session endpoints

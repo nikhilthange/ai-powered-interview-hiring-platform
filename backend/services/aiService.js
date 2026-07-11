@@ -634,6 +634,50 @@ exports.generateCareerRoadmap = async (skills, targetRole) => {
   return callAI(mockFn, aiCall, { name: 'generateCareerRoadmap' });
 };
 
+exports.generateCareerRoadmapFromResume = async (resumeText, targetRole) => {
+  const fallbackRoadmap = {
+    targetRole,
+    summary: `A structured 6-month career roadmap to become a ${targetRole}. (Standard Fallback Plan)`,
+    estimatedDuration: '6 months',
+    milestones: [
+      { title: 'Foundation Building', duration: 'Months 1-2', description: 'Master the core concepts and fundamental technologies required for this role.', status: 'pending', skills: ['Core Languages', 'Basic Frameworks'], resources: [{ title: 'Official Documentation' }, { title: 'Online Crash Courses' }] },
+      { title: 'Advanced Concepts & Tooling', duration: 'Months 3-4', description: 'Learn advanced architectures, testing, and modern tooling workflows.', status: 'pending', skills: ['Architecture Patterns', 'Testing', 'Version Control'], resources: [{ title: 'Advanced Tutorials' }, { title: 'Open Source Repositories' }] },
+      { title: 'Portfolio & Interview Prep', duration: 'Months 5-6', description: 'Build real-world projects and prepare for technical interviews.', status: 'pending', skills: ['System Design', 'Interview Prep', 'Deployment'], projects: [{ title: 'Capstone Project', description: 'End-to-end full-stack application' }], resources: [{ title: 'System Design Primer' }, { title: 'Mock Interviews' }] }
+    ]
+  };
+
+  const mockFn = async () => {
+    await delay(1500);
+    return fallbackRoadmap;
+  };
+
+  const aiCall = async () => {
+    const content = await callNvidia([
+      { role: 'system', content: 'You are an expert career development coach. Create a highly specific, phased career roadmap for the candidate to reach their target role starting from their current experience as detailed in their resume. Focus on the exact technical skills they are missing. Output purely valid JSON with schema: { "targetRole": string, "summary": string, "estimatedDuration": string, "milestones": [{ "title": string, "duration": string, "description": string, "status": "pending", "skills": [string], "resources": [{ "title": string }], "projects": [{ "title": string, "description": string }] }] }' },
+      { role: 'user', content: `Candidate Resume:\n${resumeText}\n\nTarget Role: ${targetRole}` }
+    ], { responseFormat: 'json_object' });
+    
+    try {
+      const parsed = JSON.parse(content);
+      if (!parsed.milestones || !Array.isArray(parsed.milestones) || parsed.milestones.length === 0) {
+        throw new Error("Invalid roadmap structure returned by AI");
+      }
+      return parsed;
+    } catch (e) {
+      console.error("[aiService] Failed to parse roadmap JSON from AI, using fallback.", e);
+      return fallbackRoadmap;
+    }
+  };
+
+  try {
+    const result = await callAI(mockFn, aiCall, { name: 'generateCareerRoadmapFromResume' });
+    return result || fallbackRoadmap;
+  } catch (err) {
+    console.error("[aiService] Completely failed to generate roadmap, using fallback.", err);
+    return fallbackRoadmap;
+  }
+};
+
 exports.analyzeResumeFromFile = async (resumeText, jobDescription) => {
   const mockFn = async () => {
     await delay(2000);

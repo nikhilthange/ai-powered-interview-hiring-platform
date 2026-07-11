@@ -2,6 +2,7 @@ const Interview = require('../models/Interview');
 const Application = require('../models/Application');
 const Profile = require('../models/Profile');
 const User = require('../models/User');
+const Roadmap = require('../models/Roadmap');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
 const { createAndSend } = require('../utils/notificationHelper');
@@ -10,7 +11,8 @@ const { sendInterviewScheduledEmail } = require('../services/emailService');
 const {
   generateMockInterviewQuestions,
   analyzeInterviewFeedback,
-  generateCareerRoadmap
+  generateCareerRoadmap,
+  generateCareerRoadmapFromResume
 } = require('../services/aiService');
 
 /**
@@ -191,22 +193,33 @@ exports.careerRoadmapUpload = asyncHandler(async (req, res) => {
     throw new AppError('Failed to extract text from resume.', 400);
   }
 
-  const profile = await Profile.findOne({ userId: req.user._id });
-  const skills = (profile?.skills || []).filter(Boolean);
-  if (skills.length === 0) {
-    const response = await generateCareerRoadmap(
-      ['general development'],
-      targetRole.trim()
-    );
-    cleanup(req.file.path);
-    return res.status(200).json({ status: 'success', data: { roadmap: response } });
-  }
-  const roadmap = await generateCareerRoadmap(skills, targetRole.trim());
+  const generatedData = await generateCareerRoadmapFromResume(resumeText, targetRole.trim());
+
+  // Save to MongoDB
+  const roadmapDoc = await Roadmap.create({
+    userId: req.user._id,
+    targetRole: generatedData.targetRole || targetRole.trim(),
+    summary: generatedData.summary,
+    estimatedDuration: generatedData.estimatedDuration,
+    milestones: generatedData.milestones || []
+  });
 
   cleanup(req.file.path);
 
   res.status(200).json({
     status: 'success',
-    data: { roadmap }
+    data: { roadmap: roadmapDoc }
+  });
+});
+
+/**
+ * GET MY ROADMAP (Candidate)
+ */
+exports.getMyRoadmap = asyncHandler(async (req, res, next) => {
+  const roadmap = await Roadmap.findOne({ userId: req.user._id }).sort('-createdAt');
+  
+  res.status(200).json({
+    status: 'success',
+    data: { roadmap: roadmap || null }
   });
 });

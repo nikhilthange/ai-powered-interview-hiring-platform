@@ -9,6 +9,7 @@ export const interviewApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: onProgress,
     }).then((r) => r.data),
+  getMyRoadmap: () => api.get('/interviews/career-roadmap/my').then(r => r.data),
 
   // Real interview scheduling
   scheduleInterview: (data) => api.post('/interviews', data).then((r) => r.data),

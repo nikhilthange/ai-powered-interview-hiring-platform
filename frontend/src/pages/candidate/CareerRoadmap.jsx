@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
-import { useState, useCallback } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useState, useCallback, useEffect } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { interviewApi } from '../../services/interviewApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
@@ -15,6 +15,7 @@ import {
   Briefcase, AlertTriangle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -31,10 +32,28 @@ export default function CareerRoadmap() {
   const [file, setFile] = useState(null)
   const [targetRole, setTargetRole] = useState('')
 
-  const { mutate, data, isPending, isError, error, reset } = useMutation({
-    mutationFn: (formData) =>
-      interviewApi.careerRoadmapUpload(formData),
-    onError: () => {},
+  const queryClient = useQueryClient()
+
+  // Fetch existing roadmap on load
+  const { data: existingData, isLoading: isFetchingRoadmap } = useQuery({
+    queryKey: ['myRoadmap'],
+    queryFn: () => interviewApi.getMyRoadmap()
+  })
+
+  const { mutate, data: mutationData, isPending, isError, error, reset } = useMutation({
+    mutationFn: (formData) => interviewApi.careerRoadmapUpload(formData),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['myRoadmap'], data)
+      const isFallback = data?.data?.roadmap?.summary?.includes('Fallback');
+      if (isFallback) {
+        toast('AI unavailable. Generated standard roadmap.', { icon: '⚠️' })
+      } else {
+        toast.success('Roadmap generated successfully!')
+      }
+    },
+    onError: () => {
+      toast.error('Failed to generate roadmap')
+    },
   })
 
   const handleFileChange = useCallback((f) => setFile(f), [])
@@ -48,9 +67,20 @@ export default function CareerRoadmap() {
     mutate(formData)
   }
 
-  const result = data?.data?.data?.roadmap || data?.roadmap || data?.data || {}
+  // Use mutation data if available, otherwise fall back to fetched data
+  const rawData = mutationData || existingData
+  const result = rawData?.data?.data?.roadmap || rawData?.data?.roadmap || rawData?.roadmap || rawData?.data || null
 
-  if (!result && isPending) {
+  if (isFetchingRoadmap) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-600 mb-4"></div>
+        <p className="text-sm font-medium text-[var(--text-secondary)]">Loading your career roadmap...</p>
+      </div>
+    )
+  }
+
+  if (isPending) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <motion.div
@@ -77,9 +107,12 @@ export default function CareerRoadmap() {
     )
   }
 
-  const roadmap = result
+  const roadmap = result || {}
   const milestones = roadmap.milestones || roadmap.steps || roadmap.stages || []
-  const hasResult = Object.keys(roadmap).length > 0
+  const hasResult = Object.keys(roadmap).length > 0 && milestones.length > 0
+
+  const completedMilestones = milestones.filter(m => m.status === 'completed' || m.completed).length
+  const progressPercent = milestones.length > 0 ? Math.round((completedMilestones / milestones.length) * 100) : 0
 
   return (
     <motion.div
@@ -186,6 +219,17 @@ export default function CareerRoadmap() {
               </div>
             </motion.div>
           )}
+          
+          <motion.div variants={itemVariants} className="bg-white dark:bg-[var(--bg-primary)] p-5 rounded-2xl border border-[var(--border-color)]">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold text-[var(--text-primary)]">Progress</span>
+              <span className="text-sm font-bold text-indigo-600">{progressPercent}%</span>
+            </div>
+            <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2.5 mb-2 overflow-hidden">
+              <div className="bg-indigo-600 h-2.5 rounded-full transition-all duration-1000 ease-out" style={{ width: `${progressPercent}%` }}></div>
+            </div>
+            <p className="text-xs text-[var(--text-secondary)]">{completedMilestones} of {milestones.length} milestones completed</p>
+          </motion.div>
 
           <motion.div variants={itemVariants} className="grid gap-4 sm:grid-cols-3">
             <Card>

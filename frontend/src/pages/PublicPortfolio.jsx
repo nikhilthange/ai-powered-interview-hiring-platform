@@ -6,8 +6,8 @@ import { getMediaUrl } from '../lib/utils'
 import { Card, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { SkeletonProfile } from '../components/ui/Skeleton'
-import { 
-  MapPin, Link as LinkIcon, Github, Linkedin, Briefcase, 
+import {
+  MapPin, Link as LinkIcon, Briefcase, 
   GraduationCap, FolderGit2, Award, FileText, CheckCircle2, AlertCircle
 } from 'lucide-react'
 
@@ -137,12 +137,12 @@ export default function PublicPortfolio() {
               )}
               {profile.github && (
                 <a href={profile.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] transition-colors border border-[var(--border-color)]">
-                  <Github className="h-4 w-4" /> GitHub
+                  <LinkIcon className="h-4 w-4" /> GitHub
                 </a>
               )}
               {profile.linkedin && (
                 <a href={profile.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0077b5]/10 text-[#0077b5] hover:bg-[#0077b5]/20 transition-colors border border-[#0077b5]/20">
-                  <Linkedin className="h-4 w-4" /> LinkedIn
+                  <LinkIcon className="h-4 w-4" /> LinkedIn
                 </a>
               )}
             </div>

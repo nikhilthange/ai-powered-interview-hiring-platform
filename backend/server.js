@@ -3,13 +3,8 @@
  * Must be declared at the absolute beginning of the process execution.
  */
 process.on('uncaughtException', (err) => {
-  console.error('========================================');
-  console.error('UNCAUGHT EXCEPTION! 💥 Server will shut down.');
-  console.error('Name:', err.name);
-  console.error('Message:', err.message);
-  console.error('Stack:', err.stack);
-  console.error('========================================');
-  if (err.cause) console.error('Cause:', err.cause);
+  console.error('UNCAUGHT EXCEPTION');
+  console.error(err ? err.stack : err);
   process.exit(1);
 });
 
@@ -143,11 +138,8 @@ try {
  * This prevents crashes from unhandled async errors while they are still logged.
  */
 process.on('unhandledRejection', (reason) => {
-  console.error('========================================');
-  console.error('UNHANDLED REJECTION!', reason?.name || 'N/A');
-  console.error('Message:', reason?.message || reason || 'N/A');
-  console.error('Stack:', reason?.stack || 'N/A');
-  console.error('========================================');
+  console.error('UNHANDLED REJECTION');
+  console.error(reason);
 });
 
 /**

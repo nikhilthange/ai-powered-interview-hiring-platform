@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Building2, Globe, Users, Briefcase, MapPin, ExternalLink, Heart, ArrowLeft, Twitter, Linkedin, Facebook } from 'lucide-react';
+import { Building2, Globe, Users, Briefcase, MapPin, ExternalLink, Heart, ArrowLeft, Link as LinkIcon } from 'lucide-react';
 import companyService from '../../services/companyService';
 import { toast } from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 const CompanyDetails = () => {
   const { id } = useParams();
@@ -202,17 +202,17 @@ const CompanyDetails = () => {
                 <div className="flex space-x-4">
                   {company.socialLinks?.linkedin && (
                     <a href={company.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-600 transition-colors">
-                      <Linkedin className="h-6 w-6" />
+                      <LinkIcon className="h-6 w-6" />
                     </a>
                   )}
                   {company.socialLinks?.twitter && (
                     <a href={company.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-400 transition-colors">
-                      <Twitter className="h-6 w-6" />
+                      <LinkIcon className="h-6 w-6" />
                     </a>
                   )}
                   {company.socialLinks?.facebook && (
                     <a href={company.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-800 transition-colors">
-                      <Facebook className="h-6 w-6" />
+                      <LinkIcon className="h-6 w-6" />
                     </a>
                   )}
                 </div>

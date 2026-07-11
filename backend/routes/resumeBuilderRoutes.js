@@ -9,7 +9,7 @@ const {
   importResume,
   aiAssist
 } = require('../controllers/resumeBuilderController');
-const { protect } = require('../middleware/auth');
+const { protect } = require('../middleware/authMiddleware');
 const multer = require('multer');
 
 const upload = multer({

@@ -135,7 +135,7 @@ export default function CandidateDashboard() {
   const appTrendData = last6Months
 
   // --- CHART 2: Resume Score Trend (Smooth Area) ---
-  let scoreTrendData = []
+  let scoreTrendData;
   const baseScore = profile.resumeScore || 0
   
   // Filter out applications that don't have an ATS score, sort chronologically

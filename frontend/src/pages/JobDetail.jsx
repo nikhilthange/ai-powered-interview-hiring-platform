@@ -30,7 +30,7 @@ const itemVariants = {
 export default function JobDetail() {
   const { id } = useParams()
   const { toast } = useToast()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 

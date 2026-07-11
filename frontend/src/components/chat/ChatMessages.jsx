@@ -1,15 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { chatApi } from '../../services/chatApi'
 import { useSocket } from '../../hooks/useSocket'
-import { useAuth } from '../../hooks/useAuth'
 import ChatMessage from './ChatMessage'
 import { Loader2, MessageCircle } from 'lucide-react'
 
 export default function ChatMessages({ roomId }) {
   const bottomRef = useRef(null)
   const socket = useSocket()
-  const { user } = useAuth()
   const [liveMessages, setLiveMessages] = useState([])
 
   const { data, isLoading } = useQuery({

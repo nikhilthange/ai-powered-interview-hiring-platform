@@ -29,7 +29,7 @@ const ChatInput = memo(function ChatInput({ roomId }) {
       </div>
       <button
         type="submit"
-        disabled={!text.trim() || mutation.isPending}
+        disabled={!text.trim()}
         className="rounded-xl bg-indigo-500 p-2.5 text-white hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         <Send className="h-4 w-4" />

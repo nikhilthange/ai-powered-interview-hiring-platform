@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '../ui/Card'
 import Badge from '../ui/Badge'
-import { Sparkles, ArrowRight, Briefcase, MapPin, GraduationCap, DollarSign, ChevronRight, SlidersHorizontal } from 'lucide-react'
+import { Sparkles, Briefcase, MapPin, GraduationCap, ChevronRight, SlidersHorizontal } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import MatchBadge, { MatchScoreBar } from './MatchBadge'
 

@@ -9,7 +9,7 @@ const CompaniesList = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+  const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || '';
 
   const fetchCompanies = async (search = '') => {
     setLoading(true);

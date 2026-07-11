@@ -32,8 +32,8 @@ const sendRefreshTokenCookie = (res, token) => {
   const cookieOptions = {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days matching token duration
     httpOnly: true,
-    secure: process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   };
   res.cookie('refreshToken', token, cookieOptions);
 };
@@ -340,8 +340,8 @@ exports.logout = asyncHandler(async (req, res, next) => {
   // 2. Invalidate refresh token cookie on the client
   res.clearCookie('refreshToken', {
     httpOnly: true,
-    secure: process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   });
 
   res.status(200).json({

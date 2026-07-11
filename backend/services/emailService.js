@@ -66,7 +66,7 @@ const sendEmail = async ({ to, subject, html, text, template, metadata }) => {
 };
 
 const sendVerificationEmail = async (email, token, name) => {
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const clientUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const verifyUrl = `${clientUrl}/verify-email?token=${token}`;
   const html = templates.verificationEmail(name, verifyUrl);
 
@@ -94,7 +94,7 @@ const sendWelcomeEmail = async (email, name) => {
 };
 
 const sendPasswordResetEmail = async (email, token, name) => {
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const clientUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const resetUrl = `${clientUrl}/reset-password?token=${token}`;
   const html = templates.passwordReset(name, resetUrl);
 

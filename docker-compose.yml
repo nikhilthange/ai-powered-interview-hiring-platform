@@ -14,7 +14,7 @@ services:
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
       - JWT_ACCESS_EXPIRES_IN=15m
       - JWT_REFRESH_EXPIRES_IN=7d
-      - CLIENT_URL=http://localhost
+      - FRONTEND_URL=http://localhost
       - COOKIE_SECURE=true
       - SMTP_HOST=${SMTP_HOST:-smtp.mailtrap.io}
       - SMTP_PORT=${SMTP_PORT:-2525}

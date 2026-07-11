@@ -51,7 +51,7 @@ const CompanyProfileForm = () => {
             twitter: comp.socialLinks?.twitter || '',
           });
           
-          const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+          const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || '';
           
           setPreviews({
             logo: comp.logo && comp.logo !== 'default-company-logo.png' ? `${baseUrl}/uploads/${comp.logo}` : null,

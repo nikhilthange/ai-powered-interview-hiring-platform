@@ -21,6 +21,7 @@ const requiredEnvVars = [
   'JWT_REFRESH_SECRET',
   'JWT_ACCESS_EXPIRES_IN',
   'JWT_REFRESH_EXPIRES_IN',
+  'PORT'
 ];
 const missing = requiredEnvVars.filter(v => !process.env[v]);
 if (missing.length > 0) {
@@ -36,7 +37,7 @@ const { startEmailJobs } = require('./jobs/emailJobs');
 
 connectDB();
 
-const configuredPort = parseInt(process.env.PORT, 10) || 5000;
+const configuredPort = parseInt(process.env.PORT, 10);
 
 /**
  * Kill any existing process holding the given TCP port (Windows).
@@ -64,6 +65,7 @@ function freePort(p) {
  * Ensures VITE_API_URL and VITE_SOCKET_URL stay in sync.
  */
 function syncFrontendEnv(actualPort) {
+  if (process.env.NODE_ENV !== 'development') return;
   const frontendEnvPath = path.join(__dirname, '..', 'frontend', '.env');
   try {
     let content = fs.readFileSync(frontendEnvPath, 'utf8');

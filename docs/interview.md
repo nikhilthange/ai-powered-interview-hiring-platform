@@ -427,7 +427,7 @@ Files are served statically via `app.use('/uploads', express.static(...))`.
 ## 23. Security Measures Implemented
 
 1. **Helmet** — 15 HTTP security headers including CSP, X-Frame-Options, X-Content-Type-Options
-2. **CORS** — Restricted to `CLIENT_URL` origin with credentials
+2. **CORS** — Restricted to `FRONTEND_URL` origin with credentials
 3. **Express Mongo Sanitize** — Strips `$` and `.` from input to prevent NoSQL injection (e.g., `{ "email": { "$ne": null } }`)
 4. **XSS Clean** — Sanitizes user input against cross-site scripting
 5. **HPP** — Prevents HTTP parameter pollution

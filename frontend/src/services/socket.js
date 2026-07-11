@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client'
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '')
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL
 
 let socket = null
 
@@ -34,6 +34,7 @@ export function connectSocket() {
   socket = io(SOCKET_URL, {
     auth: { token: localStorage.getItem('accessToken') },
     transports: ['websocket', 'polling'],
+    withCredentials: true,
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,

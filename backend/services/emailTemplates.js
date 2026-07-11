@@ -66,7 +66,7 @@ exports.welcomeEmail = (name) => baseLayout(`
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
       <td align="center" style="padding:8px 0 0;">
-        <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard" style="${buttonStyle}background-color:#4f46e5;color:#ffffff;">Go to Dashboard</a>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard" style="${buttonStyle}background-color:#4f46e5;color:#ffffff;">Go to Dashboard</a>
       </td>
     </tr>
   </table>
@@ -97,7 +97,7 @@ exports.applicationSubmitted = (name, jobTitle, company) => baseLayout(`
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
       <td align="center" style="padding:8px 0 0;">
-        <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/my-applications" style="${buttonStyle}background-color:#4f46e5;color:#ffffff;">Track Application</a>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/my-applications" style="${buttonStyle}background-color:#4f46e5;color:#ffffff;">Track Application</a>
       </td>
     </tr>
   </table>
@@ -111,7 +111,7 @@ exports.applicationAccepted = (name, jobTitle, company) => baseLayout(`
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
       <td align="center" style="padding:8px 0 0;">
-        <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/my-applications" style="${buttonStyle}background-color:#059669;color:#ffffff;">View Details</a>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/my-applications" style="${buttonStyle}background-color:#059669;color:#ffffff;">View Details</a>
       </td>
     </tr>
   </table>
@@ -125,7 +125,7 @@ exports.applicationRejected = (name, jobTitle, company) => baseLayout(`
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
       <td align="center" style="padding:8px 0 0;">
-        <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/jobs" style="${buttonStyle}background-color:#4f46e5;color:#ffffff;">Browse Jobs</a>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/jobs" style="${buttonStyle}background-color:#4f46e5;color:#ffffff;">Browse Jobs</a>
       </td>
     </tr>
   </table>
@@ -148,7 +148,7 @@ exports.interviewScheduled = (name, jobTitle, dateTime, meetLink) => baseLayout(
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
       <td align="center" style="padding:8px 0 0;">
-        <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/interviews" style="${buttonStyle}background-color:#4f46e5;color:#ffffff;">View Interview</a>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/interviews" style="${buttonStyle}background-color:#4f46e5;color:#ffffff;">View Interview</a>
       </td>
     </tr>
   </table>

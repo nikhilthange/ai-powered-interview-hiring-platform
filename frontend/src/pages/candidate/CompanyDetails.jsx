@@ -13,7 +13,7 @@ const CompanyDetails = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
-  const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
+  const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || '';
 
   const fetchCompanyDetails = async () => {
     try {

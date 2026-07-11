@@ -50,9 +50,23 @@ app.use(helmet({
   }
 })); // HTTP headers safety guards
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://hiremate-portal.vercel.app'
+];
+if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 // Enable CORS with Credentials (essential for httpOnly cookies)
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS']
 }));

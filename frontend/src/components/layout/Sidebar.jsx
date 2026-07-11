@@ -10,12 +10,13 @@ import {
   GraduationCap, Search, Target, BarChart3,
   Users, X, Calendar, ChevronLeft, Bell,
   User, CreditCard, LogOut, Sparkles, Settings,
-  ScrollText, Megaphone, Cpu,
+  ScrollText, Megaphone, Cpu, Building2
 } from 'lucide-react'
 
 const candidateLinks = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/jobs', label: 'Find Jobs', icon: Search },
+  { to: '/companies', label: 'Companies', icon: Building2 },
   { to: '/my-applications', label: 'Applications', icon: FileText },
   { to: '/my-interviews', label: 'Interviews', icon: Calendar },
   { to: '/saved-jobs', label: 'Saved Jobs', icon: Bookmark },
@@ -29,6 +30,7 @@ const candidateLinks = [
 const recruiterLinks = [
   { to: '/recruiter/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/recruiter/my-jobs', label: 'My Jobs', icon: Briefcase },
+  { to: '/recruiter/company-profile', label: 'Company Profile', icon: Building2 },
   { to: '/recruiter/jobs/create', label: 'Post a Job', icon: FileText },
   { to: '/recruiter/interviews', label: 'Interviews', icon: Calendar },
   { to: '/recruiter/chat', label: 'Messages', icon: MessageCircle },

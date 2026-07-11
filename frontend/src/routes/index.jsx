@@ -44,6 +44,9 @@ const AIChatPage = () => lazyLoad(() => import('../pages/ai-chat/AIChatPage'))
 const RecruiterDashboard = () => lazyLoad(() => import('../pages/recruiter/Dashboard'))
 const RecruiterJobApplications = () => lazyLoad(() => import('../pages/recruiter/JobApplications'))
 const RecruiterProfile = () => lazyLoad(() => import('../pages/recruiter/Profile'))
+const CompanyProfileForm = () => lazyLoad(() => import('../pages/recruiter/CompanyProfileForm'))
+const CompaniesList = () => lazyLoad(() => import('../pages/candidate/CompaniesList'))
+const CompanyDetails = () => lazyLoad(() => import('../pages/candidate/CompanyDetails'))
 const CreateJob = () => lazyLoad(() => import('../pages/recruiter/CreateJob'))
 const MyJobs = () => lazyLoad(() => import('../pages/recruiter/MyJobs'))
 const EditJob = () => lazyLoad(() => import('../pages/recruiter/EditJob'))
@@ -69,6 +72,8 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'jobs', element: <Jobs /> },
       { path: 'jobs/:id', element: <JobDetail /> },
+      { path: 'companies', element: <CompaniesList /> },
+      { path: 'companies/:id', element: <CompanyDetails /> },
       { path: 'verify-email', element: <VerifyEmail /> },
       { path: 'verify-email-prompt', element: <VerifyEmailPrompt /> },
       { element: <ProtectedRoute />, children: [
@@ -93,6 +98,7 @@ export const router = createBrowserRouter([
         { index: true, element: <Navigate to="dashboard" replace /> },
         { path: 'dashboard', element: <RecruiterDashboard /> },
         { path: 'profile', element: <RecruiterProfile /> },
+        { path: 'company-profile', element: <CompanyProfileForm /> },
         { path: 'jobs/create', element: <CreateJob /> },
         { path: 'my-jobs', element: <MyJobs /> },
         { path: 'interviews', element: <MyInterviews /> },

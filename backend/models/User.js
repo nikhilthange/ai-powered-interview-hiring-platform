@@ -36,7 +36,11 @@ const UserSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
     select: false // Do not return in standard user queries
-  }
+  },
+  followingCompanies: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  }]
 }, {
   timestamps: true
 });

@@ -1,5 +1,4 @@
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
-import { saveAs } from 'file-saver';
 
 export const exportAsDocx = async (resumeData) => {
   const { title, content } = resumeData;
@@ -193,5 +192,14 @@ export const exportAsDocx = async (resumeData) => {
   });
 
   const blob = await Packer.toBlob(doc);
-  saveAs(blob, `${title || 'Resume'}.docx`);
+  
+  // Use standard DOM API for download to avoid file-saver module issues
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${title || 'Resume'}.docx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };

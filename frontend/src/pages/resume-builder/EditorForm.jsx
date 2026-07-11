@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import Input from '../../components/ui/Input';
-import { GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, ArrowUp, ArrowDown } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 import PersonalInfoSection from '../../components/resume/PersonalInfoSection';
@@ -19,48 +15,43 @@ import InterestsSection from '../../components/resume/InterestsSection';
 import ReferenceSection from '../../components/resume/ReferenceSection';
 import ResumeTemplateSelector from '../../components/resume/ResumeTemplateSelector';
 
-const SortableItem = ({ id, title, children }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+const SectionWrapper = ({ id, title, children, onMoveUp, onMoveDown, isFirst, isLast }) => {
   const [isOpen, setIsOpen] = useState(true);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   return (
-    <div ref={setNodeRef} style={style} className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-color)] overflow-hidden mb-4 shadow-sm">
+    <div className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-color)] overflow-hidden mb-4 shadow-sm transition-shadow hover:shadow-md shrink-0">
       <div className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] border-b border-[var(--border-color)]">
         <div className="flex items-center gap-3">
-          <button {...attributes} {...listeners} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] cursor-grab active:cursor-grabbing p-1">
-            <GripVertical className="h-5 w-5" />
-          </button>
+          <div className="flex flex-col">
+            <button onClick={onMoveUp} disabled={isFirst} className="p-0.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
+              <ArrowUp className="h-3.5 w-3.5" />
+            </button>
+            <button onClick={onMoveDown} disabled={isLast} className="p-0.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
+              <ArrowDown className="h-3.5 w-3.5" />
+            </button>
+          </div>
           <h3 className="font-semibold text-[var(--text-primary)] capitalize">{title}</h3>
         </div>
-        <button onClick={() => setIsOpen(!isOpen)} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1">
+        <button onClick={() => setIsOpen(!isOpen)} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1 transition-colors">
           {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </button>
       </div>
-      {isOpen && <div className="p-4">{children}</div>}
+      {isOpen && <div className="p-5">{children}</div>}
     </div>
   );
 };
 
 export default function EditorForm({ resumeData, onChange, onAIAssist }) {
   const { title, template, content } = resumeData;
-  const sectionOrder = content.sectionOrder || ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'achievements', 'languages', 'interests', 'references'];
+  const defaultOrder = ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'achievements', 'languages', 'interests', 'references'];
+  const sectionOrder = defaultOrder; // FORCING default order to bypass corrupted data
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    if (active.id !== over.id) {
-      const oldIndex = sectionOrder.indexOf(active.id);
-      const newIndex = sectionOrder.indexOf(over.id);
-      onChange('content', { ...content, sectionOrder: arrayMove(sectionOrder, oldIndex, newIndex) });
+  const moveSection = (index, direction) => {
+    const newOrder = [...sectionOrder];
+    const newIndex = index + direction;
+    if (newIndex >= 0 && newIndex < newOrder.length) {
+      [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+      onChange('content', { ...content, sectionOrder: newOrder });
     }
   };
 
@@ -113,21 +104,26 @@ export default function EditorForm({ resumeData, onChange, onAIAssist }) {
 
   return (
     <div className="h-full flex flex-col space-y-6 overflow-y-auto pr-2 pb-20 custom-scrollbar">
-      
       <ResumeTemplateSelector title={title} template={template} onChange={onChange} />
-
-      {/* Personal Info */}
       <PersonalInfoSection data={content.personalInfo} onChange={updatePersonalInfo} />
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
-          {sectionOrder.map((sectionId) => (
-            <SortableItem key={sectionId} id={sectionId} title={sectionId}>
-              {renderSectionContent(sectionId)}
-            </SortableItem>
-          ))}
-        </SortableContext>
-      </DndContext>
+      {sectionOrder.map((sectionId, index) => {
+        const children = renderSectionContent(sectionId);
+        if (!children) return null;
+        return (
+          <SectionWrapper 
+            key={sectionId} 
+            id={sectionId} 
+            title={sectionId}
+            onMoveUp={() => moveSection(index, -1)}
+            onMoveDown={() => moveSection(index, 1)}
+            isFirst={index === 0}
+            isLast={index === sectionOrder.length - 1}
+          >
+            {children}
+          </SectionWrapper>
+        );
+      })}
     </div>
   );
 }

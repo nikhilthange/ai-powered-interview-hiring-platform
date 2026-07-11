@@ -10,21 +10,20 @@ export default function MinimalTemplate({ data }) {
   const renderSection = (sectionName) => {
     switch (sectionName) {
       case 'summary':
-        if (!summary) return null;
         return (
           <div key="summary" className="mb-8">
             <SectionTitle title="Summary" />
-            <p className="text-[13px] leading-relaxed text-gray-800 whitespace-pre-wrap">{summary}</p>
+            <p className="text-[13px] leading-relaxed text-gray-800 whitespace-pre-wrap">{summary || 'No summary provided.'}</p>
           </div>
         );
       
       case 'experience':
-        if (!experience?.length) return null;
         return (
           <div key="experience" className="mb-8">
             <SectionTitle title="Experience" />
+            {!experience?.length && <p className="text-[13px] text-gray-400 italic">No experience added yet.</p>}
             <div className="space-y-6">
-              {experience.map(exp => (
+              {experience?.map(exp => (
                 <div key={exp.id}>
                   <div className="flex justify-between items-baseline mb-1">
                     <span className="font-bold text-[14px] text-gray-900">{exp.company}</span>
@@ -43,7 +42,14 @@ export default function MinimalTemplate({ data }) {
         );
 
       case 'education':
-        if (!education?.length) return null;
+        if (!education?.length) {
+          return (
+            <div key="education" className="mb-6 opacity-50">
+              <h2 className="text-sm font-semibold tracking-widest text-gray-500 uppercase mb-3">Education</h2>
+              <p className="text-gray-400 italic">Your education will appear here once you add it in the editor.</p>
+            </div>
+          );
+        }
         return (
           <div key="education" className="mb-8">
             <SectionTitle title="Education" />
@@ -211,7 +217,13 @@ export default function MinimalTemplate({ data }) {
 
       <div>
         {/* Sections based on order */}
-        {(sectionOrder || ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'achievements', 'languages', 'interests', 'references']).map(renderSection)}
+        {(() => {
+          const defaultOrder = ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'achievements', 'languages', 'interests', 'references'];
+          const savedOrder = Array.isArray(sectionOrder) ? sectionOrder : [];
+          const missingSections = defaultOrder.filter(sec => !savedOrder.includes(sec));
+          const finalOrder = savedOrder.length > 0 ? [...savedOrder, ...missingSections] : defaultOrder;
+          return finalOrder.map(renderSection);
+        })()}
       </div>
     </div>
   );

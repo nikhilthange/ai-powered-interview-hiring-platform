@@ -3,7 +3,7 @@ import Input from '../ui/Input';
 
 export default function PersonalInfoSection({ data = {}, onChange }) {
   return (
-    <div className="bg-[var(--bg-primary)] p-5 rounded-xl border border-[var(--border-color)] shadow-sm space-y-4">
+    <div className="bg-[var(--bg-primary)] p-5 rounded-xl border border-[var(--border-color)] shadow-sm space-y-4 shrink-0">
       <h3 className="font-semibold text-[var(--text-primary)]">Personal Information</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input label="Full Name" value={data.fullName || ''} onChange={e => onChange('fullName', e.target.value)} />

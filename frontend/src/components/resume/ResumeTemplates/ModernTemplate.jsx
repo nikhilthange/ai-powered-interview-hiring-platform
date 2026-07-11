@@ -6,21 +6,22 @@ export default function ModernTemplate({ data }) {
   const renderSection = (sectionName) => {
     switch (sectionName) {
       case 'summary':
-        if (!summary) return null;
         return (
           <div key="summary" className="mb-6">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-3">Profile</h2>
-            <p className="text-[13px] leading-relaxed text-gray-700 whitespace-pre-wrap">{summary}</p>
+            <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">Professional Summary</h2>
+            <div className="w-8 h-1 bg-[var(--color-primary-500)] mb-4"></div>
+            <p className="text-sm text-[var(--text-secondary)] whitespace-pre-line">{summary || 'No summary provided.'}</p>
           </div>
         );
       
       case 'experience':
-        if (!experience?.length) return null;
         return (
           <div key="experience" className="mb-6">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-4">Experience</h2>
+            <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">Experience</h2>
+            <div className="w-8 h-1 bg-[var(--color-primary-500)] mb-4"></div>
+            {(!experience || experience.length === 0) && <p className="text-sm text-gray-400 italic">No experience added yet.</p>}
             <div className="space-y-5">
-              {experience.map(exp => (
+              {experience?.map(exp => (
                 <div key={exp.id} className="relative pl-4 border-l-2 border-indigo-100">
                   <div className="absolute w-2 h-2 bg-indigo-500 rounded-full -left-[5px] top-1.5"></div>
                   <div className="mb-1">
@@ -41,7 +42,14 @@ export default function ModernTemplate({ data }) {
         );
 
       case 'education':
-        if (!education?.length) return null;
+        if (!education?.length) {
+          return (
+            <div key="education" className="mb-8 opacity-50">
+              <SectionTitle title="Education" />
+              <p className="text-gray-400 italic">Your education will appear here once you add it in the editor.</p>
+            </div>
+          );
+        }
         return (
           <div key="education" className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-4">Education</h2>
@@ -68,7 +76,14 @@ export default function ModernTemplate({ data }) {
         );
 
       case 'projects':
-        if (!projects?.length) return null;
+        if (!projects?.length) {
+          return (
+            <div key="projects" className="mb-8 opacity-50">
+              <SectionTitle title="Projects" />
+              <p className="text-gray-400 italic">Your projects will appear here once you add them in the editor.</p>
+            </div>
+          );
+        }
         return (
           <div key="projects" className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-4">Projects</h2>
@@ -90,7 +105,14 @@ export default function ModernTemplate({ data }) {
         );
 
       case 'skills':
-        if (!skills?.length) return null;
+        if (!skills?.length) {
+          return (
+            <div key="skills" className="mb-8 opacity-50">
+              <SectionTitle title="Skills" />
+              <p className="text-gray-400 italic">Your skills will appear here once you add them in the editor.</p>
+            </div>
+          );
+        }
         return (
           <div key="skills" className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-4">Skills</h2>
@@ -106,7 +128,14 @@ export default function ModernTemplate({ data }) {
         );
 
       case 'certifications':
-        if (!certifications?.length) return null;
+        if (!certifications?.length) {
+          return (
+            <div key="certifications" className="mb-8 opacity-50">
+              <SectionTitle title="Certifications" />
+              <p className="text-gray-400 italic">Your certifications will appear here once you add them in the editor.</p>
+            </div>
+          );
+        }
         return (
           <div key="certifications" className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-4">Certifications</h2>
@@ -129,7 +158,14 @@ export default function ModernTemplate({ data }) {
         );
 
       case 'achievements':
-        if (!achievements?.length) return null;
+        if (!achievements?.length) {
+          return (
+            <div key="achievements" className="mb-8 opacity-50">
+              <SectionTitle title="Achievements" />
+              <p className="text-gray-400 italic">Your achievements will appear here once you add them in the editor.</p>
+            </div>
+          );
+        }
         return (
           <div key="achievements" className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-4">Achievements</h2>
@@ -148,7 +184,14 @@ export default function ModernTemplate({ data }) {
         );
 
       case 'languages':
-        if (!languages?.length) return null;
+        if (!languages?.length) {
+          return (
+            <div key="languages" className="mb-8 opacity-50">
+              <SectionTitle title="Languages" />
+              <p className="text-gray-400 italic">Your languages will appear here once you add them in the editor.</p>
+            </div>
+          );
+        }
         return (
           <div key="languages" className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-4">Languages</h2>
@@ -164,7 +207,14 @@ export default function ModernTemplate({ data }) {
         );
 
       case 'interests':
-        if (!interests?.length) return null;
+        if (!interests?.length) {
+          return (
+            <div key="interests" className="mb-8 opacity-50">
+              <SectionTitle title="Interests" />
+              <p className="text-gray-400 italic">Your interests will appear here once you add them in the editor.</p>
+            </div>
+          );
+        }
         return (
           <div key="interests" className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-4">Interests</h2>
@@ -177,7 +227,14 @@ export default function ModernTemplate({ data }) {
         );
 
       case 'references':
-        if (!references?.length) return null;
+        if (!references?.length) {
+          return (
+            <div key="references" className="mb-8 opacity-50">
+              <SectionTitle title="References" />
+              <p className="text-gray-400 italic">Your references will appear here once you add them in the editor.</p>
+            </div>
+          );
+        }
         return (
           <div key="references" className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-4">References</h2>
@@ -215,7 +272,13 @@ export default function ModernTemplate({ data }) {
 
       <div className="px-10 pb-10">
         {/* Sections based on order */}
-        {(sectionOrder || ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'achievements', 'languages', 'interests', 'references']).map(renderSection)}
+        {(() => {
+          const defaultOrder = ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'achievements', 'languages', 'interests', 'references'];
+          const savedOrder = Array.isArray(sectionOrder) ? sectionOrder : [];
+          const missingSections = defaultOrder.filter(sec => !savedOrder.includes(sec));
+          const finalOrder = savedOrder.length > 0 ? [...savedOrder, ...missingSections] : defaultOrder;
+          return finalOrder.map(renderSection);
+        })()}
       </div>
     </div>
   );

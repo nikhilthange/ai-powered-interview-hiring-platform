@@ -67,3 +67,9 @@ export default defineConfig({
     renderBuiltUrl: () => ({ relative: true }),
   },
 })
+ 
+ 
+ 
+ 
+ 
+ 

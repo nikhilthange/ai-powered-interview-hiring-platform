@@ -1,8 +1,8 @@
-import React, { useRef } from 'react';
-import ClassicTemplate from './Templates/ClassicTemplate';
-import ModernTemplate from './Templates/ModernTemplate';
-import MinimalTemplate from './Templates/MinimalTemplate';
-import ProfessionalTemplate from './Templates/ProfessionalTemplate';
+import React, { useRef, useEffect, useState } from 'react';
+import ClassicTemplate from './ResumeTemplates/ClassicTemplate';
+import ModernTemplate from './ResumeTemplates/ModernTemplate';
+import MinimalTemplate from './ResumeTemplates/MinimalTemplate';
+import ProfessionalTemplate from './ResumeTemplates/ProfessionalTemplate';
 import { useReactToPrint } from 'react-to-print';
 import Button from '../ui/Button';
 import { exportAsDocx } from '../../utils/exportDocx';
@@ -10,9 +10,39 @@ import { Download, FileText } from 'lucide-react';
 
 export default function LivePreview({ resumeData }) {
   const componentRef = useRef();
+  const containerRef = useRef(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        // Calculate the available width (container width minus padding)
+        const containerWidth = containerRef.current.offsetWidth - 32;
+        const targetWidth = 816; // Standard US Letter width in pixels
+        if (containerWidth < targetWidth) {
+          setScale(containerWidth / targetWidth);
+        } else {
+          setScale(1);
+        }
+      }
+    };
+
+    // Use ResizeObserver for more robust resizing tracking of the specific container
+    const observer = new ResizeObserver(updateScale);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    
+    // Initial scale
+    updateScale();
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   const handlePrint = useReactToPrint({
-    contentRef: () => componentRef.current,
+    contentRef: componentRef,
     documentTitle: resumeData?.title || 'Resume'
   });
 
@@ -46,11 +76,19 @@ export default function LivePreview({ resumeData }) {
         </div>
       </div>
       
-      <div className="flex-1 overflow-auto p-4 sm:p-8 flex justify-center bg-gray-50/50">
+      <div 
+        ref={containerRef}
+        className="flex-1 overflow-auto p-4 flex justify-center bg-gray-50/50 custom-scrollbar"
+      >
         <div 
-          className="bg-white shadow-xl origin-top" 
+          className="bg-white shadow-xl origin-top transition-transform duration-200" 
           ref={componentRef}
-          style={{ width: '816px', minHeight: '1056px', transformOrigin: 'top center' }}
+          style={{ 
+            width: '816px', 
+            minHeight: '1056px', 
+            transform: `scale(${scale})`,
+            marginBottom: `${-(1056 - (1056 * scale))}px` // Adjust margin to prevent empty scroll space
+          }}
         >
           {renderTemplate()}
         </div>

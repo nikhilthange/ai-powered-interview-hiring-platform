@@ -12,21 +12,24 @@ const PROMPTS = [
   { icon: Compass, label: 'Career advice', text: 'I need career advice for my next move. How do I plan my career growth?' },
 ]
 
-export default memo(function SuggestedPrompts({ onSelect }) {
+export default memo(function SuggestedPrompts({ onSelect, isWidgetMode }) {
+  // Use fewer prompts if in widget mode to save vertical space
+  const displayPrompts = isWidgetMode ? PROMPTS.slice(0, 4) : PROMPTS
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="h-4 w-4 text-indigo-500" />
         <p className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Suggested prompts</p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {PROMPTS.map((prompt, i) => {
+      <div className={`grid gap-2 ${isWidgetMode ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-4'}`}>
+        {displayPrompts.map((prompt, i) => {
           const Icon = prompt.icon
           return (
             <button
               key={i}
               onClick={() => onSelect(prompt.text)}
-              className="flex items-center gap-2 px-3 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)] hover:border-indigo-300 dark:hover:border-indigo-700 transition-all text-left group"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)] hover:border-indigo-300 dark:hover:border-indigo-700 transition-all text-left group"
             >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
                 <Icon className="h-4 w-4" />

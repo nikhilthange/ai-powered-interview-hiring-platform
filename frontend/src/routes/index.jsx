@@ -40,7 +40,7 @@ const MockInterview = () => lazyLoad(() => import('../pages/candidate/MockInterv
 const CareerRoadmap = () => lazyLoad(() => import('../pages/candidate/CareerRoadmap'))
 const MyInterviews = () => lazyLoad(() => import('../pages/MyInterviews'))
 const ChatPage = () => lazyLoad(() => import('../pages/ChatPage'))
-const AIChatPage = () => lazyLoad(() => import('../pages/ai-chat/AIChatPage'))
+// Removed AIChatPage as it is now a globally mounted widget
 const RecruiterDashboard = () => lazyLoad(() => import('../pages/recruiter/Dashboard'))
 const RecruiterJobApplications = () => lazyLoad(() => import('../pages/recruiter/JobApplications'))
 const RecruiterProfile = () => lazyLoad(() => import('../pages/recruiter/Profile'))
@@ -98,7 +98,6 @@ export const router = createBrowserRouter([
         { path: 'plans', element: <PlansPage /> },
         { path: 'subscription', element: <SubscriptionPage /> },
         { path: 'chat', element: <ChatPage /> },
-        { path: 'ai-chat', element: <AIChatPage /> },
       ]},
       { path: 'recruiter', element: <ProtectedRoute allowedRoles={['recruiter', 'admin']} />, children: [
         { index: true, element: <Navigate to="dashboard" replace /> },

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
 import BottomNav from './BottomNav'
+import FloatingAIChatWidget from '../ai-chat/FloatingAIChatWidget'
 import { LayoutProvider, useLayout } from '../../context/LayoutContext'
 import { cn } from '../../lib/utils'
 
@@ -86,7 +87,12 @@ function LayoutContent() {
             </div>
           </main>
         </div>
-        {!isLanding && <BottomNav />}
+        {!isLanding && (
+          <>
+            <FloatingAIChatWidget />
+            <BottomNav />
+          </>
+        )}
       </div>
     </>
   )

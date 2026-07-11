@@ -90,7 +90,7 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
 
       <aside
         className={cn(
-          'fixed top-16 left-0 z-40 flex flex-col h-[calc(100vh-64px)] border-r bg-[var(--bg-primary)]/95 backdrop-blur-xl border-[var(--border-color)] transition-all duration-300 lg:translate-x-0',
+          'fixed top-[72px] left-0 z-40 flex flex-col h-[calc(100vh-72px)] border-r bg-[var(--bg-primary)]/95 backdrop-blur-xl border-[var(--border-color)] transition-all duration-300 lg:translate-x-0',
           collapsed ? 'w-[72px]' : 'w-[260px]',
           open ? 'translate-x-0' : '-translate-x-full'
         )}

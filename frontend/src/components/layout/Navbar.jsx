@@ -8,14 +8,14 @@ import NotificationBell from '../notifications/NotificationBell'
 import { useClickOutside } from '../../hooks/useClickOutside'
 import { useApi } from '../../hooks/useApi'
 import { profileApi } from '../../services/profileApi'
-import { getMediaUrl } from '../../lib/utils'
+import { getMediaUrl, cn } from '../../lib/utils'
 import { Menu, LogOut, User, CreditCard, Shield, Moon, Sun, Search, Sparkles } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 
 const Navbar = memo(function Navbar() {
   const { user, isAuthenticated, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const { toggleSidebar } = useLayout()
+  const { toggleSidebar, collapsed } = useLayout()
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -69,7 +69,13 @@ const Navbar = memo(function Navbar() {
   const avatarUrl = getMediaUrl(profileData?.data?.profile?.avatarUrl)
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-[var(--bg-primary)]/80 backdrop-blur-xl border-[var(--border-color)] px-4 lg:px-6">
+    <header 
+      className={cn(
+        "fixed top-0 right-0 z-40 flex h-16 items-center gap-3 border-b bg-[var(--bg-primary)]/80 backdrop-blur-xl border-[var(--border-color)] px-4 lg:px-6 transition-all duration-300",
+        "left-0",
+        collapsed ? "lg:left-[72px]" : "lg:left-64"
+      )}
+    >
       <button
         onClick={toggleSidebar}
         className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors"

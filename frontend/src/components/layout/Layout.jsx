@@ -72,6 +72,7 @@ function LayoutContent() {
           aria-label="Main content"
           className={cn(
           'flex-1 overflow-x-hidden',
+          !isLanding && 'mt-16',
           isLanding ? '' : 'p-3 sm:p-4 lg:p-6 pb-20 lg:pb-6'
         )}>
           <div className={cn(isLanding ? 'w-full' : 'mx-auto w-full max-w-7xl')}>

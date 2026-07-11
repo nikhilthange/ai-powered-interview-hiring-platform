@@ -31,6 +31,7 @@ export default function CareerRoadmap() {
   const [expandedMilestone, setExpandedMilestone] = useState(null)
   const [file, setFile] = useState(null)
   const [targetRole, setTargetRole] = useState('')
+  const [isCreatingNew, setIsCreatingNew] = useState(false)
 
   const queryClient = useQueryClient()
 
@@ -44,6 +45,7 @@ export default function CareerRoadmap() {
     mutationFn: (formData) => interviewApi.careerRoadmapUpload(formData),
     onSuccess: (data) => {
       queryClient.setQueryData(['myRoadmap'], data)
+      setIsCreatingNew(false)
       const isFallback = data?.data?.roadmap?.summary?.includes('Fallback');
       if (isFallback) {
         toast('AI unavailable. Generated standard roadmap.', { icon: '⚠️' })
@@ -109,7 +111,7 @@ export default function CareerRoadmap() {
 
   const roadmap = result || {}
   const milestones = roadmap.milestones || roadmap.steps || roadmap.stages || []
-  const hasResult = Object.keys(roadmap).length > 0 && milestones.length > 0
+  const hasResult = Object.keys(roadmap).length > 0 && milestones.length > 0 && !isCreatingNew
 
   const completedMilestones = milestones.filter(m => m.status === 'completed' || m.completed).length
   const progressPercent = milestones.length > 0 ? Math.round((completedMilestones / milestones.length) * 100) : 0
@@ -128,10 +130,20 @@ export default function CareerRoadmap() {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Career Roadmap</h1>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Upload your resume and choose a target role to get a personalized career progression plan.
+            {isCreatingNew ? 'Upload your resume and choose a target role to get a personalized career progression plan.' : 'Your personalized career progression plan based on your skills and goals.'}
           </p>
         </div>
       </motion.div>
+
+      {!hasResult && (
+        <motion.div variants={itemVariants} className="mb-4">
+          {existingData && existingData.data?.roadmap && isCreatingNew && (
+            <Button variant="ghost" size="sm" onClick={() => setIsCreatingNew(false)} className="mb-2">
+              <ArrowLeft className="h-4 w-4 mr-2" /> Cancel
+            </Button>
+          )}
+        </motion.div>
+      )}
 
       {!hasResult && (
         <motion.form variants={itemVariants} onSubmit={handleSubmit} className="space-y-6">
@@ -202,10 +214,10 @@ export default function CareerRoadmap() {
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div />
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={reset}>
+              <Button variant="outline" size="sm" onClick={() => { setIsCreatingNew(true); reset(); }}>
                 <Upload className="h-4 w-4" /> New Roadmap
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => window.print()}>
                 <Download className="h-4 w-4" /> Download PDF
               </Button>
             </div>

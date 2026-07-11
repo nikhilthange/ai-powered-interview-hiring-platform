@@ -9,17 +9,15 @@ const onlineUsers = new Map();
 
 const initSocket = (server) => {
   const allowedOrigins = [
-    "http://localhost:5173",
-    "https://hiremate-portal.vercel.app"
-  ];
-  if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
-    allowedOrigins.push(process.env.FRONTEND_URL);
-  }
+    process.env.FRONTEND_URL,
+    "https://hiremate-portal.vercel.app",
+    "http://localhost:5173"
+  ].filter(Boolean);
 
   const io = socketIO(server, {
     cors: {
       origin: allowedOrigins,
-      methods: ["GET", "POST"],
+      methods: ["GET", "POST", "OPTIONS"],
       credentials: true
     }
   });

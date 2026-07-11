@@ -11,10 +11,6 @@ const CompaniesList = () => {
   
   const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
 
-  useEffect(() => {
-    fetchCompanies();
-  }, []);
-
   const fetchCompanies = async (search = '') => {
     setLoading(true);
     try {
@@ -26,6 +22,10 @@ const CompaniesList = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();

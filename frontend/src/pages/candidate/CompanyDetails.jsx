@@ -15,17 +15,6 @@ const CompanyDetails = () => {
 
   const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
 
-  useEffect(() => {
-    fetchCompanyDetails();
-  }, [id]);
-
-  useEffect(() => {
-    // Check if the current user is following this company
-    if (user?.followingCompanies && company) {
-      setIsFollowing(user.followingCompanies.includes(company.id));
-    }
-  }, [user, company]);
-
   const fetchCompanyDetails = async () => {
     try {
       const response = await companyService.getCompanyById(id);
@@ -36,6 +25,17 @@ const CompanyDetails = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchCompanyDetails();
+  }, [id]);
+
+  useEffect(() => {
+    // Check if the current user is following this company
+    if (user?.followingCompanies && company) {
+      setIsFollowing(user.followingCompanies.includes(company.id));
+    }
+  }, [user, company]);
 
   const handleFollowToggle = async () => {
     if (!user) {

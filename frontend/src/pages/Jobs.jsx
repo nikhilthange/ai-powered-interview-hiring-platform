@@ -207,7 +207,7 @@ export default function Jobs() {
   const [showFilters, setShowFilters] = useState(false)
   const [page, setPage] = useState(1)
   const debouncedSearch = useDebounce(search, 300)
-  const allJobsRef = useRef([])
+  const [jobs, setJobs] = useState([])
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -269,16 +269,17 @@ export default function Jobs() {
     placeholderData: (prev) => prev,
   })
 
-  const jobs = useMemo(() => {
+  useEffect(() => {
     const newJobs = data?.data?.jobs || []
     if (page === 1) {
-      allJobsRef.current = newJobs
+      setJobs(newJobs)
     } else if (newJobs.length > 0) {
-      const existingIds = new Set(allJobsRef.current.map((j) => j._id))
-      const unique = newJobs.filter((j) => !existingIds.has(j._id))
-      allJobsRef.current = [...allJobsRef.current, ...unique]
+      setJobs(prev => {
+        const existingIds = new Set(prev.map((j) => j._id))
+        const unique = newJobs.filter((j) => !existingIds.has(j._id))
+        return [...prev, ...unique]
+      })
     }
-    return allJobsRef.current
   }, [data, page])
 
   const totalPages = data?.totalPages || data?.pagination?.totalPages || 1
@@ -313,7 +314,7 @@ export default function Jobs() {
   const handleSetFilters = useCallback((fn) => {
     setFilters(fn)
     setPage(1)
-    allJobsRef.current = []
+    setJobs([])
   }, [])
 
   const handleToggleFilters = useCallback(() => setShowFilters((prev) => !prev), [])

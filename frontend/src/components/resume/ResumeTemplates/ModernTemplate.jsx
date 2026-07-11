@@ -1,5 +1,9 @@
 import React from 'react';
 
+const SectionTitle = ({ title }) => (
+  <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600 mb-4">{title}</h2>
+);
+
 export default function ModernTemplate({ data }) {
   const { personalInfo, summary, experience, education, skills, projects, certifications, achievements, languages, interests, references, sectionOrder } = data;
 

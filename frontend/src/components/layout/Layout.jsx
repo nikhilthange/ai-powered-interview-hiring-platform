@@ -50,48 +50,45 @@ function LayoutContent() {
   return (
     <>
       <RouteAnnouncer />
-      <div className="flex min-h-screen bg-[var(--bg-secondary)]">
-      {!isLanding && (
-        <Sidebar
-          open={sidebarOpen}
-          onClose={closeSidebar}
-          collapsed={collapsed}
-          onToggle={toggleCollapsed}
-        />
-      )}
-      <div 
-        className={cn(
-          "flex flex-1 flex-col min-w-0 transition-all duration-300",
-          !isLanding && (collapsed ? "lg:ml-[72px]" : "lg:ml-64")
-        )}
-      >
+      <div className="flex flex-col min-h-screen bg-[var(--bg-secondary)]">
         {!isLanding && <Navbar />}
-        <main
-          id="main-content"
-          role="region"
-          aria-label="Main content"
-          className={cn(
-          'flex-1 overflow-x-hidden',
-          !isLanding && 'mt-16',
-          isLanding ? '' : 'p-3 sm:p-4 lg:p-6 pb-20 lg:pb-6'
-        )}>
-          <div className={cn(isLanding ? 'w-full' : 'mx-auto w-full max-w-7xl')}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </main>
+        <div className="flex flex-1 overflow-hidden">
+          {!isLanding && (
+            <Sidebar
+              open={sidebarOpen}
+              onClose={closeSidebar}
+              collapsed={collapsed}
+              onToggle={toggleCollapsed}
+            />
+          )}
+          <main
+            id="main-content"
+            role="region"
+            aria-label="Main content"
+            className={cn(
+              'flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300',
+              !isLanding && 'mt-16 h-[calc(100vh-64px)]',
+              !isLanding && (collapsed ? "lg:ml-[72px]" : "lg:ml-[260px]"),
+              isLanding ? '' : 'p-3 sm:p-4 lg:p-6 pb-20 lg:pb-6'
+            )}
+          >
+            <div className={cn(isLanding ? 'w-full' : 'mx-auto w-full max-w-7xl')}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  variants={pageVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  <Outlet />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </main>
+        </div>
+        {!isLanding && <BottomNav />}
       </div>
-      {!isLanding && <BottomNav />}
-    </div>
     </>
   )
 }

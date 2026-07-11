@@ -90,39 +90,26 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
 
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 flex flex-col h-screen border-r bg-[var(--bg-primary)]/95 backdrop-blur-xl border-[var(--border-color)] transition-all duration-300 lg:translate-x-0',
-          collapsed ? 'w-[72px]' : 'w-64',
+          'fixed top-16 left-0 z-40 flex flex-col h-[calc(100vh-64px)] border-r bg-[var(--bg-primary)]/95 backdrop-blur-xl border-[var(--border-color)] transition-all duration-300 lg:translate-x-0',
+          collapsed ? 'w-[72px]' : 'w-[260px]',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
         aria-label="Sidebar navigation"
       >
         <div className={cn(
-          'flex h-16 items-center border-b border-[var(--border-color)]',
-          collapsed ? 'justify-center px-0' : 'justify-between px-4 sm:px-5'
+          'flex items-center py-2 shrink-0',
+          collapsed ? 'justify-center' : 'justify-end px-3'
         )}>
-          <Link to="/" className="flex items-center gap-2.5 min-w-0" onClick={onClose}>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold shadow-sm shadow-indigo-500/20">
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-            </div>
-            {!collapsed && (
-              <span className="font-semibold text-[var(--text-primary)] truncate">HireMate</span>
-            )}
-          </Link>
           <button
             onClick={onToggle}
-            className={cn(
-              'rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] transition-colors',
-              collapsed && 'hidden lg:block mx-auto'
-            )}
+            className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] transition-colors hidden lg:block"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} aria-hidden="true" />
           </button>
-          {!collapsed && (
-            <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors" aria-label="Close sidebar">
-              <X className="h-5 w-5" aria-hidden="true" />
-            </button>
-          )}
+          <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors" aria-label="Close sidebar">
+            <X className="h-5 w-5" aria-hidden="true" />
+          </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-thin">

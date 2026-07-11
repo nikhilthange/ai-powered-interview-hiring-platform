@@ -62,6 +62,7 @@ const AdminNotifications = () => lazyLoad(() => import('../pages/admin/Notificat
 const NotificationsPage = () => lazyLoad(() => import('../pages/notifications/NotificationsPage'))
 const PlansPage = () => lazyLoad(() => import('../pages/profile/PlansPage'))
 const SubscriptionPage = () => lazyLoad(() => import('../pages/profile/SubscriptionPage'))
+const PublicPortfolio = () => lazyLoad(() => import('../pages/PublicPortfolio'))
 
 export const router = createBrowserRouter([
   {
@@ -74,6 +75,7 @@ export const router = createBrowserRouter([
       { path: 'jobs/:id', element: <JobDetail /> },
       { path: 'companies', element: <CompaniesList /> },
       { path: 'companies/:id', element: <CompanyDetails /> },
+      { path: 'u/:username', element: <PublicPortfolio /> },
       { path: 'verify-email', element: <VerifyEmail /> },
       { path: 'verify-email-prompt', element: <VerifyEmailPrompt /> },
       { element: <ProtectedRoute />, children: [

@@ -24,6 +24,23 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
   });
 });
 
+exports.getPublicProfileByUsername = asyncHandler(async (req, res, next) => {
+  const { username } = req.params;
+  
+  const profile = await Profile.findOne({ username, isPublic: true })
+    .populate('userId', 'name')
+    .select('-careerRoadmap'); // exclude private roadmap
+    
+  if (!profile) {
+    return next(new AppError('Public profile not found or is set to private.', 404));
+  }
+  
+  res.status(200).json({
+    status: 'success',
+    data: { profile }
+  });
+});
+
 exports.createOrUpdateProfile = asyncHandler(async (req, res, next) => {
   console.log('=== createOrUpdateProfile ===');
   console.log('Headers:', JSON.stringify({
@@ -38,6 +55,7 @@ exports.createOrUpdateProfile = asyncHandler(async (req, res, next) => {
     'fullName', 'bio', 'phone', 'location', 'headline', 'title',
     'website', 'linkedin', 'github', 'portfolio',
     'skills', 'experienceYears', 'education', 'projects',
+    'username', 'experience', 'certificates', 'isPublic'
   ];
 
   const fields = { userId: req.user._id };
@@ -73,6 +91,17 @@ exports.createOrUpdateProfile = asyncHandler(async (req, res, next) => {
 
   if (!fields.fullName && existing?.fullName) {
     fields.fullName = existing.fullName;
+  }
+
+  // Handle username uniqueness check before saving
+  if (fields.username) {
+    const existingUsername = await Profile.findOne({ 
+      username: fields.username, 
+      userId: { $ne: req.user._id } 
+    });
+    if (existingUsername) {
+      return next(new AppError('This username is already taken. Please choose another.', 400));
+    }
   }
 
   console.log('Final fields to $set:', JSON.stringify(fields, null, 2));

@@ -18,6 +18,8 @@ export default function ProfileForm({ profile, onChange, isRecruiter = false }) 
         portfolio: profile.portfolio || '',
         title: profile.title || '',
         experienceYears: profile.experienceYears ?? '',
+        username: profile.username || '',
+        isPublic: profile.isPublic ?? true,
       }
       if (isRecruiter) {
         base.company = profile.company?.name ?? ''
@@ -39,6 +41,7 @@ export default function ProfileForm({ profile, onChange, isRecruiter = false }) 
   ]
 
   const candidateFields = [
+    { id: 'username', label: 'Public Username', placeholder: 'johndoe123' },
     { id: 'headline', label: 'Headline', placeholder: 'Senior Software Engineer at Acme' },
     { id: 'phone', label: 'Phone', type: 'tel', placeholder: '+1 (555) 123-4567' },
     { id: 'location', label: 'Location', placeholder: 'San Francisco, CA' },
@@ -108,6 +111,22 @@ export default function ProfileForm({ profile, onChange, isRecruiter = false }) 
           />
         ))}
       </div>
+      
+      {!isRecruiter && (
+        <div className="flex items-center gap-3 bg-[var(--bg-secondary)] p-4 rounded-xl border border-[var(--border-color)]">
+          <input
+            type="checkbox"
+            id="isPublic"
+            checked={form.isPublic || false}
+            onChange={(e) => updateField('isPublic', e.target.checked)}
+            className="h-5 w-5 rounded border-[var(--border-color)] text-indigo-600 focus:ring-indigo-500"
+          />
+          <div>
+            <label htmlFor="isPublic" className="font-medium text-[var(--text-primary)]">Public Portfolio</label>
+            <p className="text-sm text-[var(--text-secondary)]">Allow anyone to view your portfolio at /u/{form.username || 'username'}</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

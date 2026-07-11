@@ -10,9 +10,10 @@ import ProfileForm from '../../components/profile/ProfileForm'
 import AvatarUpload from '../../components/profile/AvatarUpload'
 import SkillBadge from '../../components/profile/SkillBadge'
 import RoadmapView from '../../components/profile/RoadmapView'
+import ExperienceEditor from '../../components/profile/ExperienceEditor'
 import Button from '../../components/ui/Button'
 import { getMediaUrl } from '../../lib/utils'
-import { Upload, FileText, AlertCircle, Plus, Briefcase, Award } from 'lucide-react'
+import { Upload, FileText, AlertCircle, Plus, Briefcase, Award, FileBadge } from 'lucide-react'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -44,6 +45,7 @@ export default function CandidateProfile() {
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const [newSkill, setNewSkill] = useState('')
+  const [newCertificate, setNewCertificate] = useState('')
   const [selectedAvatarFile, setSelectedAvatarFile] = useState(null)
   const [currentFormValues, setCurrentFormValues] = useState(null)
   const [formVersion, setFormVersion] = useState(0)
@@ -93,6 +95,23 @@ export default function CandidateProfile() {
   const handleRemoveSkill = (skill) => {
     const updatedSkills = (profile?.skills || []).filter((s) => s !== skill)
     updateMutation.mutate({ data: { skills: updatedSkills }, avatarFile: selectedAvatarFile || undefined })
+  }
+
+  const handleAddCertificate = () => {
+    const cert = newCertificate.trim()
+    if (!cert || profile?.certificates?.includes(cert)) return
+    const updatedCerts = [...(profile?.certificates || []), cert]
+    updateMutation.mutate({ data: { certificates: updatedCerts }, avatarFile: selectedAvatarFile || undefined })
+    setNewCertificate('')
+  }
+
+  const handleRemoveCertificate = (cert) => {
+    const updatedCerts = (profile?.certificates || []).filter((c) => c !== cert)
+    updateMutation.mutate({ data: { certificates: updatedCerts }, avatarFile: selectedAvatarFile || undefined })
+  }
+
+  const handleUpdateExperience = (experience) => {
+    updateMutation.mutate({ data: { experience }, avatarFile: selectedAvatarFile || undefined })
   }
 
   const handleFormChange = (form) => {
@@ -261,6 +280,55 @@ export default function CandidateProfile() {
             )}
           </CardContent>
         </Card>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
+                <FileBadge className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-[var(--text-primary)]">Certificates</h2>
+                <p className="text-xs text-[var(--text-tertiary)]">Add your certifications</p>
+              </div>
+            </div>
+            {profile?.certificates?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {profile.certificates.map((cert) => (
+                  <SkillBadge key={cert} skill={cert} onRemove={handleRemoveCertificate} />
+                ))}
+              </div>
+            )}
+            {(!profile?.certificates || profile.certificates.length === 0) && (
+              <p className="text-sm text-[var(--text-secondary)] mb-4">No certificates added yet.</p>
+            )}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0 w-full">
+                <input
+                  type="text"
+                  placeholder="Add a certificate..."
+                  value={newCertificate}
+                  onChange={(e) => setNewCertificate(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCertificate())}
+                  className="flex-1 min-w-0 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                />
+                <Button onClick={handleAddCertificate} disabled={!newCertificate.trim() || updateMutation.isPending} size="sm" className="shrink-0">
+                  <Plus className="h-4 w-4" /> Add
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <ExperienceEditor 
+          experience={profile?.experience || []} 
+          onUpdate={handleUpdateExperience}
+          loading={updateMutation.isPending}
+        />
       </motion.div>
 
       <motion.div variants={itemVariants} className="mt-6 mb-8">

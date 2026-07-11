@@ -3,6 +3,8 @@ import api from './axios'
 export const profileApi = {
   getMyProfile: () => api.get('/profiles'),
 
+  getPublicProfile: (username) => api.get(`/profiles/public/${username}`),
+
   getProfileByUserId: (userId) => api.get(`/profiles/${userId}`),
 
   updateProfile: (data, avatarFile) => {
@@ -21,15 +23,23 @@ export const profileApi = {
       formData.append('github', data.github ?? '')
       formData.append('portfolio', data.portfolio ?? '')
       formData.append('title', data.title ?? '')
+      formData.append('username', data.username ?? '')
+      formData.append('isPublic', String(data.isPublic ?? true))
       formData.append('experienceYears', String(data.experienceYears ?? 0))
       if (Array.isArray(data.skills)) {
         data.skills.forEach((s) => formData.append('skills', s))
+      }
+      if (Array.isArray(data.certificates)) {
+        data.certificates.forEach((c) => formData.append('certificates', c))
       }
       if (data.education !== undefined) {
         formData.append('education', JSON.stringify(data.education))
       }
       if (data.projects !== undefined) {
         formData.append('projects', JSON.stringify(data.projects))
+      }
+      if (data.experience !== undefined) {
+        formData.append('experience', JSON.stringify(data.experience))
       }
       if (data.company !== undefined) {
         formData.append('company', JSON.stringify(data.company))

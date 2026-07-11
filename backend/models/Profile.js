@@ -77,9 +77,21 @@ const ProfileSchema = new mongoose.Schema({
   },
   
   // Candidate-specific attributes
+  username: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true,
+    lowercase: true,
+    match: [/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores and dashes.']
+  },
   resumeUrl: {
     type: String,
     default: ''
+  },
+  resumeScore: {
+    type: Number,
+    default: null
   },
   skills: [{
     type: String,
@@ -89,11 +101,27 @@ const ProfileSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  experience: [{
+    company: { type: String, default: '', trim: true },
+    position: { type: String, default: '', trim: true },
+    startDate: { type: Date, default: null },
+    endDate: { type: Date, default: null },
+    current: { type: Boolean, default: false },
+    description: { type: String, default: '', trim: true }
+  }],
   education: [EducationSchema],
   projects: [ProjectSchema],
+  certificates: [{
+    type: String,
+    trim: true
+  }],
   careerRoadmap: {
     type: mongoose.Schema.Types.Mixed,
     default: null
+  },
+  isPublic: {
+    type: Boolean,
+    default: true
   },
   
   // Recruiter-specific attributes

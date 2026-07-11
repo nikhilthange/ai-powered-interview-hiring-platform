@@ -12,6 +12,8 @@ const {
 
 const router = express.Router();
 
+router.get('/public/:username', profileController.getPublicProfileByUsername);
+
 router.use(protect);
 
 function normalizeFormData(req, res, next) {
@@ -24,7 +26,10 @@ function normalizeFormData(req, res, next) {
   if (req.body.experienceYears !== undefined) {
     req.body.experienceYears = Number(req.body.experienceYears);
   }
-  ['education', 'projects', 'company'].forEach((field) => {
+  if (req.body.isPublic !== undefined) {
+    req.body.isPublic = req.body.isPublic === 'true' || req.body.isPublic === true;
+  }
+  ['education', 'projects', 'company', 'experience'].forEach((field) => {
     if (typeof req.body[field] === 'string') {
       try { req.body[field] = JSON.parse(req.body[field]); } catch (e) {
         console.log(`Failed to parse ${field}:`, e.message);

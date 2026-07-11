@@ -15,8 +15,18 @@ const projectSchema = z.object({
   technologies: z.array(z.string()).optional().default([]),
 });
 
+const experienceSchema = z.object({
+  company: z.string().optional().default(''),
+  position: z.string().optional().default(''),
+  startDate: z.string().nullable().optional().default(null).transform(val => val ? new Date(val) : null),
+  endDate: z.string().nullable().optional().default(null).transform(val => val ? new Date(val) : null),
+  current: z.boolean().optional().default(false),
+  description: z.string().optional().default(''),
+});
+
 const createOrUpdateProfileSchema = z.object({
   fullName: z.string({ required_error: 'Full name is required' }).trim().min(1, 'Full name cannot be empty').optional(),
+  username: z.string().trim().regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores and dashes.').optional().nullable(),
   bio: z.string().optional(),
   phone: z.string().optional(),
   location: z.string().optional(),
@@ -28,8 +38,11 @@ const createOrUpdateProfileSchema = z.object({
   portfolio: z.string().optional(),
   skills: z.array(z.string().trim()).optional(),
   experienceYears: z.number().min(0).optional(),
+  experience: z.array(experienceSchema).optional(),
   education: z.array(educationSchema).optional(),
   projects: z.array(projectSchema).optional(),
+  certificates: z.array(z.string().trim()).optional(),
+  isPublic: z.boolean().optional(),
   company: z.object({
     name: z.string().trim().optional(),
     website: z.string().trim().optional(),

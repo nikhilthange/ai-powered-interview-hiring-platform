@@ -3,7 +3,6 @@ const User = require('../models/User');
 const Profile = require('../models/Profile');
 const Job = require('../models/Job');
 const Application = require('../models/Application');
-const Subscription = require('../models/Subscription');
 const Notification = require('../models/Notification');
 const AiConfig = require('../models/AiConfig');
 const AuditLog = require('../models/AuditLog');
@@ -280,11 +279,10 @@ exports.broadcastNotification = asyncHandler(async (req, res, next) => {
 });
 
 exports.getDashboardAnalytics = asyncHandler(async (req, res, next) => {
-  const [userStats, jobStats, applicationStats, revenueStats, interviewCount, aiConfigData] = await Promise.all([
+  const [userStats, jobStats, applicationStats, interviewCount, aiConfigData] = await Promise.all([
     User.aggregate([{ $group: { _id: '$role', count: { $sum: 1 } } }, { $project: { role: '$_id', count: 1, _id: 0 } }]),
     Job.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }, { $project: { status: '$_id', count: 1, _id: 0 } }]),
     Application.aggregate([{ $group: { _id: '$status', count: { $sum: 1 }, averageAtsScore: { $avg: '$atsScore' } } }, { $project: { stage: '$_id', count: 1, averageAtsScore: { $round: ['$averageAtsScore', 1] }, _id: 0 } }]),
-    Subscription.aggregate([{ $match: { status: 'Active' } }, { $group: { _id: '$planId', activeSubscribers: { $sum: 1 } } }, { $project: { plan: '$_id', activeSubscribers: 1, _id: 0 } }]),
     Application.countDocuments({ status: 'Interview Scheduled' }),
     AiConfig.getConfig(),
   ]);
@@ -294,8 +292,7 @@ exports.getDashboardAnalytics = asyncHandler(async (req, res, next) => {
   const totalRecruiters = userStats.find(u => u.role === 'recruiter')?.count || 0;
   const activeJobs = jobStats.find(j => j.status === 'Active')?.count || 0;
   const totalApps = applicationStats.reduce((s, a) => s + a.count, 0);
-  const revenue = revenueStats.reduce((s, r) => s + (r.activeSubscribers * 29), 0);
-  res.json({ status: 'success', data: { stats: { totalUsers, totalCandidates, totalRecruiters, activeJobs, totalApplications: totalApps, interviewsConducted: interviewCount, aiRequestsToday, revenue }, userStats, jobStats, applicationStats, revenueStats } });
+  res.json({ status: 'success', data: { stats: { totalUsers, totalCandidates, totalRecruiters, activeJobs, totalApplications: totalApps, interviewsConducted: interviewCount, aiRequestsToday }, userStats, jobStats, applicationStats } });
 });
 
 exports.getChartData = asyncHandler(async (req, res, next) => {

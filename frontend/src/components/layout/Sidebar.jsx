@@ -68,7 +68,6 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
 
   const bottomLinks = useMemo(() => [
     { to: user?.role === 'recruiter' ? '/recruiter/profile' : '/profile', label: 'Profile', icon: User },
-    { to: '/plans', label: 'Billing', icon: CreditCard },
     { to: '/notifications', label: 'Notifications', icon: Bell },
   ], [user?.role])
 

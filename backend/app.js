@@ -17,7 +17,7 @@ const profileRouter = require('./routes/profileRoutes');
 const applicationRouter = require('./routes/applicationRoutes');
 const interviewRouter = require('./routes/interviewRoutes');
 const chatRouter = require('./routes/chatRoutes');
-const paymentRouter = require('./routes/paymentRoutes');
+
 const adminRouter = require('./routes/adminRoutes');
 const notificationRouter = require('./routes/notificationRoutes');
 const savedJobRouter = require('./routes/savedJobRoutes');
@@ -120,7 +120,7 @@ app.use('/api/v1/profiles', profileRouter);
 app.use('/api/v1/applications', applicationRouter);
 app.use('/api/v1/interviews', interviewRouter);
 app.use('/api/v1/chats', chatRouter);
-app.use('/api/v1/payments', paymentRouter);
+
 app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/saved-jobs', savedJobRouter);

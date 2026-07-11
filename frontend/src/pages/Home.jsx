@@ -141,7 +141,7 @@ export default function Home() {
             </motion.div>
             <h1 className="text-[clamp(1.75rem,5vw,3.75rem)] font-bold text-[var(--text-primary)] tracking-tight leading-tight">
               Land Your Dream Job with{' '}
-              <span className="text-gradient-premium">AI</span>
+              <span className="text-gradient-primary">AI</span>
             </h1>
             <p className="mt-6 text-sm sm:text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto">
               AI-powered resume analysis, skill gap detection, mock interviews, and career roadmaps — all in one platform.

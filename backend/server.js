@@ -32,7 +32,6 @@ if (missing.length > 0) {
 const app = require('./app');
 const connectDB = require('./config/db');
 const { initSocket } = require('./sockets/socketManager');
-const { startSubscriptionJobs } = require('./jobs/subscriptionJobs');
 const { startEmailJobs } = require('./jobs/emailJobs');
 
 connectDB();
@@ -126,9 +125,8 @@ try {
   console.error('Failed to initialize Socket.io:', err.message);
 }
 
-// Start scheduled background jobs (subscription expiry, cleanup, etc.)
+// Start scheduled background jobs (cleanup, etc.)
 try {
-  startSubscriptionJobs();
   startEmailJobs();
 } catch (err) {
   console.error('Failed to start background jobs:', err.message);

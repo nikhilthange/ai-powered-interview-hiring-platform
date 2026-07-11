@@ -60,8 +60,7 @@ const AdminSettings = () => lazyLoad(() => import('../pages/admin/Settings'))
 const AdminAuditLogs = () => lazyLoad(() => import('../pages/admin/AuditLogs'))
 const AdminNotifications = () => lazyLoad(() => import('../pages/admin/Notifications'))
 const NotificationsPage = () => lazyLoad(() => import('../pages/notifications/NotificationsPage'))
-const PlansPage = () => lazyLoad(() => import('../pages/profile/PlansPage'))
-const SubscriptionPage = () => lazyLoad(() => import('../pages/profile/SubscriptionPage'))
+
 const PublicPortfolio = () => lazyLoad(() => import('../pages/PublicPortfolio'))
 const ResumeBuilderPage = () => lazyLoad(() => import('../pages/resume-builder/ResumeBuilderPage'))
 const ResumeEditor = () => lazyLoad(() => import('../pages/resume-builder/ResumeEditor'))
@@ -95,8 +94,7 @@ export const router = createBrowserRouter([
         { path: 'mock-interview', element: <MockInterview /> },
         { path: 'career-roadmap', element: <CareerRoadmap /> },
         { path: 'notifications', element: <NotificationsPage /> },
-        { path: 'plans', element: <PlansPage /> },
-        { path: 'subscription', element: <SubscriptionPage /> },
+
         { path: 'chat', element: <ChatPage /> },
       ]},
       { path: 'recruiter', element: <ProtectedRoute allowedRoles={['recruiter', 'admin']} />, children: [

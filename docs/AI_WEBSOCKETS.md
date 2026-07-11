@@ -1,5 +1,5 @@
-# AI, Payment Gateways, and Real-Time WebSockets Architecture
-> **Senior Engineer Note:** When combining slow third-party web services (NVIDIA NIM) with real-time operations (WebSockets) and billing transactions (Razorpay), reliability is key. Always validate signatures on payment webhooks, handle rate-limiting errors from LLMs gracefully, and authenticate Socket.io handshakes securely using standard JWT verification.
+# AI and Real-Time WebSockets Architecture
+> **Senior Engineer Note:** When combining slow third-party web services (NVIDIA NIM) with real-time operations (WebSockets), reliability is key. Handle rate-limiting errors from LLMs gracefully, and authenticate Socket.io handshakes securely using standard JWT verification.
 
 ---
 
@@ -60,62 +60,9 @@ exports.analyzeResumeBackground = async (applicationId, resumeText, jobDescripti
 };
 ```
 
----
 
-## 2. Payment Architecture (Razorpay Integration)
 
-SaaS plans:
-1. **Free**: 1 resume analysis/month, 0 mock interviews.
-2. **Pro**: $15/month - 15 resume analyses/month, 5 mock interviews.
-3. **Premium**: $39/month - Unlimited resumes, 20 mock interviews, roadmap generator.
-
-### 2.1 Webhook Endpoint & Signature Checking (`controllers/paymentController.js`)
-Always verify the Razorpay webhook signatures using their signature verification utility.
-
-```javascript
-const crypto = require('crypto');
-const User = require('../models/User');
-const Subscription = require('../models/Subscription');
-
-exports.handleRazorpayWebhook = async (req, res) => {
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  const signature = req.headers['x-razorpay-signature'];
-
-  // Calculate signature locally
-  const shasum = crypto.createHmac('sha256', webhookSecret);
-  shasum.update(JSON.stringify(req.body));
-  const digest = shasum.digest('hex');
-
-  // Verify signature authenticity
-  if (digest !== signature) {
-    return res.status(400).json({ status: 'fail', message: 'Invalid signature.' });
-  }
-
-  // Parse webhook payload
-  const event = req.body.event;
-  const payload = req.body.payload;
-
-  if (event === 'subscription.charged') {
-    const subscriptionId = payload.payment.entity.subscription_id;
-    const customerEmail = payload.payment.entity.email;
-
-    // Upgrade customer account status
-    const user = await User.findOne({ email: customerEmail });
-    if (user) {
-      await Subscription.findOneAndUpdate(
-        { userId: user._id },
-        { status: 'Active', razorpaySubscriptionId: subscriptionId }
-      );
-    }
-  }
-
-  res.status(200).json({ status: 'success' });
-};
-```
-
----
-
-## 3. Real-Time WebSocket Architecture (Socket.io)
+## 2. Real-Time WebSocket Architecture (Socket.io)
 
 For chat, typing indicators, and notifications, we design a Socket.io server layer. To scale horizontally to multiple servers, we leverage the Redis adapter for event propagation.
 
@@ -126,7 +73,7 @@ graph LR
     S1 <--> REDIS{Redis Pub/Sub Adapter} <--> S2
 ```
 
-### 3.1 WebSocket Handshake Verification & Initialization (`sockets/socketManager.js`)
+### 2.1 WebSocket Handshake Verification & Initialization (`sockets/socketManager.js`)
 Verify tokens during connection setup to ensure unauthorized devices cannot initialize connection channels.
 
 ```javascript

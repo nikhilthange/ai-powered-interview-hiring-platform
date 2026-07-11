@@ -224,15 +224,6 @@ const Navbar = memo(function Navbar() {
                       <User className="h-4 w-4" aria-hidden="true" />
                       Profile
                     </Link>
-                    <Link
-                      to="/plans"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-3 px-5 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
-                      role="menuitem"
-                    >
-                      <CreditCard className="h-4 w-4" aria-hidden="true" />
-                      Plans & Billing
-                    </Link>
                     {user?.role === 'admin' && (
                       <Link
                         to="/admin/dashboard"

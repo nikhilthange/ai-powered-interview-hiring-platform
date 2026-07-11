@@ -3,8 +3,9 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { resumeBuilderApi } from '../../services/resumeBuilderApi';
 import EditorForm from './EditorForm';
-import LivePreview from './LivePreview';
+import ResumePreview from '../../components/resume/ResumePreview';
 import AIAssistantModal from './AIAssistantModal';
+import ResumeToolbar from '../../components/resume/ResumeToolbar';
 import { SkeletonPage } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -78,32 +79,13 @@ export default function ResumeEditor() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col -m-6 sm:-m-8">
       {/* Editor Header */}
-      <div className="h-14 border-b border-[var(--border-color)] bg-[var(--bg-primary)] px-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
-          <Link to="/resume-builder" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-semibold text-[var(--text-primary)]">{resumeData.title || 'Untitled Resume'}</h1>
-              {isSaving && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">Unsaved Changes</span>}
-            </div>
-            <div className="flex items-center gap-2 text-xs text-[var(--text-tertiary)]">
-              {isSaving ? (
-                <>Saving...</>
-              ) : (
-                <>
-                  <Save className="h-3 w-3" />
-                  Last saved {lastSaved ? lastSaved.toLocaleTimeString() : 'just now'}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-        <Button size="sm" onClick={handleManualSave} disabled={updateMutation.isPending || (!isSaving && !!lastSaved)}>
-          <Save className="h-4 w-4 mr-2" /> Save
-        </Button>
-      </div>
+      <ResumeToolbar 
+        title={resumeData.title}
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+        onSave={handleManualSave}
+        isPending={updateMutation.isPending}
+      />
 
       {/* Editor Body */}
       <div className="flex-1 flex overflow-hidden">
@@ -118,7 +100,7 @@ export default function ResumeEditor() {
 
         {/* Right Pane - Preview */}
         <div className="hidden lg:block lg:w-[55%] h-full bg-[var(--bg-tertiary)] p-6">
-          <LivePreview resumeData={resumeData} />
+          <ResumePreview resumeData={resumeData} />
         </div>
       </div>
 

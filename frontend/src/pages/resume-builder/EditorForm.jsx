@@ -3,9 +3,21 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Input from '../../components/ui/Input';
-import Button from '../../components/ui/Button';
-import { GripVertical, Plus, Trash2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+
+import PersonalInfoSection from '../../components/resume/PersonalInfoSection';
+import SummarySection from '../../components/resume/SummarySection';
+import ExperienceSection from '../../components/resume/ExperienceSection';
+import EducationSection from '../../components/resume/EducationSection';
+import ProjectsSection from '../../components/resume/ProjectsSection';
+import SkillsSection from '../../components/resume/SkillsSection';
+import CertificationsSection from '../../components/resume/CertificationsSection';
+import AchievementsSection from '../../components/resume/AchievementsSection';
+import LanguagesSection from '../../components/resume/LanguagesSection';
+import InterestsSection from '../../components/resume/InterestsSection';
+import ReferenceSection from '../../components/resume/ReferenceSection';
+import ResumeTemplateSelector from '../../components/resume/ResumeTemplateSelector';
 
 const SortableItem = ({ id, title, children }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
@@ -36,7 +48,7 @@ const SortableItem = ({ id, title, children }) => {
 
 export default function EditorForm({ resumeData, onChange, onAIAssist }) {
   const { title, template, content } = resumeData;
-  const sectionOrder = content.sectionOrder || ['summary', 'experience', 'education', 'projects', 'skills'];
+  const sectionOrder = content.sectionOrder || ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'achievements', 'languages', 'interests', 'references'];
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -72,287 +84,46 @@ export default function EditorForm({ resumeData, onChange, onAIAssist }) {
     onChange('content', { ...content, [section]: arr.filter(item => item.id !== id) });
   };
 
+  const renderSectionContent = (sectionId) => {
+    switch (sectionId) {
+      case 'summary':
+        return <SummarySection data={content.summary} onChange={(val) => onChange('content', { ...content, summary: val })} onAIAssist={onAIAssist} />;
+      case 'experience':
+        return <ExperienceSection data={content.experience} onUpdate={updateArrayField} onAdd={addArrayItem} onRemove={removeArrayItem} onAIAssist={onAIAssist} />;
+      case 'education':
+        return <EducationSection data={content.education} onUpdate={updateArrayField} onAdd={addArrayItem} onRemove={removeArrayItem} />;
+      case 'projects':
+        return <ProjectsSection data={content.projects} onUpdate={updateArrayField} onAdd={addArrayItem} onRemove={removeArrayItem} onAIAssist={onAIAssist} />;
+      case 'skills':
+        return <SkillsSection data={content.skills} onUpdate={updateArrayField} onAdd={addArrayItem} onRemove={removeArrayItem} />;
+      case 'certifications':
+        return <CertificationsSection data={content.certifications} onUpdate={updateArrayField} onAdd={addArrayItem} onRemove={removeArrayItem} />;
+      case 'achievements':
+        return <AchievementsSection data={content.achievements} onUpdate={updateArrayField} onAdd={addArrayItem} onRemove={removeArrayItem} />;
+      case 'languages':
+        return <LanguagesSection data={content.languages} onUpdate={updateArrayField} onAdd={addArrayItem} onRemove={removeArrayItem} />;
+      case 'interests':
+        return <InterestsSection data={content.interests} onUpdate={updateArrayField} onAdd={addArrayItem} onRemove={removeArrayItem} />;
+      case 'references':
+        return <ReferenceSection data={content.references} onUpdate={updateArrayField} onAdd={addArrayItem} onRemove={removeArrayItem} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="h-full flex flex-col space-y-6 overflow-y-auto pr-2 pb-20 custom-scrollbar">
       
-      {/* Settings */}
-      <div className="bg-[var(--bg-primary)] p-5 rounded-xl border border-[var(--border-color)] shadow-sm space-y-4">
-        <h3 className="font-semibold text-[var(--text-primary)]">Document Settings</h3>
-        <Input 
-          label="Resume Title (Internal)" 
-          value={title || ''} 
-          onChange={(e) => onChange('title', e.target.value)} 
-          placeholder="Software Engineer Resume"
-        />
-        <div>
-          <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Template</label>
-          <select 
-            value={template || 'classic'} 
-            onChange={(e) => onChange('template', e.target.value)}
-            className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm"
-          >
-            <option value="classic">Classic (ATS Friendly)</option>
-            <option value="modern">Modern</option>
-            <option value="minimal">Minimal</option>
-            <option value="professional">Professional</option>
-          </select>
-        </div>
-      </div>
+      <ResumeTemplateSelector title={title} template={template} onChange={onChange} />
 
       {/* Personal Info */}
-      <div className="bg-[var(--bg-primary)] p-5 rounded-xl border border-[var(--border-color)] shadow-sm space-y-4">
-        <h3 className="font-semibold text-[var(--text-primary)]">Personal Information</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input label="Full Name" value={content.personalInfo?.fullName || ''} onChange={e => updatePersonalInfo('fullName', e.target.value)} />
-          <Input label="Email" value={content.personalInfo?.email || ''} onChange={e => updatePersonalInfo('email', e.target.value)} />
-          <Input label="Phone" value={content.personalInfo?.phone || ''} onChange={e => updatePersonalInfo('phone', e.target.value)} />
-          <Input label="Location" value={content.personalInfo?.location || ''} onChange={e => updatePersonalInfo('location', e.target.value)} />
-          <Input label="LinkedIn URL" value={content.personalInfo?.linkedin || ''} onChange={e => updatePersonalInfo('linkedin', e.target.value)} />
-          <Input label="GitHub URL" value={content.personalInfo?.github || ''} onChange={e => updatePersonalInfo('github', e.target.value)} />
-          <Input label="Portfolio Website" value={content.personalInfo?.website || ''} onChange={e => updatePersonalInfo('website', e.target.value)} />
-        </div>
-      </div>
+      <PersonalInfoSection data={content.personalInfo} onChange={updatePersonalInfo} />
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
           {sectionOrder.map((sectionId) => (
             <SortableItem key={sectionId} id={sectionId} title={sectionId}>
-              
-              {sectionId === 'summary' && (
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-sm font-medium text-[var(--text-primary)]">Professional Summary</label>
-                    <Button variant="ghost" size="sm" onClick={() => onAIAssist(content.summary, (res) => onChange('content', { ...content, summary: res }))} className="h-6 px-2 text-xs text-indigo-600">
-                      <Sparkles className="h-3 w-3 mr-1" /> AI Improve
-                    </Button>
-                  </div>
-                  <textarea
-                    value={content.summary || ''}
-                    onChange={(e) => onChange('content', { ...content, summary: e.target.value })}
-                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-sm min-h-[120px]"
-                    placeholder="Brief summary of your professional background..."
-                  />
-                </div>
-              )}
-
-              {sectionId === 'experience' && (
-                <div className="space-y-4">
-                  {(content.experience || []).map((exp, index) => (
-                    <div key={exp.id} className="p-4 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] relative group">
-                      <button onClick={() => removeArrayItem('experience', exp.id)} className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <Input label="Company" value={exp.company || ''} onChange={e => updateArrayField('experience', exp.id, 'company', e.target.value)} />
-                        <Input label="Position" value={exp.position || ''} onChange={e => updateArrayField('experience', exp.id, 'position', e.target.value)} />
-                        <Input label="Start Date" placeholder="e.g. Jan 2020" value={exp.startDate || ''} onChange={e => updateArrayField('experience', exp.id, 'startDate', e.target.value)} />
-                        <div className="flex flex-col">
-                           <Input label="End Date" placeholder="e.g. Present" value={exp.endDate || ''} disabled={exp.current} onChange={e => updateArrayField('experience', exp.id, 'endDate', e.target.value)} />
-                           <label className="flex items-center gap-2 mt-2 text-sm text-[var(--text-secondary)]">
-                             <input type="checkbox" checked={exp.current || false} onChange={e => updateArrayField('experience', exp.id, 'current', e.target.checked)} className="rounded border-[var(--border-color)] text-indigo-600" />
-                             I currently work here
-                           </label>
-                        </div>
-                      </div>
-                      <div className="flex justify-between mb-1">
-                        <label className="text-sm font-medium text-[var(--text-primary)]">Description (Bullet points)</label>
-                        <Button variant="ghost" size="sm" onClick={() => onAIAssist(exp.description, (res) => updateArrayField('experience', exp.id, 'description', res))} className="h-6 px-2 text-xs text-indigo-600">
-                          <Sparkles className="h-3 w-3 mr-1" /> AI Rewrite
-                        </Button>
-                      </div>
-                      <textarea
-                        value={exp.description || ''}
-                        onChange={e => updateArrayField('experience', exp.id, 'description', e.target.value)}
-                        className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm min-h-[100px]"
-                      />
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => addArrayItem('experience')} className="w-full border-dashed">
-                    <Plus className="h-4 w-4 mr-2" /> Add Experience
-                  </Button>
-                </div>
-              )}
-
-              {sectionId === 'education' && (
-                <div className="space-y-4">
-                  {(content.education || []).map((edu) => (
-                    <div key={edu.id} className="p-4 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] relative group">
-                      <button onClick={() => removeArrayItem('education', edu.id)} className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <Input label="Institution" value={edu.institution || ''} onChange={e => updateArrayField('education', edu.id, 'institution', e.target.value)} />
-                        <div className="flex gap-2">
-                          <div className="flex-1"><Input label="Degree" value={edu.degree || ''} onChange={e => updateArrayField('education', edu.id, 'degree', e.target.value)} /></div>
-                          <div className="flex-1"><Input label="Field" value={edu.field || ''} onChange={e => updateArrayField('education', edu.id, 'field', e.target.value)} /></div>
-                        </div>
-                        <Input label="Start Date" value={edu.startDate || ''} onChange={e => updateArrayField('education', edu.id, 'startDate', e.target.value)} />
-                        <Input label="End Date" value={edu.endDate || ''} onChange={e => updateArrayField('education', edu.id, 'endDate', e.target.value)} />
-                      </div>
-                      <Input label="Description / Honors (Optional)" value={edu.description || ''} onChange={e => updateArrayField('education', edu.id, 'description', e.target.value)} />
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => addArrayItem('education')} className="w-full border-dashed">
-                    <Plus className="h-4 w-4 mr-2" /> Add Education
-                  </Button>
-                </div>
-              )}
-
-              {sectionId === 'projects' && (
-                <div className="space-y-4">
-                  {(content.projects || []).map((proj) => (
-                    <div key={proj.id} className="p-4 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] relative group">
-                      <button onClick={() => removeArrayItem('projects', proj.id)} className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <Input label="Project Title" value={proj.title || ''} onChange={e => updateArrayField('projects', proj.id, 'title', e.target.value)} />
-                        <Input label="Technologies (comma separated)" value={proj.technologies || ''} onChange={e => updateArrayField('projects', proj.id, 'technologies', e.target.value)} />
-                      </div>
-                      <div className="mb-4">
-                        <Input label="Project URL" value={proj.url || ''} onChange={e => updateArrayField('projects', proj.id, 'url', e.target.value)} />
-                      </div>
-                      <div className="flex justify-between mb-1">
-                        <label className="text-sm font-medium text-[var(--text-primary)]">Description</label>
-                        <Button variant="ghost" size="sm" onClick={() => onAIAssist(proj.description, (res) => updateArrayField('projects', proj.id, 'description', res))} className="h-6 px-2 text-xs text-indigo-600">
-                          <Sparkles className="h-3 w-3 mr-1" /> AI Improve
-                        </Button>
-                      </div>
-                      <textarea
-                        value={proj.description || ''}
-                        onChange={e => updateArrayField('projects', proj.id, 'description', e.target.value)}
-                        className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-sm min-h-[80px]"
-                      />
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => addArrayItem('projects')} className="w-full border-dashed">
-                    <Plus className="h-4 w-4 mr-2" /> Add Project
-                  </Button>
-                </div>
-              )}
-
-              {sectionId === 'skills' && (
-                <div className="space-y-4">
-                  {(content.skills || []).map((skill) => (
-                    <div key={skill.id} className="flex gap-4 items-start relative group">
-                      <div className="w-1/3">
-                        <Input placeholder="e.g. Languages" value={skill.category || ''} onChange={e => updateArrayField('skills', skill.id, 'category', e.target.value)} />
-                      </div>
-                      <div className="flex-1">
-                        <Input placeholder="JavaScript, Python, C++" value={skill.items || ''} onChange={e => updateArrayField('skills', skill.id, 'items', e.target.value)} />
-                      </div>
-                      <button onClick={() => removeArrayItem('skills', skill.id)} className="p-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 mt-1">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => addArrayItem('skills')} className="w-full border-dashed">
-                    <Plus className="h-4 w-4 mr-2" /> Add Skill Group
-                  </Button>
-                </div>
-              )}
-
-              {sectionId === 'certifications' && (
-                <div className="space-y-4">
-                  {(content.certifications || []).map((cert) => (
-                    <div key={cert.id} className="p-4 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] relative group">
-                      <button onClick={() => removeArrayItem('certifications', cert.id)} className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <Input label="Certification Title" value={cert.title || ''} onChange={e => updateArrayField('certifications', cert.id, 'title', e.target.value)} />
-                        <Input label="Issuer/Organization" value={cert.issuer || ''} onChange={e => updateArrayField('certifications', cert.id, 'issuer', e.target.value)} />
-                        <Input label="Date Earned" value={cert.date || ''} onChange={e => updateArrayField('certifications', cert.id, 'date', e.target.value)} />
-                        <Input label="Credential URL (Optional)" value={cert.url || ''} onChange={e => updateArrayField('certifications', cert.id, 'url', e.target.value)} />
-                      </div>
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => addArrayItem('certifications')} className="w-full border-dashed">
-                    <Plus className="h-4 w-4 mr-2" /> Add Certification
-                  </Button>
-                </div>
-              )}
-
-              {sectionId === 'achievements' && (
-                <div className="space-y-4">
-                  {(content.achievements || []).map((ach) => (
-                    <div key={ach.id} className="p-4 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] relative group">
-                      <button onClick={() => removeArrayItem('achievements', ach.id)} className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <Input label="Achievement Title" value={ach.title || ''} onChange={e => updateArrayField('achievements', ach.id, 'title', e.target.value)} />
-                        <Input label="Date" value={ach.date || ''} onChange={e => updateArrayField('achievements', ach.id, 'date', e.target.value)} />
-                      </div>
-                      <Input label="Description" value={ach.description || ''} onChange={e => updateArrayField('achievements', ach.id, 'description', e.target.value)} />
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => addArrayItem('achievements')} className="w-full border-dashed">
-                    <Plus className="h-4 w-4 mr-2" /> Add Achievement
-                  </Button>
-                </div>
-              )}
-
-              {sectionId === 'languages' && (
-                <div className="space-y-4">
-                  {(content.languages || []).map((lang) => (
-                    <div key={lang.id} className="flex gap-4 items-start relative group">
-                      <div className="w-1/2">
-                        <Input placeholder="e.g. Spanish" value={lang.language || ''} onChange={e => updateArrayField('languages', lang.id, 'language', e.target.value)} />
-                      </div>
-                      <div className="w-1/2">
-                        <Input placeholder="e.g. Fluent, Native" value={lang.proficiency || ''} onChange={e => updateArrayField('languages', lang.id, 'proficiency', e.target.value)} />
-                      </div>
-                      <button onClick={() => removeArrayItem('languages', lang.id)} className="p-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 mt-1">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => addArrayItem('languages')} className="w-full border-dashed">
-                    <Plus className="h-4 w-4 mr-2" /> Add Language
-                  </Button>
-                </div>
-              )}
-
-              {sectionId === 'interests' && (
-                <div className="space-y-4">
-                  {(content.interests || []).map((interest) => (
-                    <div key={interest.id} className="flex gap-4 items-start relative group">
-                      <div className="flex-1">
-                        <Input placeholder="e.g. Open Source, Machine Learning, Photography" value={interest.items || ''} onChange={e => updateArrayField('interests', interest.id, 'items', e.target.value)} />
-                      </div>
-                      <button onClick={() => removeArrayItem('interests', interest.id)} className="p-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 mt-1">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => addArrayItem('interests')} className="w-full border-dashed">
-                    <Plus className="h-4 w-4 mr-2" /> Add Interest
-                  </Button>
-                </div>
-              )}
-
-              {sectionId === 'references' && (
-                <div className="space-y-4">
-                  {(content.references || []).map((ref) => (
-                    <div key={ref.id} className="p-4 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] relative group">
-                      <button onClick={() => removeArrayItem('references', ref.id)} className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <Input label="Name" value={ref.name || ''} onChange={e => updateArrayField('references', ref.id, 'name', e.target.value)} />
-                        <Input label="Position" value={ref.position || ''} onChange={e => updateArrayField('references', ref.id, 'position', e.target.value)} />
-                        <Input label="Company" value={ref.company || ''} onChange={e => updateArrayField('references', ref.id, 'company', e.target.value)} />
-                        <Input label="Contact Info (Email/Phone)" value={ref.contactInfo || ''} onChange={e => updateArrayField('references', ref.id, 'contactInfo', e.target.value)} />
-                      </div>
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={() => addArrayItem('references')} className="w-full border-dashed">
-                    <Plus className="h-4 w-4 mr-2" /> Add Reference
-                  </Button>
-                </div>
-              )}
-
+              {renderSectionContent(sectionId)}
             </SortableItem>
           ))}
         </SortableContext>

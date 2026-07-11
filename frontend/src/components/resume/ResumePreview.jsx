@@ -4,7 +4,7 @@ import ModernTemplate from './Templates/ModernTemplate';
 import MinimalTemplate from './Templates/MinimalTemplate';
 import ProfessionalTemplate from './Templates/ProfessionalTemplate';
 import { useReactToPrint } from 'react-to-print';
-import Button from '../../components/ui/Button';
+import Button from '../ui/Button';
 import { exportAsDocx } from '../../utils/exportDocx';
 import { Download, FileText } from 'lucide-react';
 

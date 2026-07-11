@@ -109,8 +109,25 @@ exports.getAllCompanies = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   let query = {};
+  
   if (req.query.search) {
-    query = { $text: { $search: req.query.search } };
+    query.$text = { $search: req.query.search };
+  }
+
+  if (req.query.industry) {
+    query.industry = { $in: req.query.industry.split(',') };
+  }
+
+  if (req.query.location) {
+    query.location = { $regex: req.query.location, $options: 'i' };
+  }
+
+  if (req.query.size) {
+    query.employeeCount = { $in: req.query.size.split(',') };
+  }
+
+  if (req.query.isVerified === 'true') {
+    query.isVerified = true;
   }
 
   const companies = await Company.find(query)
@@ -210,5 +227,25 @@ exports.unfollowCompany = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     message: 'Successfully unfollowed company'
+  });
+});
+
+/**
+ * @desc    Get recommended companies based on rating and followers
+ * @route   GET /api/v1/companies/recommended
+ * @access  Public
+ */
+exports.getRecommendedCompanies = catchAsync(async (req, res, next) => {
+  const limit = parseInt(req.query.limit) || 5;
+  
+  // Recommend verified companies with highest ratings and followers
+  const companies = await Company.find({ isVerified: true })
+    .sort('-rating -followersCount')
+    .limit(limit);
+
+  res.status(200).json({
+    status: 'success',
+    results: companies.length,
+    data: { companies }
   });
 });

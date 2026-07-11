@@ -1,133 +1,359 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Building2, MapPin, Users, ChevronRight } from 'lucide-react';
+import { Search, Building2, MapPin, Users, ChevronRight, Star, BadgeCheck, Filter, X } from 'lucide-react';
 import companyService from '../../services/companyService';
 import { toast } from 'react-hot-toast';
+import { getMediaUrl, cn } from '../../lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const INDUSTRIES = ['Technology', 'FinTech', 'HealthTech', 'E-commerce', 'SaaS', 'AI', 'EdTech', 'Cybersecurity'];
+const SIZES = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'];
 
 const CompaniesList = () => {
   const [companies, setCompanies] = useState([]);
+  const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   
-  const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || '';
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    industry: [],
+    size: [],
+    location: '',
+    isVerified: false
+  });
+  
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  const fetchCompanies = async (search = '') => {
+  const fetchCompanies = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await companyService.getAllCompanies({ search });
-      setCompanies(response.data?.companies || []);
+      const params = {
+        search: searchTerm,
+        industry: filters.industry.join(','),
+        size: filters.size.join(','),
+        location: filters.location,
+        isVerified: filters.isVerified ? 'true' : ''
+      };
+      
+      const [compRes, recRes] = await Promise.all([
+        companyService.getAllCompanies(params),
+        companyService.getRecommendedCompanies({ limit: 3 })
+      ]);
+      
+      setCompanies(compRes.data?.companies || []);
+      setRecommended(recRes.data?.companies || []);
     } catch (error) {
       toast.error('Failed to load companies');
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, filters]);
 
   useEffect(() => {
     fetchCompanies();
-  }, []);
+  }, [fetchCompanies]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchCompanies(searchTerm);
+    fetchCompanies();
   };
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="md:flex md:items-center md:justify-between mb-8">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-            Discover Companies
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Find and follow the best places to work.
-          </p>
-        </div>
-      </div>
+  const toggleFilter = (type, value) => {
+    setFilters(prev => {
+      const current = prev[type];
+      const updated = current.includes(value) 
+        ? current.filter(item => item !== value)
+        : [...current, value];
+      return { ...prev, [type]: updated };
+    });
+  };
 
-      <div className="mb-8 max-w-xl">
-        <form onSubmit={handleSearch} className="flex rounded-md shadow-sm">
-          <div className="relative flex-grow focus-within:z-10">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              name="search"
-              id="search"
-              className="focus:ring-primary-500 focus:border-primary-500 block w-full rounded-none rounded-l-md pl-10 sm:text-sm border-gray-300"
-              placeholder="Search companies by name, industry, or description..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilters({ industry: [], size: [], location: '', isVerified: false });
+  };
+
+  const CompanyCard = ({ company }) => (
+    <Link
+      to={`/companies/${company.id}`}
+      className="group flex flex-col bg-white dark:bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] overflow-hidden hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1 transition-all duration-300"
+    >
+      <div className="h-32 relative overflow-hidden bg-gray-100 dark:bg-gray-800">
+        {company.coverImage && company.coverImage !== 'default-company-cover.png' ? (
+           <img src={getMediaUrl(company.coverImage)} alt="Cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        ) : (
+           <div className="w-full h-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20"></div>
+        )}
+      </div>
+      
+      <div className="px-5 pb-5 flex-1 flex flex-col relative">
+        <div className="flex justify-between items-start -mt-10 mb-3">
+          <div className="h-20 w-20 rounded-xl shadow-md border-4 border-white dark:border-[var(--bg-primary)] bg-white overflow-hidden z-10">
+            {company.logo && company.logo !== 'default-company-logo.png' ? (
+               <img src={getMediaUrl(company.logo)} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+               <Building2 className="h-full w-full p-4 text-gray-400 bg-gray-50 dark:bg-gray-800" />
+            )}
           </div>
-          <button
-            type="submit"
-            className="-ml-px relative inline-flex items-center space-x-2 px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-          >
-            Search
-          </button>
-        </form>
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+          {company.rating > 0 && (
+            <div className="mt-12 flex items-center gap-1 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-lg text-xs font-semibold">
+              <Star className="h-3 w-3 fill-current" />
+              <span>{company.rating}</span>
+            </div>
+          )}
         </div>
-      ) : companies.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <Building2 className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No companies found</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Try adjusting your search terms.
+
+        <div className="mb-2">
+          <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors flex items-center gap-1.5">
+            {company.name}
+            {company.isVerified && <BadgeCheck className="h-4 w-4 text-blue-500" title="Verified Company" />}
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] font-medium">{company.industry}</p>
+        </div>
+
+        <p className="text-sm text-[var(--text-tertiary)] line-clamp-2 mb-4 flex-1">
+          {company.about}
+        </p>
+
+        <div className="flex flex-wrap gap-y-2 gap-x-4 text-xs text-[var(--text-secondary)] mb-4">
+          {company.location && (
+            <div className="flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" />
+              <span>{company.location}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5" />
+            <span>{company.employeeCount}</span>
+          </div>
+        </div>
+
+        <div className="mt-auto border-t border-[var(--border-color)] pt-4 flex items-center justify-between">
+          <span className="text-xs font-medium text-[var(--text-tertiary)]">
+            {company.followersCount?.toLocaleString() || 0} followers
+          </span>
+          <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 flex items-center group-hover:underline">
+            View Profile <ChevronRight className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen">
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
+            Discover Companies
+          </h1>
+          <p className="text-[var(--text-secondary)]">
+            Find and follow the best places to work based on your career goals.
           </p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {companies.map((company) => (
-            <Link
-              key={company.id}
-              to={`/companies/${company.id}`}
-              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-300 border border-gray-100 flex flex-col group"
+        
+        <button 
+          onClick={() => setShowMobileFilters(!showMobileFilters)}
+          className="md:hidden flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm font-medium"
+        >
+          <Filter className="h-4 w-4" />
+          Filters
+        </button>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Left Sidebar - Filters */}
+        <AnimatePresence>
+          {(showMobileFilters || window.innerWidth >= 768) && (
+            <motion.div 
+              initial={{ opacity: 0, x: -20, height: 0 }}
+              animate={{ opacity: 1, x: 0, height: 'auto' }}
+              exit={{ opacity: 0, x: -20, height: 0 }}
+              className="w-full md:w-64 shrink-0 space-y-6"
             >
-              <div className="h-32 bg-gray-200 relative overflow-hidden">
-                {company.coverImage && company.coverImage !== 'default-company-cover.png' ? (
-                   <img src={`${baseUrl}/uploads/${company.coverImage}`} alt="Cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                ) : (
-                   <div className="w-full h-full bg-gradient-to-r from-primary-100 to-primary-200"></div>
-                )}
-              </div>
-              <div className="px-4 py-5 sm:p-6 flex-grow flex flex-col relative -mt-10">
-                <div className="h-20 w-20 rounded-lg shadow-sm border-4 border-white bg-white overflow-hidden flex-shrink-0 z-10 mb-3">
-                  {company.logo && company.logo !== 'default-company-logo.png' ? (
-                     <img src={`${baseUrl}/uploads/${company.logo}`} alt="Logo" className="w-full h-full object-contain" />
-                  ) : (
-                     <Building2 className="h-full w-full p-4 text-gray-400 bg-gray-50" />
+              <div className="bg-[var(--bg-primary)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-[var(--text-primary)]">Filters</h3>
+                  {(filters.industry.length > 0 || filters.size.length > 0 || filters.location || filters.isVerified || searchTerm) && (
+                    <button onClick={clearFilters} className="text-xs text-indigo-600 hover:underline">
+                      Clear all
+                    </button>
                   )}
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
-                  {company.name}
-                </h3>
-                <div className="mt-1 flex items-center text-sm text-gray-500">
-                  <span className="truncate">{company.industry}</span>
+
+                {/* Search */}
+                <div className="mb-6">
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Search</label>
+                  <form onSubmit={handleSearch} className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
+                    <input
+                      type="text"
+                      placeholder="Name, keyword..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                    />
+                  </form>
                 </div>
-                <div className="mt-4 flex flex-col gap-2 text-sm text-gray-500 flex-grow">
-                  <div className="flex items-center">
-                    <Users className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                    <span>{company.employeeCount} employees</span>
+                
+                {/* Location */}
+                <div className="mb-6">
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Location</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
+                    <input
+                      type="text"
+                      placeholder="e.g. San Francisco"
+                      value={filters.location}
+                      onChange={(e) => setFilters({...filters, location: e.target.value})}
+                      className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                    />
                   </div>
                 </div>
-                <div className="mt-6 border-t border-gray-100 pt-4 flex justify-between items-center text-sm">
-                  <span className="text-gray-500 font-medium">{company.followersCount || 0} followers</span>
-                  <span className="text-primary-600 font-medium flex items-center group-hover:underline">
-                    View Profile <ChevronRight className="ml-1 w-4 h-4" />
-                  </span>
+
+                {/* Industry */}
+                <div className="mb-6">
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-3 uppercase tracking-wider">Industry</label>
+                  <div className="space-y-2.5 max-h-48 overflow-y-auto scrollbar-thin">
+                    {INDUSTRIES.map(ind => (
+                      <label key={ind} className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative flex items-center justify-center">
+                          <input 
+                            type="checkbox" 
+                            className="peer sr-only"
+                            checked={filters.industry.includes(ind)}
+                            onChange={() => toggleFilter('industry', ind)}
+                          />
+                          <div className="h-4 w-4 rounded border border-[var(--border-color)] bg-[var(--bg-tertiary)] peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-colors"></div>
+                          <div className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none">
+                            <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        </div>
+                        <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{ind}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Size */}
+                <div className="mb-6">
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-3 uppercase tracking-wider">Company Size</label>
+                  <div className="space-y-2.5">
+                    {SIZES.map(size => (
+                      <label key={size} className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative flex items-center justify-center">
+                          <input 
+                            type="checkbox" 
+                            className="peer sr-only"
+                            checked={filters.size.includes(size)}
+                            onChange={() => toggleFilter('size', size)}
+                          />
+                          <div className="h-4 w-4 rounded border border-[var(--border-color)] bg-[var(--bg-tertiary)] peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-colors"></div>
+                          <div className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none">
+                            <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        </div>
+                        <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{size}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Verified */}
+                <div>
+                   <label className="flex items-center justify-between cursor-pointer group">
+                     <span className="text-sm font-medium text-[var(--text-primary)] flex items-center gap-1.5">
+                        Verified Only
+                        <BadgeCheck className="h-4 w-4 text-blue-500" />
+                     </span>
+                     <div className="relative">
+                       <input 
+                         type="checkbox" 
+                         className="peer sr-only"
+                         checked={filters.isVerified}
+                         onChange={(e) => setFilters({...filters, isVerified: e.target.checked})}
+                       />
+                       <div className="block h-5 w-9 rounded-full bg-gray-200 dark:bg-gray-700 peer-checked:bg-indigo-600 transition-colors"></div>
+                       <div className="dot absolute left-1 top-1 h-3 w-3 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
+                     </div>
+                   </label>
                 </div>
               </div>
-            </Link>
-          ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Right Content - Grid */}
+        <div className="flex-1 min-w-0">
+          
+          {/* Recommendations Block (only show on page 1 without filters for cleaner UX) */}
+          {recommended.length > 0 && !searchTerm && filters.industry.length === 0 && (
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                <Star className="h-5 w-5 text-amber-500" />
+                Recommended for you
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recommended.map(company => (
+                  <CompanyCard key={`rec-${company.id}`} company={company} />
+                ))}
+              </div>
+              <div className="my-8 h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent" />
+            </div>
+          )}
+
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="animate-pulse bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl h-80">
+                  <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-t-2xl"></div>
+                  <div className="p-5">
+                    <div className="h-20 w-20 bg-gray-300 dark:bg-gray-700 rounded-xl -mt-10 mb-4 border-4 border-white dark:border-gray-900"></div>
+                    <div className="h-5 bg-gray-200 dark:bg-gray-800 rounded w-3/4 mb-3"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/2 mb-6"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-4/5"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : companies.length === 0 ? (
+            <div className="text-center py-20 bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] flex flex-col items-center shadow-sm">
+              <div className="h-24 w-24 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center mb-6">
+                <Search className="h-10 w-10 text-indigo-500" />
+              </div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">No companies found</h3>
+              <p className="text-[var(--text-secondary)] max-w-md mb-8">
+                We couldn't find any companies matching your current filters. Try broadening your search or exploring different industries.
+              </p>
+              <button 
+                onClick={clearFilters}
+                className="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 shadow-sm transition-colors"
+              >
+                Clear all filters
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+                  All Companies <span className="text-sm font-normal text-[var(--text-tertiary)] ml-2">({companies.length})</span>
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {companies.map((company) => (
+                  <CompanyCard key={company.id} company={company} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -6,6 +6,7 @@ const router = express.Router();
 
 // Public routes
 router.get('/', companyController.getAllCompanies);
+router.get('/recommended/top', companyController.getRecommendedCompanies);
 router.get('/:id', companyController.getCompanyById);
 
 // Protected routes (must be logged in)

@@ -33,6 +33,21 @@ const CompanySchema = new mongoose.Schema({
     required: [true, 'Please specify the industry'],
     trim: true
   },
+  location: {
+    type: String,
+    trim: true,
+    default: 'Remote'
+  },
+  rating: {
+    type: Number,
+    min: 0,
+    max: 5,
+    default: 0
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
   employeeCount: {
     type: String,
     enum: ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'],
@@ -71,6 +86,6 @@ CompanySchema.virtual('jobs', {
   localField: '_id'
 });
 
-CompanySchema.index({ name: 'text', about: 'text', industry: 'text' });
+CompanySchema.index({ name: 'text', about: 'text', industry: 'text', location: 'text' });
 
 module.exports = mongoose.model('Company', CompanySchema);

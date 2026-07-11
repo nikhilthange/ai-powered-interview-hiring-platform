@@ -12,6 +12,11 @@ const companyService = {
     return response.data;
   },
 
+  getRecommendedCompanies: async (params) => {
+    const response = await api.get('/companies/recommended/top', { params });
+    return response.data;
+  },
+
   followCompany: async (id) => {
     const response = await api.post(`/companies/${id}/follow`);
     return response.data;

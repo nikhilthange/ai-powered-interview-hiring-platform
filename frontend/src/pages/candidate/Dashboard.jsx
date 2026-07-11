@@ -90,7 +90,7 @@ export default function CandidateDashboard() {
     ? Math.round(completedSessions.reduce((sum, s) => sum + (s.overallScore || 0), 0) / completedSessions.length)
     : null
 
-  const resumeScore = profile.resumeScore ?? avgScore ?? 75
+  const resumeScore = profile.resumeScore ?? avgScore ?? null
   const aiUsageCount = sessions.length + (profile.aiChatCount || 0) + (profile.resumeAnalyses || 0)
 
   const metrics = [
@@ -125,12 +125,9 @@ export default function CandidateDashboard() {
     }
   }
 
-  const scoreTrendData = completedSessions.length >= 2
+  const scoreTrendData = completedSessions.length > 0
     ? completedSessions.slice(-6).map((s, i) => ({ session: `#${i + 1}`, score: s.overallScore || 0 }))
-    : [
-        { session: '#1', score: 60 }, { session: '#2', score: 65 }, { session: '#3', score: 72 },
-        { session: '#4', score: 70 }, { session: '#5', score: 78 }, { session: '#6', score: resumeScore },
-      ]
+    : []
 
   const skillNames = profile.skills?.slice(0, 8) || ['React', 'Node.js', 'TypeScript', 'Python', 'SQL', 'Docker', 'AWS', 'GraphQL']
   const skillGrowthData = skillNames.map((skill) => ({

@@ -1,6 +1,7 @@
 import { io } from 'socket.io-client'
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL
+// Ensure we never fallback to window.location.origin (which causes the Vercel wss:// error)
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? new URL(import.meta.env.VITE_API_URL).origin : '');
 
 let socket = null
 

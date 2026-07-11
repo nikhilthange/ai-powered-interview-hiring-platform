@@ -6,21 +6,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/uploads': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-      },
-      '/socket.io': {
-        target: 'http://localhost:5000',
-        ws: true,
-      },
-    },
   },
   build: {
     outDir: 'dist',
@@ -62,9 +47,6 @@ export default defineConfig({
       polyfill: false,
     },
     reportCompressedSize: false,
-  },
-  experimental: {
-    renderBuiltUrl: () => ({ relative: true }),
   },
 })
  

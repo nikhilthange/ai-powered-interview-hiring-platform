@@ -41,7 +41,8 @@ export function initPerformanceMonitoring() {
         timestamp: Date.now(),
       }
       if (navigator.sendBeacon) {
-        navigator.sendBeacon('/api/v1/analytics/vitals', JSON.stringify(body))
+        const baseUrl = import.meta.env.VITE_API_URL || '';
+        navigator.sendBeacon(`${baseUrl}/analytics/vitals`, JSON.stringify(body))
       }
     })
   }

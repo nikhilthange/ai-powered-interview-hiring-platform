@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
 import ClassicTemplate from './Templates/ClassicTemplate';
 import ModernTemplate from './Templates/ModernTemplate';
+import MinimalTemplate from './Templates/MinimalTemplate';
+import ProfessionalTemplate from './Templates/ProfessionalTemplate';
 import { useReactToPrint } from 'react-to-print';
 import Button from '../../components/ui/Button';
 import { exportAsDocx } from '../../utils/exportDocx';
@@ -10,7 +12,7 @@ export default function LivePreview({ resumeData }) {
   const componentRef = useRef();
 
   const handlePrint = useReactToPrint({
-    contentRef: componentRef,
+    contentRef: () => componentRef.current,
     documentTitle: resumeData?.title || 'Resume'
   });
 
@@ -22,6 +24,10 @@ export default function LivePreview({ resumeData }) {
     const template = resumeData?.template || 'classic';
     if (template === 'modern') {
       return <ModernTemplate data={resumeData.content} />;
+    } else if (template === 'minimal') {
+      return <MinimalTemplate data={resumeData.content} />;
+    } else if (template === 'professional') {
+      return <ProfessionalTemplate data={resumeData.content} />;
     }
     return <ClassicTemplate data={resumeData.content} />;
   };

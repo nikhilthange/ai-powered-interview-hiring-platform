@@ -3,7 +3,7 @@ import { saveAs } from 'file-saver';
 
 export const exportAsDocx = async (resumeData) => {
   const { title, content } = resumeData;
-  const { personalInfo, summary, experience, education, skills, projects, sectionOrder } = content;
+  const { personalInfo, summary, experience, education, skills, projects, certifications, achievements, languages, interests, references, sectionOrder } = content;
 
   const doc = new Document({
     sections: [
@@ -34,7 +34,7 @@ export const exportAsDocx = async (resumeData) => {
           new Paragraph({ text: '' }), // Spacer
           
           // Generate sections based on sectionOrder
-          ...sectionOrder.flatMap((sectionName) => {
+          ...(sectionOrder || []).flatMap((sectionName) => {
             if (sectionName === 'summary' && summary) {
               return [
                 new Paragraph({ text: 'Professional Summary', heading: HeadingLevel.HEADING_2 }),
@@ -114,6 +114,75 @@ export const exportAsDocx = async (resumeData) => {
                   }),
                 ]),
                 new Paragraph({ text: '' }),
+              ];
+            }
+            if (sectionName === 'certifications' && certifications?.length > 0) {
+              return [
+                new Paragraph({ text: 'Certifications', heading: HeadingLevel.HEADING_2 }),
+                ...certifications.flatMap(cert => [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: `${cert.title}`, bold: true }),
+                      new TextRun(cert.issuer ? ` - ${cert.issuer}` : ''),
+                      new TextRun(cert.date ? ` (${cert.date})` : ''),
+                    ],
+                  }),
+                  new Paragraph({
+                    children: cert.url ? [new TextRun({ text: cert.url, color: '0000FF' })] : [],
+                  }),
+                ]),
+                new Paragraph({ text: '' }),
+              ];
+            }
+            if (sectionName === 'achievements' && achievements?.length > 0) {
+              return [
+                new Paragraph({ text: 'Achievements', heading: HeadingLevel.HEADING_2 }),
+                ...achievements.flatMap(ach => [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: `${ach.title}`, bold: true }),
+                      new TextRun(ach.date ? ` (${ach.date})` : ''),
+                    ],
+                  }),
+                  new Paragraph({ text: ach.description || '' }),
+                ]),
+                new Paragraph({ text: '' }),
+              ];
+            }
+            if (sectionName === 'languages' && languages?.length > 0) {
+              return [
+                new Paragraph({ text: 'Languages', heading: HeadingLevel.HEADING_2 }),
+                ...languages.flatMap(lang => [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: `${lang.language}: `, bold: true }),
+                      new TextRun(lang.proficiency || ''),
+                    ],
+                  }),
+                ]),
+                new Paragraph({ text: '' }),
+              ];
+            }
+            if (sectionName === 'interests' && interests?.length > 0) {
+              return [
+                new Paragraph({ text: 'Interests', heading: HeadingLevel.HEADING_2 }),
+                new Paragraph({ text: interests.map(int => int.items).join(', ') }),
+                new Paragraph({ text: '' }),
+              ];
+            }
+            if (sectionName === 'references' && references?.length > 0) {
+              return [
+                new Paragraph({ text: 'References', heading: HeadingLevel.HEADING_2 }),
+                ...references.flatMap(ref => [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: ref.name, bold: true }),
+                      new TextRun(` | ${ref.position}${ref.company ? ` at ${ref.company}` : ''}`),
+                    ],
+                  }),
+                  new Paragraph({ text: ref.contactInfo || '' }),
+                  new Paragraph({ text: '' }),
+                ]),
               ];
             }
             return [];

@@ -8,6 +8,7 @@ import AIAssistantModal from './AIAssistantModal';
 import { SkeletonPage } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
 import { ArrowLeft, Save } from 'lucide-react';
+import Button from '../../components/ui/Button';
 
 export default function ResumeEditor() {
   const { id } = useParams();
@@ -57,7 +58,14 @@ export default function ResumeEditor() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       updateMutation.mutate(newData);
-    }, 1500); // 1.5s debounce
+    }, 5000); // 5s debounce for Autosave
+  };
+
+  const handleManualSave = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!isSaving && lastSaved) return; // already saved
+    setIsSaving(true);
+    updateMutation.mutate(resumeData);
   };
 
   const handleAIAssistRequest = (text, callback) => {
@@ -76,7 +84,10 @@ export default function ResumeEditor() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="font-semibold text-[var(--text-primary)]">{resumeData.title || 'Untitled Resume'}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="font-semibold text-[var(--text-primary)]">{resumeData.title || 'Untitled Resume'}</h1>
+              {isSaving && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">Unsaved Changes</span>}
+            </div>
             <div className="flex items-center gap-2 text-xs text-[var(--text-tertiary)]">
               {isSaving ? (
                 <>Saving...</>
@@ -89,6 +100,9 @@ export default function ResumeEditor() {
             </div>
           </div>
         </div>
+        <Button size="sm" onClick={handleManualSave} disabled={updateMutation.isPending || (!isSaving && !!lastSaved)}>
+          <Save className="h-4 w-4 mr-2" /> Save
+        </Button>
       </div>
 
       {/* Editor Body */}

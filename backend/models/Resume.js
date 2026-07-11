@@ -13,7 +13,7 @@ const ResumeSchema = new mongoose.Schema({
   },
   template: {
     type: String,
-    enum: ['classic', 'modern'],
+    enum: ['classic', 'modern', 'minimal', 'professional'],
     default: 'classic'
   },
   content: {
@@ -58,6 +58,35 @@ const ResumeSchema = new mongoose.Schema({
       category: { type: String, default: '' },
       items: { type: String, default: '' } // comma separated
     }],
+    certifications: [{
+      id: { type: String, required: true },
+      title: { type: String, default: '' },
+      issuer: { type: String, default: '' },
+      date: { type: String, default: '' },
+      url: { type: String, default: '' }
+    }],
+    achievements: [{
+      id: { type: String, required: true },
+      title: { type: String, default: '' },
+      date: { type: String, default: '' },
+      description: { type: String, default: '' }
+    }],
+    languages: [{
+      id: { type: String, required: true },
+      language: { type: String, default: '' },
+      proficiency: { type: String, default: '' }
+    }],
+    interests: [{
+      id: { type: String, required: true },
+      items: { type: String, default: '' } // comma separated
+    }],
+    references: [{
+      id: { type: String, required: true },
+      name: { type: String, default: '' },
+      position: { type: String, default: '' },
+      company: { type: String, default: '' },
+      contactInfo: { type: String, default: '' }
+    }],
     customSections: [{
       id: { type: String, required: true },
       title: { type: String, default: '' },
@@ -71,7 +100,7 @@ const ResumeSchema = new mongoose.Schema({
     }],
     sectionOrder: {
       type: [String],
-      default: ['summary', 'experience', 'education', 'projects', 'skills']
+      default: ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'achievements', 'languages', 'interests', 'references']
     }
   }
 }, {

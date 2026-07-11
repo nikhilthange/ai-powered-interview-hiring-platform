@@ -93,6 +93,8 @@ export default function EditorForm({ resumeData, onChange, onAIAssist }) {
           >
             <option value="classic">Classic (ATS Friendly)</option>
             <option value="modern">Modern</option>
+            <option value="minimal">Minimal</option>
+            <option value="professional">Professional</option>
           </select>
         </div>
       </div>
@@ -246,6 +248,107 @@ export default function EditorForm({ resumeData, onChange, onAIAssist }) {
                   ))}
                   <Button variant="outline" size="sm" onClick={() => addArrayItem('skills')} className="w-full border-dashed">
                     <Plus className="h-4 w-4 mr-2" /> Add Skill Group
+                  </Button>
+                </div>
+              )}
+
+              {sectionId === 'certifications' && (
+                <div className="space-y-4">
+                  {(content.certifications || []).map((cert) => (
+                    <div key={cert.id} className="p-4 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] relative group">
+                      <button onClick={() => removeArrayItem('certifications', cert.id)} className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <Input label="Certification Title" value={cert.title || ''} onChange={e => updateArrayField('certifications', cert.id, 'title', e.target.value)} />
+                        <Input label="Issuer/Organization" value={cert.issuer || ''} onChange={e => updateArrayField('certifications', cert.id, 'issuer', e.target.value)} />
+                        <Input label="Date Earned" value={cert.date || ''} onChange={e => updateArrayField('certifications', cert.id, 'date', e.target.value)} />
+                        <Input label="Credential URL (Optional)" value={cert.url || ''} onChange={e => updateArrayField('certifications', cert.id, 'url', e.target.value)} />
+                      </div>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => addArrayItem('certifications')} className="w-full border-dashed">
+                    <Plus className="h-4 w-4 mr-2" /> Add Certification
+                  </Button>
+                </div>
+              )}
+
+              {sectionId === 'achievements' && (
+                <div className="space-y-4">
+                  {(content.achievements || []).map((ach) => (
+                    <div key={ach.id} className="p-4 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] relative group">
+                      <button onClick={() => removeArrayItem('achievements', ach.id)} className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <Input label="Achievement Title" value={ach.title || ''} onChange={e => updateArrayField('achievements', ach.id, 'title', e.target.value)} />
+                        <Input label="Date" value={ach.date || ''} onChange={e => updateArrayField('achievements', ach.id, 'date', e.target.value)} />
+                      </div>
+                      <Input label="Description" value={ach.description || ''} onChange={e => updateArrayField('achievements', ach.id, 'description', e.target.value)} />
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => addArrayItem('achievements')} className="w-full border-dashed">
+                    <Plus className="h-4 w-4 mr-2" /> Add Achievement
+                  </Button>
+                </div>
+              )}
+
+              {sectionId === 'languages' && (
+                <div className="space-y-4">
+                  {(content.languages || []).map((lang) => (
+                    <div key={lang.id} className="flex gap-4 items-start relative group">
+                      <div className="w-1/2">
+                        <Input placeholder="e.g. Spanish" value={lang.language || ''} onChange={e => updateArrayField('languages', lang.id, 'language', e.target.value)} />
+                      </div>
+                      <div className="w-1/2">
+                        <Input placeholder="e.g. Fluent, Native" value={lang.proficiency || ''} onChange={e => updateArrayField('languages', lang.id, 'proficiency', e.target.value)} />
+                      </div>
+                      <button onClick={() => removeArrayItem('languages', lang.id)} className="p-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 mt-1">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => addArrayItem('languages')} className="w-full border-dashed">
+                    <Plus className="h-4 w-4 mr-2" /> Add Language
+                  </Button>
+                </div>
+              )}
+
+              {sectionId === 'interests' && (
+                <div className="space-y-4">
+                  {(content.interests || []).map((interest) => (
+                    <div key={interest.id} className="flex gap-4 items-start relative group">
+                      <div className="flex-1">
+                        <Input placeholder="e.g. Open Source, Machine Learning, Photography" value={interest.items || ''} onChange={e => updateArrayField('interests', interest.id, 'items', e.target.value)} />
+                      </div>
+                      <button onClick={() => removeArrayItem('interests', interest.id)} className="p-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 mt-1">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => addArrayItem('interests')} className="w-full border-dashed">
+                    <Plus className="h-4 w-4 mr-2" /> Add Interest
+                  </Button>
+                </div>
+              )}
+
+              {sectionId === 'references' && (
+                <div className="space-y-4">
+                  {(content.references || []).map((ref) => (
+                    <div key={ref.id} className="p-4 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] relative group">
+                      <button onClick={() => removeArrayItem('references', ref.id)} className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <Input label="Name" value={ref.name || ''} onChange={e => updateArrayField('references', ref.id, 'name', e.target.value)} />
+                        <Input label="Position" value={ref.position || ''} onChange={e => updateArrayField('references', ref.id, 'position', e.target.value)} />
+                        <Input label="Company" value={ref.company || ''} onChange={e => updateArrayField('references', ref.id, 'company', e.target.value)} />
+                        <Input label="Contact Info (Email/Phone)" value={ref.contactInfo || ''} onChange={e => updateArrayField('references', ref.id, 'contactInfo', e.target.value)} />
+                      </div>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => addArrayItem('references')} className="w-full border-dashed">
+                    <Plus className="h-4 w-4 mr-2" /> Add Reference
                   </Button>
                 </div>
               )}

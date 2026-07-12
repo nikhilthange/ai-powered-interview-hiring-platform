@@ -17,7 +17,8 @@ router.post('/', restrictTo('recruiter'), companyController.uploadCompanyImages,
 router.get('/my/company', restrictTo('recruiter'), companyController.getMyCompany);
 
 // Candidate routes
+router.get('/following', restrictTo('candidate'), companyController.getFollowingCompanies);
 router.post('/:id/follow', restrictTo('candidate'), companyController.followCompany);
-router.post('/:id/unfollow', restrictTo('candidate'), companyController.unfollowCompany);
+router.delete('/:id/follow', restrictTo('candidate'), companyController.unfollowCompany);
 
 module.exports = router;

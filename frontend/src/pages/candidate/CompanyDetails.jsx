@@ -18,6 +18,7 @@ const CompanyDetails = () => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [showUnfollowConfirm, setShowUnfollowConfirm] = useState(false);
   const [activeTab, setActiveTab] = useState('about');
 
   useEffect(() => {
@@ -53,19 +54,33 @@ const CompanyDetails = () => {
       return;
     }
     
+    if (isFollowing) {
+      setShowUnfollowConfirm(true);
+      return;
+    }
+
     setFollowLoading(true);
     try {
-      if (isFollowing) {
-        await companyService.unfollowCompany(id);
-        setIsFollowing(false);
-        setCompany(prev => ({ ...prev, followersCount: Math.max(0, prev.followersCount - 1) }));
-        toast.success(`Unfollowed ${company.name}`);
-      } else {
-        await companyService.followCompany(id);
-        setIsFollowing(true);
-        setCompany(prev => ({ ...prev, followersCount: (prev.followersCount || 0) + 1 }));
-        toast.success(`Following ${company.name}`);
-      }
+      await companyService.followCompany(id);
+      setIsFollowing(true);
+      setCompany(prev => ({ ...prev, followersCount: (prev.followersCount || 0) + 1 }));
+      toast.success(`Following ${company.name}`);
+    } catch (error) {
+      console.error('Action failed', error);
+      toast.error('Action failed. Please try again.');
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const handleConfirmUnfollow = async () => {
+    setFollowLoading(true);
+    try {
+      await companyService.unfollowCompany(id);
+      setIsFollowing(false);
+      setCompany(prev => ({ ...prev, followersCount: Math.max(0, prev.followersCount - 1) }));
+      toast.success(`Unfollowed ${company.name}`);
+      setShowUnfollowConfirm(false);
     } catch (error) {
       console.error('Action failed', error);
       toast.error('Action failed. Please try again.');
@@ -159,7 +174,7 @@ const CompanyDetails = () => {
                   )}
                 >
                   {isFollowing ? (
-                    <>Following</>
+                    <>Following ✓</>
                   ) : (
                     <><Plus className="mr-1.5 h-4 w-4" /> Follow</>
                   )}
@@ -367,6 +382,49 @@ const CompanyDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Unfollow Confirmation Modal */}
+      <AnimatePresence>
+        {showUnfollowConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => !followLoading && setShowUnfollowConfirm(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              exit={{ opacity: 0, scale: 0.95 }} 
+              className="bg-[var(--bg-primary)] p-6 rounded-2xl shadow-xl w-full max-w-sm relative z-10 border border-[var(--border-color)]"
+            >
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Unfollow {company.name}?</h3>
+              <p className="text-[var(--text-secondary)] mb-6 text-sm">
+                You will no longer receive updates or notifications when {company.name} posts new jobs.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button 
+                  onClick={() => setShowUnfollowConfirm(false)}
+                  disabled={followLoading}
+                  className="px-4 py-2 text-sm font-semibold rounded-xl text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleConfirmUnfollow}
+                  disabled={followLoading}
+                  className="px-4 py-2 text-sm font-semibold rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {followLoading ? 'Unfollowing...' : 'Unfollow'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

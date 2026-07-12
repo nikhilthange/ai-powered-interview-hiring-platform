@@ -5,6 +5,7 @@ import { applicationApi } from '../../services/applicationApi'
 import { savedJobApi } from '../../services/savedJobApi'
 import { interviewApi } from '../../services/interviewApi'
 import { profileApi } from '../../services/profileApi'
+import companyService from '../../services/companyService'
 import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import { SkeletonMetrics, SkeletonChart } from '../../components/ui/Skeleton'
@@ -13,8 +14,9 @@ import { cn, calculateProfileCompletion } from '../../lib/utils'
 import {
   FileText, Bookmark, Briefcase, CalendarCheck, Bot,
   TrendingUp, BarChart3, Sparkles, Activity, Target,
-  ChevronRight, ArrowUpRight,
+  ChevronRight, ArrowUpRight, Building2, ExternalLink
 } from 'lucide-react'
+import { getMediaUrl } from '../../lib/utils'
 import {
   AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -62,10 +64,11 @@ export default function CandidateDashboard() {
       { queryKey: ['saved-jobs'], queryFn: () => savedJobApi.getSavedJobs().then((r) => r.data) },
       { queryKey: ['my-sessions'], queryFn: () => interviewApi.getMySessions() },
       { queryKey: ['my-interviews'], queryFn: () => interviewApi.getMyInterviews() },
+      { queryKey: ['following-companies'], queryFn: () => companyService.getFollowingCompanies().then(r => r.data) },
     ],
   })
 
-  const [profileQuery, appsQuery, savedQuery, sessionsQuery, interviewsQuery] = results
+  const [profileQuery, appsQuery, savedQuery, sessionsQuery, interviewsQuery, followingQuery] = results
   const isLoading = results.some((q) => q.isPending && !q.data)
 
   if (isLoading) {
@@ -86,6 +89,7 @@ export default function CandidateDashboard() {
   const savedCount = Array.isArray(savedJobs) ? savedJobs.length : 0
   const sessions = sessionsQuery.data?.data?.sessions || []
   const upcomingInterviews = interviewsQuery.data?.data?.interviews?.filter((i) => i.status === 'scheduled') || []
+  const followedCompanies = followingQuery.data?.companies || []
 
   const completedSessions = sessions.filter((s) => s.status === 'completed')
   const avgScore = completedSessions.length > 0
@@ -451,6 +455,48 @@ export default function CandidateDashboard() {
           )}
         </motion.div>
       </div>
+
+      {/* Following Companies Section */}
+      {followedCompanies.length > 0 && (
+        <motion.div variants={itemVariants} className="mt-6 lg:mt-8">
+          <Card className="rounded-3xl shadow-sm border-[var(--border-color)] overflow-hidden transition-all hover:shadow-md">
+            <CardContent className="p-6 sm:p-8">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="rounded-2xl bg-gradient-to-br from-fuchsia-50 to-pink-50 dark:from-fuchsia-900/20 dark:to-pink-900/20 p-3 ring-1 ring-inset ring-fuchsia-500/20">
+                  <Building2 className="h-6 w-6 text-fuchsia-600 dark:text-fuchsia-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight">Following Companies</h2>
+                  <p className="text-sm font-semibold text-[var(--text-tertiary)] mt-1">Updates and jobs from organizations you follow</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {followedCompanies.map(company => (
+                  <Link key={company._id} to={`/companies/${company._id}`} className="group block">
+                    <div className="flex items-center gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 transition-all hover:border-fuchsia-300 dark:hover:border-fuchsia-500/30 hover:shadow-sm h-full">
+                      <div className="h-12 w-12 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-2 shrink-0">
+                        {company.logo && company.logo !== 'default-company-logo.png' ? (
+                          <img src={getMediaUrl(company.logo)} alt={company.name} className="w-full h-full object-contain" />
+                        ) : (
+                          <Building2 className="h-full w-full text-[var(--text-tertiary)]" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-base font-extrabold text-[var(--text-primary)] group-hover:text-fuchsia-600 dark:group-hover:text-fuchsia-400 transition-colors truncate">{company.name}</p>
+                        <p className="text-xs font-semibold text-[var(--text-secondary)] truncate mt-0.5">{company.industry}</p>
+                      </div>
+                      <div className="shrink-0 text-fuchsia-600 bg-fuchsia-50 dark:bg-fuchsia-900/20 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ExternalLink className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
     </motion.div>
   )
 }

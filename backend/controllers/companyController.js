@@ -193,8 +193,12 @@ exports.followCompany = catchAsync(async (req, res, next) => {
     user.followingCompanies.push(companyId);
     await user.save({ validateBeforeSave: false });
 
-    // Increment company followers count
+    // Increment company followers count and add to followers array
     company.followersCount += 1;
+    if (!company.followers) company.followers = [];
+    if (!company.followers.includes(userId)) {
+      company.followers.push(userId);
+    }
     await company.save();
   }
 
@@ -227,8 +231,11 @@ exports.unfollowCompany = catchAsync(async (req, res, next) => {
     );
     await user.save({ validateBeforeSave: false });
 
-    // Decrement company followers count
+    // Decrement company followers count and remove from followers array
     company.followersCount = Math.max(0, company.followersCount - 1);
+    if (company.followers) {
+      company.followers = company.followers.filter(id => id.toString() !== userId.toString());
+    }
     await company.save();
   }
 
@@ -255,5 +262,29 @@ exports.getRecommendedCompanies = catchAsync(async (req, res, next) => {
     status: 'success',
     results: companies.length,
     data: { companies }
+  });
+});
+
+/**
+ * @desc    Get companies that the current candidate is following
+ * @route   GET /api/v1/companies/following
+ * @access  Private (Candidate)
+ */
+exports.getFollowingCompanies = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user._id).populate({
+    path: 'followingCompanies',
+    select: 'name logo industry location'
+  });
+
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    results: user.followingCompanies.length,
+    data: {
+      companies: user.followingCompanies
+    }
   });
 });

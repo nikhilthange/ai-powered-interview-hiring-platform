@@ -23,7 +23,12 @@ const companyService = {
   },
 
   unfollowCompany: async (id) => {
-    const response = await api.post(`/companies/${id}/unfollow`);
+    const response = await api.delete(`/companies/${id}/follow`);
+    return response.data;
+  },
+
+  getFollowingCompanies: async () => {
+    const response = await api.get('/companies/following');
     return response.data;
   },
 

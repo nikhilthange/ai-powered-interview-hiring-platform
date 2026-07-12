@@ -16,8 +16,9 @@ import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import {
   Search, MapPin, Briefcase,
   Check, Bookmark, DollarSign,
-  GraduationCap, X, Filter,
+  GraduationCap, X, Filter, Building2
 } from 'lucide-react'
+import { getMediaUrl } from '../lib/utils'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -51,20 +52,23 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
     <motion.div variants={itemVariants}>
       <div className="surface-card p-5 group cursor-pointer h-full flex flex-col justify-between">
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 dark:from-indigo-950 dark:to-indigo-900 dark:text-indigo-400 font-bold text-lg">
-            {job.title?.charAt(0) || 'J'}
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] overflow-hidden font-bold text-lg">
+            {job.companyId?.logo && job.companyId.logo !== 'default-company-logo.png' ? (
+              <img src={getMediaUrl(job.companyId.logo)} alt={job.companyId?.name || 'Company'} className="w-full h-full object-contain p-1" />
+            ) : (
+              <Building2 className="h-6 w-6 text-[var(--text-tertiary)]" />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <Link to={`/jobs/${job._id}`} onMouseEnter={handleMouseEnter}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h3 className="font-semibold text-[var(--text-primary)]">{job.title}</h3>
-                  {job.recruiterId?.email && (
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-sm text-[var(--text-secondary)]">{job.recruiterId.email}</span>
-                    </div>
-                  )}
-                </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-sm font-medium text-[var(--text-secondary)]">
+                      {job.companyId?.name || job.recruiterId?.email}
+                    </span>
+                  </div>
               </div>
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 {job.location && (

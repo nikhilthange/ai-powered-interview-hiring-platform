@@ -1,5 +1,7 @@
 const Job = require('../models/Job');
 const Profile = require('../models/Profile');
+const Company = require('../models/Company');
+const Notification = require('../models/Notification');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
 const aiService = require('../services/aiService');
@@ -9,10 +11,23 @@ const { extractTextFromUrl } = require('../services/resumeService');
  * CREATE JOB (Recruiter)
  */
 exports.createJob = asyncHandler(async (req, res, next) => {
+  const company = await Company.findOne({ recruiterId: req.user._id });
+
   const job = await Job.create({
     ...req.body,
-    recruiterId: req.user._id
+    recruiterId: req.user._id,
+    companyId: company ? company._id : req.body.companyId
   });
+
+  if (company && company.followers && company.followers.length > 0) {
+    const notifications = company.followers.map(followerId => ({
+      recipientId: followerId,
+      type: 'new_job_posted',
+      title: 'New Job Posting',
+      message: `${company.name} posted a new ${job.title} position.`
+    }));
+    await Notification.insertMany(notifications);
+  }
 
   res.status(201).json({
     status: 'success',
@@ -39,7 +54,8 @@ exports.getJobs = asyncHandler(async (req, res, next) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
-      .populate('recruiterId', 'email'),
+      .populate('recruiterId', 'email')
+      .populate('companyId', 'name logo isVerified industry'),
     Job.countDocuments(filter)
   ]);
 
@@ -79,7 +95,8 @@ exports.getRecommendedJobs = asyncHandler(async (req, res, next) => {
     const jobs = await Job.find({ status: 'Active' })
       .sort({ createdAt: -1 })
       .limit(6)
-      .populate('recruiterId', 'email');
+      .populate('recruiterId', 'email')
+      .populate('companyId', 'name logo isVerified industry');
     return res.status(200).json({
       status: 'success',
       results: jobs.length,
@@ -88,7 +105,9 @@ exports.getRecommendedJobs = asyncHandler(async (req, res, next) => {
   }
 
   const skillsLower = userSkills.map((s) => s.toLowerCase());
-  const jobs = await Job.find({ status: 'Active' }).populate('recruiterId', 'email');
+  const jobs = await Job.find({ status: 'Active' })
+    .populate('recruiterId', 'email')
+    .populate('companyId', 'name logo isVerified industry');
 
   const scored = jobs.map((job) => {
     const text = [

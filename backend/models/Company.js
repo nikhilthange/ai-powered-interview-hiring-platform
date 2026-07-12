@@ -72,7 +72,11 @@ const CompanySchema = new mongoose.Schema({
   followersCount: {
     type: Number,
     default: 0
-  }
+  },
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

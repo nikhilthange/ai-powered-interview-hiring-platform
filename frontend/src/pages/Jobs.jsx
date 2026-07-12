@@ -69,6 +69,7 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
                       {job.companyId?.name || job.recruiterId?.email}
                     </span>
                   </div>
+                </div>
               </div>
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 {job.location && (

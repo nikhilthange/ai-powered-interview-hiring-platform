@@ -7,13 +7,10 @@ const AppError = require('../utils/appError');
 const { extractText, extractTextFromUrl } = require('../services/resumeService');
 
 exports.generateJobDescription = asyncHandler(async (req, res, next) => {
-  const { title, location, jobType, experienceLevel, requirements } = req.body;
-  if (!title) return next(new AppError('Job title is required.', 400));
+  const { prompt, title } = req.body;
+  if (!prompt) return next(new AppError('Prompt is required for generating a job description.', 400));
 
-  const result = await recruiterAiService.generateJobDescription(
-    title, location || 'Remote', jobType || 'Full-time',
-    experienceLevel || 'Mid', requirements || []
-  );
+  const result = await recruiterAiService.generateJobDescription(prompt, title);
 
   res.status(200).json({ status: 'success', data: result });
 });

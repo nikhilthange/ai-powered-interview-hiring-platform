@@ -2,31 +2,52 @@ const { callAI, callNvidia, extractJsonArray } = require('./aiService');
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-exports.generateJobDescription = async (title, location, jobType, experienceLevel, requirements) => {
+exports.generateJobDescription = async (prompt, title) => {
   const mockFn = async () => {
     await delay(1500);
     return {
-      title: title || 'Software Engineer',
-      description: `We are looking for a talented ${title || 'Software Engineer'} to join our team. The ideal candidate will have strong experience in building scalable applications and working in a fast-paced environment.\n\n## Responsibilities\n- Design, develop, and maintain high-quality software solutions\n- Collaborate with cross-functional teams to define and implement new features\n- Write clean, testable, and efficient code\n- Participate in code reviews and mentor junior developers\n- Troubleshoot and debug production issues\n\n## What We Offer\n- Competitive salary and benefits package\n- Remote-friendly work environment\n- Opportunity to work with cutting-edge technologies\n- Professional development and growth opportunities`,
-      requirements: requirements.length > 0 ? requirements : [
-        `${experienceLevel === 'Senior' ? '7+' : experienceLevel === 'Mid' ? '3+' : '1+'} years of experience in software development`,
-        'Strong problem-solving skills',
-        'Excellent communication and teamwork abilities',
-        'Experience with version control systems (Git)',
-        'Bachelor\'s degree in Computer Science or related field'
+      title: title || 'Senior Software Engineer',
+      summary: 'We are seeking an experienced Software Engineer to join our fast-paced development team. You will lead technical initiatives, build scalable systems, and mentor junior developers.',
+      responsibilities: [
+        'Design and develop high-volume, low-latency applications for mission-critical systems',
+        'Contribute in all phases of the development lifecycle',
+        'Write well-designed, testable, efficient code',
+        'Ensure designs are in compliance with specifications',
+        'Prepare and produce releases of software components'
       ],
-      location: location || 'Remote',
-      jobType: jobType || 'Full-time',
-      experienceLevel: experienceLevel || 'Mid',
-      salaryRange: experienceLevel === 'Senior' ? { min: 120000, max: 200000 } : experienceLevel === 'Mid' ? { min: 80000, max: 130000 } : { min: 50000, max: 85000 }
+      requiredSkills: [
+        'Proven software development experience',
+        'Strong knowledge of modern JavaScript/TypeScript and frameworks (React, Node.js)',
+        'Experience with SQL and NoSQL databases',
+        'Solid understanding of scalable architecture'
+      ],
+      preferredSkills: [
+        'Experience with cloud platforms (AWS, GCP)',
+        'Familiarity with CI/CD and Docker',
+        'Knowledge of microservices'
+      ],
+      qualifications: [
+        'BS/MS degree in Computer Science, Engineering or a related subject'
+      ],
+      experience: '5+ years',
+      salaryRange: { min: 120000, max: 180000 },
+      jobType: 'Full-time',
+      location: 'Remote',
+      benefits: [
+        'Competitive salary and equity',
+        'Health, dental, and vision insurance',
+        'Unlimited PTO',
+        'Flexible working hours'
+      ],
+      keywords: ['Software Engineer', 'React', 'Node.js', 'Backend', 'Frontend', 'Full Stack']
     };
   };
 
   const aiCall = async () => {
     const content = await callNvidia([
-      { role: 'system', content: 'You are an expert HR and job description writer. Generate a detailed, professional job description. Output purely valid JSON with schema: { "title": string, "description": string (use markdown), "requirements": [string], "location": string, "jobType": string, "experienceLevel": string, "salaryRange": { "min": number, "max": number } }' },
-      { role: 'user', content: `Generate a job description for:\nTitle: ${title || 'Software Engineer'}\nLocation: ${location || 'Remote'}\nJob Type: ${jobType || 'Full-time'}\nExperience Level: ${experienceLevel || 'Mid'}\nDesired Requirements: ${requirements.join(', ') || 'Not specified'}` }
-    ], { responseFormat: 'json_object', temperature: 0.3, maxTokens: 2048 });
+      { role: 'system', content: 'You are an expert HR and job description writer. Generate a comprehensive, professional job posting. Output purely valid JSON with schema: { "title": string, "summary": string, "responsibilities": [string], "requiredSkills": [string], "preferredSkills": [string], "qualifications": [string], "experience": string, "salaryRange": { "min": number, "max": number }, "jobType": "Full-time" | "Part-time" | "Contract" | "Remote", "location": string, "benefits": [string], "keywords": [string] }' },
+      { role: 'user', content: `Generate a complete job posting based on this context. Job Title: ${title || 'Not specified'}. Hiring Needs/Prompt: ${prompt}` }
+    ], { responseFormat: 'json_object', temperature: 0.3, maxTokens: 3000 });
     return JSON.parse(content);
   };
 

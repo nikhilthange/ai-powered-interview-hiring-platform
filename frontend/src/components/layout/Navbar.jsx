@@ -68,14 +68,14 @@ const Navbar = memo(function Navbar() {
   return (
     <header 
       className={cn(
-        "sticky top-0 z-[999] w-full flex h-[64px] items-center justify-between px-4 md:px-8 transition-all duration-300 border-b pt-[env(safe-area-inset-top)]",
+        "sticky top-0 z-[999] w-full flex h-[64px] items-center justify-between px-4 md:px-8 transition-all duration-300 pt-[env(safe-area-inset-top)]",
         scrolled 
-          ? "bg-white dark:bg-[#0f172a] border-[#ececec] dark:border-[var(--border-color)] shadow-sm"
-          : "bg-white dark:bg-[#0f172a] border-[#ececec] dark:border-[var(--border-color)]"
+          ? "bg-white/80 dark:bg-gradient-to-r dark:from-[#0f172a]/90 dark:to-[#1e293b]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 shadow-sm"
+          : "bg-white/40 dark:bg-gradient-to-r dark:from-[#0f172a]/50 dark:to-[#1e293b]/50 backdrop-blur-md border-b border-transparent"
       )}
     >
       {/* Left Section */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         <button
           onClick={toggleSidebar}
           className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors"
@@ -84,11 +84,11 @@ const Navbar = memo(function Navbar() {
           <Menu className="h-5 w-5" aria-hidden="true" />
         </button>
 
-        <Link to="/" className="flex items-center gap-2.5" aria-label="HireMate Home">
+        <Link to="/" className="flex items-center gap-2.5 pl-2" aria-label="HireMate Home">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold shadow-sm">
             <Sparkles className="h-4 w-4" aria-hidden="true" />
           </div>
-          <span className="font-semibold text-[var(--text-primary)] text-lg">HireMate</span>
+          <span className="font-bold text-[var(--text-primary)] text-lg tracking-tight">HireMate</span>
         </Link>
       </div>
 

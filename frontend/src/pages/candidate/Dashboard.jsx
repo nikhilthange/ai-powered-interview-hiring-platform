@@ -176,27 +176,27 @@ export default function CandidateDashboard() {
   const latestApps = apps.slice(0, 5)
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6 lg:space-y-8 pb-8">
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6 lg:space-y-8 pb-32 lg:pb-8">
       {/* Header Profile Card */}
       <motion.div variants={itemVariants}>
-        <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-950 p-8 sm:p-10 shadow-xl shadow-indigo-900/20 border border-indigo-700/30">
+        <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-950 p-6 sm:p-10 shadow-xl shadow-indigo-900/20 border border-indigo-700/30 h-auto">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute -top-32 -right-32 h-[32rem] w-[32rem] rounded-full bg-indigo-500/10 blur-3xl" />
             <div className="absolute -bottom-32 -left-32 h-[32rem] w-[32rem] rounded-full bg-purple-500/10 blur-3xl" />
           </div>
           <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between z-10">
-            <div>
+            <div className="flex-1">
               <p className="text-sm font-bold text-indigo-300 mb-2 tracking-wide uppercase">
                 {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'}
               </p>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight break-words">
+              <h1 className="text-[clamp(1.75rem,6vw,2.25rem)] font-extrabold text-white tracking-tight break-words leading-tight">
                 {profile.fullName || user?.email?.split('@')[0] || 'Candidate'}
               </h1>
-              <p className="text-base text-indigo-200/80 mt-2 font-medium max-w-xl leading-relaxed">
+              <p className="text-[clamp(0.875rem,3.5vw,1rem)] text-indigo-200/80 mt-2 font-medium max-w-xl leading-relaxed">
                 {profile.headline || profile.bio || 'Track your job search journey and improve your interview skills with AI-powered insights.'}
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
               <Link to="/jobs">
                 <Button className="w-full sm:w-auto bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/30 backdrop-blur-md shadow-none rounded-xl py-2.5 transition-all">
                   <Briefcase className="h-4 w-4 mr-2" />
@@ -217,18 +217,18 @@ export default function CandidateDashboard() {
       </motion.div>
 
       {/* Metrics Row inline for custom SaaS styling */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-6">
         {metrics.map((metric) => (
           <motion.div 
             key={metric.label}
             whileHover={{ y: -4, scale: 1.02 }}
-            className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-5 shadow-sm hover:shadow-md transition-all cursor-pointer"
+            className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 sm:p-5 shadow-sm hover:shadow-md transition-all cursor-pointer"
           >
-            <div className={cn("inline-flex rounded-2xl p-3 mb-4", metric.bg)}>
-              <metric.icon className={cn("h-6 w-6", metric.color)} />
+            <div className={cn("inline-flex rounded-2xl p-2.5 sm:p-3 mb-3 sm:mb-4", metric.bg)}>
+              <metric.icon className={cn("h-5 w-5 sm:h-6 sm:w-6", metric.color)} />
             </div>
-            <h3 className="text-sm font-semibold text-[var(--text-secondary)]">{metric.label}</h3>
-            <p className="text-2xl font-extrabold text-[var(--text-primary)] mt-1 tracking-tight">{metric.value}</p>
+            <h3 className="text-[clamp(0.75rem,2.5vw,0.875rem)] font-semibold text-[var(--text-secondary)] leading-tight">{metric.label}</h3>
+            <p className="text-[clamp(1.25rem,4vw,1.5rem)] font-extrabold text-[var(--text-primary)] mt-1 tracking-tight">{metric.value}</p>
           </motion.div>
         ))}
       </motion.div>

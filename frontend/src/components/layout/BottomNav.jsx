@@ -28,8 +28,8 @@ export default function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border-color)] bg-[var(--bg-primary)]/90 backdrop-blur-xl lg:hidden safe-area-bottom" aria-label="Mobile navigation">
-      <div className="flex items-center justify-around py-1">
+    <nav className="fixed bottom-0 left-0 right-0 z-[100] border-t border-[#ececec] dark:border-[var(--border-color)] bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl lg:hidden safe-area-bottom pb-[env(safe-area-inset-bottom)]" aria-label="Mobile navigation">
+      <div className="flex items-center justify-between px-2 py-2 gap-1 max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon
           const active = isActive(item.to)
@@ -38,27 +38,21 @@ export default function BottomNav() {
               key={item.to}
               to={item.to}
               className={cn(
-                'relative flex flex-col items-center gap-0.5 px-3 py-1.5 text-[10px] font-medium transition-colors rounded-xl',
+                'relative flex-1 flex flex-col items-center justify-center gap-1 h-[56px] text-[10px] font-bold transition-all rounded-xl',
                 active
-                  ? 'text-[var(--color-primary-600)]'
-                  : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+                  ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/40'
+                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
               )}
               aria-label={item.label}
               aria-current={active ? 'page' : undefined}
             >
-              {active && (
-                <motion.div
-                  layoutId="bottomNav"
-                  className="absolute -top-0.5 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-[var(--color-primary-500)]"
-                />
-              )}
-              <Icon className={cn('h-5 w-5', active && 'text-[var(--color-primary-500)]')} aria-hidden="true" />
+              <Icon className={cn('h-5 w-5', active && 'scale-110 transition-transform')} aria-hidden="true" />
               <span>{item.label}</span>
               {item.label === 'Alerts' && unreadCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-0.5 right-1/2 translate-x-4 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-error)] px-1 text-[9px] font-bold text-white leading-none"
+                  className="absolute top-1 right-[calc(50%-18px)] flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--color-error)] px-1 text-[9px] font-bold text-white leading-none shadow-sm border border-white dark:border-[#0f172a]"
                 >
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </motion.span>

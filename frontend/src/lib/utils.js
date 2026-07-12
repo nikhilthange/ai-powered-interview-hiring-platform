@@ -69,8 +69,14 @@ const API_URL = import.meta.env.VITE_API_URL
 export function getMediaUrl(path) {
   if (!path) return null
   if (path.startsWith('http://') || path.startsWith('https://')) return path
+  
+  let normalizedPath = path
+  if (!normalizedPath.startsWith('/uploads/') && !normalizedPath.startsWith('/')) {
+    normalizedPath = `/uploads/${normalizedPath}`
+  }
+  
   const baseUrl = API_URL.replace(/\/api\/v1\/?$/, '')
-  return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`
+  return `${baseUrl}${normalizedPath.startsWith('/') ? '' : '/'}${normalizedPath}`
 }
 
 export function getGradeColor(score) {

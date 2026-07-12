@@ -4,7 +4,7 @@ import { Building2, Save, Upload, Link as LinkIcon, Users, Image as ImageIcon, C
 import companyService from '../../services/companyService';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '../../lib/utils';
+import { cn, getMediaUrl } from '../../lib/utils';
 
 const steps = [
   { id: 1, name: 'Basic Details', icon: Building2 },
@@ -60,12 +60,10 @@ const CompanyProfileForm = () => {
             twitter: comp.socialLinks?.twitter || '',
           });
           
-          const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || '';
-          
           setPreviews({
-            logo: comp.logo && comp.logo !== 'default-company-logo.png' ? `${baseUrl}/uploads/${comp.logo}` : null,
-            coverImage: comp.coverImage && comp.coverImage !== 'default-company-cover.png' ? `${baseUrl}/uploads/${comp.coverImage}` : null,
-            officePhotos: comp.officePhotos?.map(p => `${baseUrl}/uploads/${p}`) || []
+            logo: comp.logo && comp.logo !== 'default-company-logo.png' ? getMediaUrl(comp.logo) : null,
+            coverImage: comp.coverImage && comp.coverImage !== 'default-company-cover.png' ? getMediaUrl(comp.coverImage) : null,
+            officePhotos: comp.officePhotos?.map(p => getMediaUrl(p)) || []
           });
         }
       } catch (error) {

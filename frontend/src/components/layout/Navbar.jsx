@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext'
 import { useLayout } from '../../context/LayoutContext'
 import NotificationBell from '../notifications/NotificationBell'
+import GlobalSearch from './GlobalSearch'
 import { useClickOutside } from '../../hooks/useClickOutside'
 import { useApi } from '../../hooks/useApi'
 import { profileApi } from '../../services/profileApi'
@@ -17,14 +18,11 @@ const Navbar = memo(function Navbar() {
   const { theme, toggleTheme } = useTheme()
   const { toggleSidebar } = useLayout()
   const [profileOpen, setProfileOpen] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const ref = useClickOutside(() => setProfileOpen(false))
-  const searchRef = useRef(null)
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') { setProfileOpen(false); setSearchOpen(false) }
+      if (e.key === 'Escape') { setProfileOpen(false) }
       if (e.key === 'ArrowDown' && profileOpen) {
         e.preventDefault()
         const menu = ref.current?.querySelector('[role="menu"]')
@@ -46,21 +44,10 @@ const Navbar = memo(function Navbar() {
         }
       }
     }
-    if (profileOpen || searchOpen) document.addEventListener('keydown', handleKeyDown)
+    if (profileOpen) document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileOpen, searchOpen])
-
-  useEffect(() => {
-    const handler = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        searchRef.current?.focus()
-      }
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [])
+  }, [profileOpen])
 
   const initial = (user?.name || user?.email || 'U').charAt(0).toUpperCase()
   const { data: profileData } = useApi(['profile'], () =>
@@ -94,51 +81,16 @@ const Navbar = memo(function Navbar() {
 
       {/* Center Section */}
       {isAuthenticated && (
-        <div className="hidden md:flex items-center justify-center flex-1 px-4" role="search">
-          <div className="relative w-full max-w-[420px] group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" aria-hidden="true" />
-            <input
-              ref={searchRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search jobs, skills..."
-              aria-label="Search jobs and skills"
-              className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] pl-9 pr-8 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
-            />
-            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 rounded-md border border-[var(--border-color)] bg-[var(--bg-primary)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)] font-mono" aria-hidden="true">
-              ⌘K
-            </kbd>
-          </div>
+        <div className="hidden md:flex items-center justify-center flex-1 px-4">
+          <GlobalSearch />
         </div>
       )}
 
       {/* Right Section */}
       <div className="flex items-center gap-2 md:gap-4">
         {isAuthenticated && (
-          <button
-            onClick={() => setSearchOpen(!searchOpen)}
-            className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] md:hidden transition-colors"
-            aria-label="Toggle search"
-            aria-expanded={searchOpen}
-          >
-            <Search className="h-5 w-5" aria-hidden="true" />
-          </button>
-        )}
-        {isAuthenticated && searchOpen && (
-          <div className="absolute left-0 right-0 top-[72px] z-50 p-3 bg-white dark:bg-[#0f172a] border-b border-[var(--border-color)] md:hidden shadow-sm" role="search">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" aria-hidden="true" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search jobs, skills..."
-                aria-label="Search jobs and skills"
-                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
-                autoFocus
-              />
-            </div>
+          <div className="md:hidden">
+            <GlobalSearch />
           </div>
         )}
 

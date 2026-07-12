@@ -289,9 +289,6 @@ export default function FloatingAIChatWidget() {
             className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[60] p-4 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 hover:scale-105 hover:shadow-indigo-500/30 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             aria-label="Open AI Career Assistant"
           >
-            <div className="absolute -top-2 -left-4 px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white text-[10px] font-bold shadow-sm whitespace-nowrap animate-float">
-              PREMIUM
-            </div>
             <Bot className="h-6 w-6" />
             {hasUnread && (
               <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-red-500 border-2 border-white dark:border-slate-900" />

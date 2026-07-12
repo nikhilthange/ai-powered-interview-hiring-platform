@@ -28,6 +28,7 @@ const debugRouter = require('./routes/debugRoutes');
 const companyRouter = require('./routes/companyRoutes');
 const resumeBuilderRouter = require('./routes/resumeBuilderRoutes');
 const userRouter = require('./routes/userRoutes');
+const searchRouter = require('./routes/searchRoutes');
 const path = require('path');
 
 const app = express();
@@ -130,6 +131,7 @@ app.use('/api/v1/recruiter-ai', recruiterAIRouter);
 app.use('/api/v1/companies', companyRouter);
 app.use('/api/v1/resume-builder', resumeBuilderRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/search', searchRouter);
 app.use('/api/debug', debugRouter);
 
 // 5. Unhandled Routes Catchall (404)

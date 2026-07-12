@@ -182,9 +182,9 @@ async function callAI(mockFn, aiCall, options = {}) {
   console.log(`[${AI_SERVICE_NAME}] callAI "${callerName}": { MOCK_AI: "${process.env.MOCK_AI}", NODE_ENV: "${process.env.NODE_ENV}", currentProvider: "${currentProvider}", circuitBreakerOpen: ${circuitBreaker.isOpen}, hasApiKey: ${!!process.env.NVIDIA_API_KEY}, enteringMockBranch: ${mockBranch} }`);
 
   if (mockBranch) {
-    if (!isDev) {
+    if (!isDev && currentProvider !== 'mock') {
       if (!process.env.NVIDIA_API_KEY) {
-        throw new AppError('AI configuration error: Missing API key.', 500);
+        throw new AppError('AI configuration error: Missing API key.', 503);
       }
       if (circuitBreaker.isOpen) {
         throw new AppError('AI provider is currently unavailable. Please try again later.', 503);

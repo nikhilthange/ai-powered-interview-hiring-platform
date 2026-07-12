@@ -217,18 +217,18 @@ export default function CandidateDashboard() {
       </motion.div>
 
       {/* Metrics Row inline for custom SaaS styling */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-6 w-full">
         {metrics.map((metric) => (
           <motion.div 
             key={metric.label}
             whileHover={{ y: -4, scale: 1.02 }}
-            className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 sm:p-5 shadow-sm hover:shadow-md transition-all cursor-pointer"
+            className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 sm:p-5 shadow-sm hover:shadow-md transition-all cursor-pointer min-w-0 w-full overflow-hidden"
           >
             <div className={cn("inline-flex rounded-2xl p-2.5 sm:p-3 mb-3 sm:mb-4", metric.bg)}>
               <metric.icon className={cn("h-5 w-5 sm:h-6 sm:w-6", metric.color)} />
             </div>
-            <h3 className="text-[clamp(0.75rem,2.5vw,0.875rem)] font-semibold text-[var(--text-secondary)] leading-tight">{metric.label}</h3>
-            <p className="text-[clamp(1.25rem,4vw,1.5rem)] font-extrabold text-[var(--text-primary)] mt-1 tracking-tight">{metric.value}</p>
+            <h3 className="text-[clamp(0.7rem,2vw,0.875rem)] font-semibold text-[var(--text-secondary)] leading-tight truncate">{metric.label}</h3>
+            <p className="text-[clamp(1.25rem,4vw,1.5rem)] font-extrabold text-[var(--text-primary)] mt-1 tracking-tight truncate">{metric.value}</p>
           </motion.div>
         ))}
       </motion.div>
@@ -250,7 +250,7 @@ export default function CandidateDashboard() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 h-[220px] md:h-[320px] md:min-h-[320px]">
+              <div className="flex-1 w-full min-w-0 h-[220px] md:h-[320px] md:min-h-[320px] overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={appTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
@@ -296,7 +296,7 @@ export default function CandidateDashboard() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 h-[220px] md:h-[320px] md:min-h-[320px]">
+              <div className="flex-1 w-full min-w-0 h-[220px] md:h-[320px] md:min-h-[320px] overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={scoreTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
@@ -391,13 +391,13 @@ export default function CandidateDashboard() {
                 </div>
                 <div className="space-y-3">
                   {latestApps.map((app) => (
-                    <Link key={app._id} to="/my-applications" className="block">
-                      <motion.div whileHover={{ scale: 1.01 }} className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 sm:p-5 transition-all hover:border-sky-300 dark:hover:border-sky-500/30 hover:shadow-sm">
-                        <div className="min-w-0 flex-1">
+                    <Link key={app._id} to="/my-applications" className="block w-full min-w-0">
+                      <motion.div whileHover={{ scale: 1.01 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 sm:p-5 transition-all hover:border-sky-300 dark:hover:border-sky-500/30 hover:shadow-sm overflow-hidden">
+                        <div className="min-w-0 w-full flex-1">
                           <p className="text-base font-extrabold text-[var(--text-primary)] truncate">{app.jobId?.title || 'Application'}</p>
                           <p className="text-sm font-semibold text-[var(--text-secondary)] mt-1">{new Date(app.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                         </div>
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                           {app.atsScore > 0 && (
                             <span className={cn('text-xs font-extrabold px-2 py-1 rounded-md bg-[var(--bg-primary)] border border-[var(--border-color)]', app.atsScore >= 80 ? 'text-emerald-600' : app.atsScore >= 60 ? 'text-amber-600' : 'text-red-600')}>
                               ATS {app.atsScore}

@@ -228,7 +228,7 @@ export default function ResumeAnalyzer() {
 
           <motion.div variants={itemVariants} className="flex justify-center gap-3 pb-4">
             <Button variant="outline" onClick={reset}>Analyze Another Resume</Button>
-            <Button variant="primary"><FileText className="h-4 w-4" /> Export PDF Report</Button>
+            <Button variant="primary" onClick={() => window.print()}><FileText className="h-4 w-4" /> Export PDF Report</Button>
           </motion.div>
         </motion.div>
       )}

@@ -319,7 +319,7 @@ export default function AIInterviewAssistant() {
                 <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-sm transition-colors">
                   <Save className="h-4 w-4" /> Save Kit
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] text-sm font-bold rounded-xl shadow-sm transition-colors">
+                <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] text-sm font-bold rounded-xl shadow-sm transition-colors">
                   <Download className="h-4 w-4" /> Export PDF
                 </button>
                 <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] text-sm font-bold rounded-xl shadow-sm transition-colors">

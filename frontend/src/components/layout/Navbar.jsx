@@ -9,13 +9,13 @@ import { useClickOutside } from '../../hooks/useClickOutside'
 import { useApi } from '../../hooks/useApi'
 import { profileApi } from '../../services/profileApi'
 import { getMediaUrl, cn } from '../../lib/utils'
-import { Menu, LogOut, User, CreditCard, Shield, Moon, Sun, Search, Sparkles } from 'lucide-react'
+import { Menu, LogOut, User, Shield, Moon, Sun, Search, Sparkles } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 
 const Navbar = memo(function Navbar() {
   const { user, isAuthenticated, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const { toggleSidebar, collapsed } = useLayout()
+  const { toggleSidebar } = useLayout()
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')

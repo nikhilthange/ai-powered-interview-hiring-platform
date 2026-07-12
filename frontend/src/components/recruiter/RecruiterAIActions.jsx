@@ -4,19 +4,9 @@ import { recruiterAiApi } from '../../services/recruiterAiApi'
 import { useToast } from '../ui/Toast'
 import Button from '../ui/Button'
 import Modal from '../ui/Modal'
-import { Sparkles, Loader2, Copy, Check } from 'lucide-react'
+import { Sparkles, Loader2, Copy } from 'lucide-react'
 
-const actionIcons = {
-  'Generate Job Description': '📝',
-  'Interview Questions': '❓',
-  'Summarize Resume': '📄',
-  'Compare Candidates': '⚖️',
-  'Rank Applicants': '🏆',
-  'Suggest Salary': '💰',
-  'Email Invitation': '✉️',
-  'Rejection Email': '📧',
-  'Technical Assignment': '📋',
-}
+
 
 export function AIActionButton({ label, onClick, loading, size = 'xs', variant = 'outline' }) {
   return (

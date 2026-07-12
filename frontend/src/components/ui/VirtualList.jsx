@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { useIntersectionObserver } from '../../hooks/useIntersectionObserver'
+
 
 const DEFAULT_OVERSCAN = 3
 
@@ -8,7 +8,7 @@ export default function VirtualList({
   itemHeight,
   renderItem,
   overscan = DEFAULT_OVERSCAN,
-  className,
+
   emptyState,
   containerClassName,
 }) {

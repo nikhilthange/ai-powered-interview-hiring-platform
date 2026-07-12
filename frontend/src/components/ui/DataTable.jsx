@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -36,7 +36,6 @@ export default function DataTable({
   selectedIds,
   onSelect,
   selectable = false,
-  pageSize = 20,
 }) {
   const [localSearch, setLocalSearch] = useState('')
   const searchRef = useRef(null)

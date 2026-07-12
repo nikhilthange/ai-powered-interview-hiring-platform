@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Briefcase, FileText, Bookmark, MessageCircle,
   GraduationCap, Search, Target, BarChart3,
   Users, X, Calendar, ChevronLeft, Bell,
-  User, CreditCard, LogOut, Sparkles, Settings,
+  User, LogOut, Settings,
   ScrollText, Megaphone, Cpu, Building2
 } from 'lucide-react'
 

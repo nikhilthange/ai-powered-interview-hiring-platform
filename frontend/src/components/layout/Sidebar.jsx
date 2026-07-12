@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Briefcase, FileText, Bookmark, MessageCircle,
   GraduationCap, Search, Target, BarChart3,
   Users, X, Calendar, ChevronLeft, Bell,
-  User, LogOut, Settings,
+  User, LogOut, Settings, Sparkles,
   ScrollText, Megaphone, Cpu, Building2
 } from 'lucide-react'
 
@@ -33,7 +33,7 @@ const recruiterLinks = [
   { to: '/recruiter/my-jobs', label: 'My Jobs', icon: Briefcase },
   { to: '/recruiter/company-profile', label: 'Company Profile', icon: Building2 },
   { to: '/recruiter/jobs/create', label: 'Post a Job', icon: FileText },
-  { to: '/recruiter/interviews', label: 'Interviews', icon: Calendar },
+  { to: '/recruiter/ai-interview-assistant', label: 'AI Interview Assistant', icon: Sparkles },
   { to: '/recruiter/chat', label: 'Messages', icon: MessageCircle },
 ]
 

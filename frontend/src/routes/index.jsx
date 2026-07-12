@@ -45,6 +45,7 @@ const RecruiterDashboard = () => lazyLoad(() => import('../pages/recruiter/Dashb
 const RecruiterJobApplications = () => lazyLoad(() => import('../pages/recruiter/JobApplications'))
 const RecruiterProfile = () => lazyLoad(() => import('../pages/recruiter/Profile'))
 const CompanyProfileForm = () => lazyLoad(() => import('../pages/recruiter/CompanyProfileForm'))
+const AIInterviewAssistant = () => lazyLoad(() => import('../pages/recruiter/AIInterviewAssistant'))
 const CompaniesList = () => lazyLoad(() => import('../pages/candidate/CompaniesList'))
 const CompanyDetails = () => lazyLoad(() => import('../pages/candidate/CompanyDetails'))
 const CreateJob = () => lazyLoad(() => import('../pages/recruiter/CreateJob'))
@@ -104,7 +105,7 @@ export const router = createBrowserRouter([
         { path: 'company-profile', element: <CompanyProfileForm /> },
         { path: 'jobs/create', element: <CreateJob /> },
         { path: 'my-jobs', element: <MyJobs /> },
-        { path: 'interviews', element: <MyInterviews /> },
+        { path: 'ai-interview-assistant', element: <AIInterviewAssistant /> },
         { path: 'jobs/:jobId/applications', element: <RecruiterJobApplications /> },
         { path: 'jobs/:id/edit', element: <EditJob /> },
         { path: 'chat', element: <ChatPage /> },

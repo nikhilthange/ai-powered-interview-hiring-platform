@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
 import { useNotifications } from '../../hooks/useNotifications'
+import { useLayout } from '../../context/LayoutContext'
 import { cn } from '../../lib/utils'
 import { LayoutDashboard, Sparkles, Bell, User, Search } from 'lucide-react'
 
@@ -16,6 +17,7 @@ const navItems = [
 export default function BottomNav() {
   const { isAuthenticated } = useAuth()
   const { unreadCount } = useNotifications()
+  const { sidebarOpen } = useLayout()
   const location = useLocation()
 
   if (!isAuthenticated) return null
@@ -28,7 +30,7 @@ export default function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-[100] border-t border-[#ececec] dark:border-[var(--border-color)] bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl lg:hidden safe-area-bottom pb-[env(safe-area-inset-bottom)]" aria-label="Mobile navigation">
+    <nav className={`fixed bottom-0 left-0 right-0 z-[8000] border-t border-[#ececec] dark:border-[var(--border-color)] bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl lg:hidden safe-area-bottom pb-[env(safe-area-inset-bottom)] transition-all duration-300 ${sidebarOpen ? 'opacity-40 blur-[2px] pointer-events-none' : ''}`} aria-label="Mobile navigation">
       <div className="flex items-center justify-between px-2 py-2 gap-1 max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { aiChatApi } from '../../services/aiChatApi'
 import { useAuth } from '../../hooks/useAuth'
+import { useLayout } from '../../context/LayoutContext'
 import AIChatSidebar from './AIChatSidebar'
 import AIChatMessage from './AIChatMessage'
 import AIChatInput from './AIChatInput'
@@ -42,6 +43,7 @@ function ChatSkeleton() {
 
 export default function FloatingAIChatWidget() {
   const { user } = useAuth()
+  const { sidebarOpen } = useLayout()
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -286,7 +288,7 @@ export default function FloatingAIChatWidget() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-[90px] right-[16px] sm:bottom-[30px] sm:right-[30px] z-[60] p-4 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 hover:scale-105 hover:shadow-indigo-500/30 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            className={`fixed bottom-[90px] right-[16px] sm:bottom-[30px] sm:right-[30px] z-[8500] p-4 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 hover:scale-105 hover:shadow-indigo-500/30 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${sidebarOpen ? 'opacity-0 pointer-events-none' : ''}`}
             aria-label="Open AI Career Assistant"
           >
             <Bot className="h-6 w-6" />

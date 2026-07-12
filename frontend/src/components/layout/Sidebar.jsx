@@ -91,7 +91,7 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[9999] bg-black/45 backdrop-blur-sm lg:hidden"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -100,9 +100,11 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
 
       <aside
         className={cn(
-          'fixed top-[72px] left-0 z-40 flex flex-col h-[calc(100vh-72px)] border-r bg-[var(--bg-primary)]/95 backdrop-blur-xl border-[var(--border-color)] transition-all duration-300 lg:translate-x-0',
-          collapsed ? 'w-[72px]' : 'w-[260px]',
-          open ? 'translate-x-0' : '-translate-x-full'
+          'fixed left-0 flex flex-col border-r bg-white dark:bg-[#0f172a] transition-all duration-300',
+          'top-0 h-[100vh] z-[10000] w-[85vw] max-w-[340px] rounded-r-2xl shadow-2xl pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]',
+          'lg:top-[64px] lg:h-[calc(100vh-64px)] lg:z-40 lg:rounded-none lg:shadow-none lg:pt-0 lg:pb-0',
+          collapsed ? 'lg:w-[72px]' : 'lg:w-[260px]',
+          open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
         aria-label="Sidebar navigation"
       >

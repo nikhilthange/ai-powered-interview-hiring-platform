@@ -68,27 +68,27 @@ const Navbar = memo(function Navbar() {
   return (
     <header 
       className={cn(
-        "sticky top-0 z-[999] w-full flex h-[64px] items-center justify-between px-4 md:px-8 transition-all duration-300 pt-[env(safe-area-inset-top)]",
+        "sticky top-0 z-[9000] w-full flex h-[64px] items-center justify-between px-4 md:px-8 transition-all duration-300 pt-[env(safe-area-inset-top)]",
         scrolled 
-          ? "bg-white/80 dark:bg-gradient-to-r dark:from-[#0f172a]/90 dark:to-[#1e293b]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 shadow-sm"
-          : "bg-white/40 dark:bg-gradient-to-r dark:from-[#0f172a]/50 dark:to-[#1e293b]/50 backdrop-blur-md border-b border-transparent"
+          ? "bg-[#0f172a]/90 backdrop-blur-xl border-b border-white/10 shadow-sm text-white"
+          : "bg-[#0f172a]/80 backdrop-blur-md border-b border-transparent text-white"
       )}
     >
       {/* Left Section */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3 shrink-0">
         <button
           onClick={toggleSidebar}
-          className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors"
+          className="rounded-xl p-2 text-slate-300 hover:bg-white/10 hover:text-white lg:hidden transition-colors"
           aria-label="Toggle sidebar"
         >
           <Menu className="h-5 w-5" aria-hidden="true" />
         </button>
 
-        <Link to="/" className="flex items-center gap-2.5 pl-2" aria-label="HireMate Home">
+        <Link to="/" className="flex items-center gap-2.5" aria-label="HireMate Home">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold shadow-sm">
             <Sparkles className="h-4 w-4" aria-hidden="true" />
           </div>
-          <span className="font-bold text-[var(--text-primary)] text-lg tracking-tight">HireMate</span>
+          <span className="font-bold text-white text-lg tracking-tight hidden min-[360px]:block">HireMate</span>
         </Link>
       </div>
 
@@ -100,12 +100,12 @@ const Navbar = memo(function Navbar() {
       )}
 
       {/* Right Section */}
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-1 md:gap-3 shrink-0">
         {isAuthenticated && (
           <div className="md:hidden flex items-center">
             <button 
               onClick={() => setMobileSearchOpen(true)}
-              className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+              className="rounded-xl p-2 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
             >
               <Search className="h-5 w-5" />
             </button>
@@ -116,7 +116,7 @@ const Navbar = memo(function Navbar() {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={toggleTheme}
-            className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            className="rounded-xl p-2 text-slate-300 hover:bg-white/10 hover:text-white transition-colors hidden md:block"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           >
@@ -134,11 +134,11 @@ const Navbar = memo(function Navbar() {
         {isAuthenticated && <NotificationBell />}
 
         {isAuthenticated && user && (
-          <div ref={ref} className="relative">
+          <div ref={ref} className="relative ml-1">
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-2.5 rounded-xl p-1.5 pr-3 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+              className="flex items-center gap-2.5 rounded-xl p-1 md:pr-3 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
               aria-label="Profile menu"
               aria-expanded={profileOpen}
               aria-haspopup="true"
@@ -246,14 +246,14 @@ const Navbar = memo(function Navbar() {
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -10, opacity: 0 }}
-            className="absolute top-0 left-0 right-0 p-4 bg-white dark:bg-[#0f172a] border-b border-[#ececec] dark:border-[var(--border-color)] z-[1000] flex items-center gap-2 pt-[calc(1rem+env(safe-area-inset-top))]"
+            className="absolute top-[100%] left-0 right-0 p-4 bg-[#0f172a]/95 backdrop-blur-xl border-b border-white/10 z-[8900] flex items-center gap-2 shadow-lg"
           >
             <div className="flex-1">
               <GlobalSearch />
             </div>
             <button 
               onClick={() => setMobileSearchOpen(false)}
-              className="p-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] rounded-xl shrink-0 transition-colors"
+              className="p-2 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white rounded-xl shrink-0 transition-colors"
             >
               Cancel
             </button>

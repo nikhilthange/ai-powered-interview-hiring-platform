@@ -25,14 +25,15 @@ const CompanyDetails = () => {
       try {
         const response = await companyService.getCompanyById(id);
         setCompany(response.data.company);
-      } catch (_error) {
+      } catch (error) {
+        console.error('Failed to load company details', error);
         toast.error('Failed to load company details');
       } finally {
         setLoading(false);
       }
     };
     fetchCompanyDetails();
-  }, [id, toast]);
+  }, [id]);
 
   const messageMutation = useMutation({
     mutationFn: (recruiterId) => chatApi.getOrCreateRoom(recruiterId),
@@ -65,7 +66,8 @@ const CompanyDetails = () => {
         setCompany(prev => ({ ...prev, followersCount: (prev.followersCount || 0) + 1 }));
         toast.success(`Following ${company.name}`);
       }
-    } catch (_error) {
+    } catch (error) {
+      console.error('Action failed', error);
       toast.error('Action failed. Please try again.');
     } finally {
       setFollowLoading(false);

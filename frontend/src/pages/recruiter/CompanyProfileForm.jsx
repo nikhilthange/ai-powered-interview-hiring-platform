@@ -68,7 +68,8 @@ const CompanyProfileForm = () => {
             officePhotos: comp.officePhotos?.map(p => `${baseUrl}/uploads/${p}`) || []
           });
         }
-      } catch (_error) {
+      } catch (error) {
+        console.error('Failed to load company profile', error);
         toast.error('Failed to load company profile');
       } finally {
         setFetching(false);

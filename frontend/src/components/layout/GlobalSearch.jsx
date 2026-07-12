@@ -25,8 +25,8 @@ export default function GlobalSearch() {
     if (saved) {
       try {
         setRecentSearches(JSON.parse(saved));
-      } catch (e) {
-        // ignore
+      } catch (error) {
+        console.error('Failed to parse recent searches', error);
       }
     }
   }, []);
@@ -89,6 +89,19 @@ export default function GlobalSearch() {
     }
   }
 
+  const handleSelect = (item) => {
+    saveRecentSearch(item.name || item.title || query);
+    setIsOpen(false);
+    setQuery('');
+    
+    if (item.type === 'job') navigate(`/jobs/${item._id}`);
+    else if (item.type === 'company') navigate(`/companies/${item._id}`);
+    else if (item.type === 'user') navigate(`/profile/${item._id}`);
+    else if (item.type === 'skill' || item.type === 'history' || item.type === 'trending') {
+      navigate(`/jobs?search=${encodeURIComponent(item.name || item.title)}`);
+    }
+  };
+
   // Keyboard navigation within dropdown
   useEffect(() => {
     if (!isOpen) return;
@@ -114,25 +127,13 @@ export default function GlobalSearch() {
     
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, flatList, selectedIndex]);
 
   // Reset selection on query change
   useEffect(() => {
     setSelectedIndex(-1);
   }, [query]);
-
-  const handleSelect = (item) => {
-    saveRecentSearch(item.name || item.title || query);
-    setIsOpen(false);
-    setQuery('');
-    
-    if (item.type === 'job') navigate(`/jobs/${item._id}`);
-    else if (item.type === 'company') navigate(`/companies/${item._id}`);
-    else if (item.type === 'user') navigate(`/profile/${item._id}`);
-    else if (item.type === 'skill' || item.type === 'history' || item.type === 'trending') {
-      navigate(`/jobs?search=${encodeURIComponent(item.name || item.title)}`);
-    }
-  };
 
   const handleClear = () => {
     setQuery('');

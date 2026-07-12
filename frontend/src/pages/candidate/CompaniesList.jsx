@@ -43,7 +43,8 @@ const CompaniesList = () => {
       
       setCompanies(compRes.data?.companies || []);
       setRecommended(recRes.data?.companies || []);
-    } catch (_error) {
+    } catch (error) {
+      console.error('Failed to load companies:', error);
       toast.error('Failed to load companies');
     } finally {
       setLoading(false);

@@ -167,6 +167,7 @@ async function callNvidia(messages, options = {}) {
   const data = await response.json();
   return data.choices[0].message.content;
 }
+const AppError = require('../utils/appError');
 
 async function callAI(mockFn, aiCall, options = {}) {
   const callerName = options.name || 'ai_call';
@@ -175,10 +176,21 @@ async function callAI(mockFn, aiCall, options = {}) {
     await loadProvider();
   }
 
+  const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
   const mockBranch = currentProvider === 'mock' || !process.env.NVIDIA_API_KEY || circuitBreaker.isOpen;
+
   console.log(`[${AI_SERVICE_NAME}] callAI "${callerName}": { MOCK_AI: "${process.env.MOCK_AI}", NODE_ENV: "${process.env.NODE_ENV}", currentProvider: "${currentProvider}", circuitBreakerOpen: ${circuitBreaker.isOpen}, hasApiKey: ${!!process.env.NVIDIA_API_KEY}, enteringMockBranch: ${mockBranch} }`);
 
   if (mockBranch) {
+    if (!isDev) {
+      if (!process.env.NVIDIA_API_KEY) {
+        throw new AppError('AI configuration error: Missing API key.', 500);
+      }
+      if (circuitBreaker.isOpen) {
+        throw new AppError('AI provider is currently unavailable. Please try again later.', 503);
+      }
+    }
+
     if (circuitBreaker.isOpen) {
       console.warn(`[${AI_SERVICE_NAME}] Circuit breaker OPEN for "${callerName}". Using mock data.`);
     }
@@ -192,6 +204,7 @@ async function callAI(mockFn, aiCall, options = {}) {
 
   const start = Date.now();
   let lastError;
+  let statusCode = 500;
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
@@ -201,6 +214,14 @@ async function callAI(mockFn, aiCall, options = {}) {
       return result;
     } catch (err) {
       lastError = err.message;
+      if (err.message && err.message.toLowerCase().includes('rate limit') || err.status === 429 || err.message.includes('429')) {
+        lastError = 'Rate limit exceeded';
+        statusCode = 429;
+      } else if (err.message && (err.message.toLowerCase().includes('time') || err.code === 'ECONNABORTED')) {
+        lastError = 'Timeout waiting for AI provider';
+        statusCode = 504;
+      }
+      
       console.error(`[${AI_SERVICE_NAME}] NVIDIA call "${callerName}" attempt ${attempt}/3: ${err.message}`);
 
       if (attempt < 3) {
@@ -215,15 +236,19 @@ async function callAI(mockFn, aiCall, options = {}) {
 
   await recordMetrics({ duration: Date.now() - start, error: fallbackReason });
 
-  if (typeof mockFn === 'function') {
+  if (isDev && typeof mockFn === 'function') {
     return mockFn();
   }
-  return mockFn;
+
+  throw new AppError(`AI provider unavailable: ${lastError}`, statusCode);
 }
 
 exports.getProvider = getProvider;
 exports.setProvider = setProvider;
 exports.recordMetrics = recordMetrics;
+exports.callAI = callAI;
+exports.callNvidia = callNvidia;
+exports.extractJsonArray = extractJsonArray;
 
 async function callNvidiaStream(messages, callbacks, options = {}) {
   const { temperature = 0.7, maxTokens = 2048 } = options;

@@ -217,7 +217,7 @@ export default function CandidateDashboard() {
       </motion.div>
 
       {/* Metrics Row inline for custom SaaS styling */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3 xl:grid-cols-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
         {metrics.map((metric) => (
           <motion.div 
             key={metric.label}
@@ -250,7 +250,7 @@ export default function CandidateDashboard() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 min-h-[320px]">
+              <div className="flex-1 h-[220px] md:h-[320px] md:min-h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={appTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
@@ -296,7 +296,7 @@ export default function CandidateDashboard() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 min-h-[320px]">
+              <div className="flex-1 h-[220px] md:h-[320px] md:min-h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={scoreTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>

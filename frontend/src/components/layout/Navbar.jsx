@@ -18,6 +18,7 @@ const Navbar = memo(function Navbar() {
   const { theme, toggleTheme } = useTheme()
   const { toggleSidebar } = useLayout()
   const [profileOpen, setProfileOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const ref = useClickOutside(() => setProfileOpen(false))
 
@@ -67,10 +68,10 @@ const Navbar = memo(function Navbar() {
   return (
     <header 
       className={cn(
-        "sticky top-0 z-50 w-full flex h-[72px] items-center justify-between px-4 md:px-8 transition-all duration-300 border-b",
+        "sticky top-0 z-[999] w-full flex h-[64px] items-center justify-between px-4 md:px-8 transition-all duration-300 border-b pt-[env(safe-area-inset-top)]",
         scrolled 
-          ? "bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-xl border-[var(--border-color)] shadow-sm"
-          : "bg-white/40 dark:bg-[#0f172a]/40 backdrop-blur-md border-transparent"
+          ? "bg-white dark:bg-[#0f172a] border-[#ececec] dark:border-[var(--border-color)] shadow-sm"
+          : "bg-white dark:bg-[#0f172a] border-[#ececec] dark:border-[var(--border-color)]"
       )}
     >
       {/* Left Section */}
@@ -101,8 +102,13 @@ const Navbar = memo(function Navbar() {
       {/* Right Section */}
       <div className="flex items-center gap-2 md:gap-4">
         {isAuthenticated && (
-          <div className="md:hidden">
-            <GlobalSearch />
+          <div className="md:hidden flex items-center">
+            <button 
+              onClick={() => setMobileSearchOpen(true)}
+              className="rounded-xl p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            >
+              <Search className="h-5 w-5" />
+            </button>
           </div>
         )}
 
@@ -233,6 +239,27 @@ const Navbar = memo(function Navbar() {
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {mobileSearchOpen && (
+          <motion.div 
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -10, opacity: 0 }}
+            className="absolute top-0 left-0 right-0 p-4 bg-white dark:bg-[#0f172a] border-b border-[#ececec] dark:border-[var(--border-color)] z-[1000] flex items-center gap-2 pt-[calc(1rem+env(safe-area-inset-top))]"
+          >
+            <div className="flex-1">
+              <GlobalSearch />
+            </div>
+            <button 
+              onClick={() => setMobileSearchOpen(false)}
+              className="p-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] rounded-xl shrink-0 transition-colors"
+            >
+              Cancel
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   )
 })

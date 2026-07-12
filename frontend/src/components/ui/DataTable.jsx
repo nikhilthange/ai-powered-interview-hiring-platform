@@ -70,7 +70,7 @@ export default function DataTable({
         </div>
       )}
 
-        <div className="overflow-x-auto surface-card">
+        <div className="overflow-x-auto max-w-full surface-card">
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/50 backdrop-blur-md">

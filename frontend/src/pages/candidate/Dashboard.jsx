@@ -176,7 +176,7 @@ export default function CandidateDashboard() {
   const latestApps = apps.slice(0, 5)
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6 lg:space-y-8 pb-32 lg:pb-8">
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6 lg:space-y-8 pb-32 lg:pb-8 max-w-full overflow-x-clip">
       {/* Header Profile Card */}
       <motion.div variants={itemVariants}>
         <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-950 p-6 sm:p-10 shadow-xl shadow-indigo-900/20 border border-indigo-700/30 h-auto">

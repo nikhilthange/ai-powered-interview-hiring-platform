@@ -51,9 +51,9 @@ function LayoutContent() {
   return (
     <>
       <RouteAnnouncer />
-      <div className="flex flex-col min-h-screen bg-[var(--bg-secondary)]">
+      <div className="flex flex-col min-h-screen bg-[var(--bg-secondary)] max-w-full overflow-x-clip">
         {!isLanding && <Navbar />}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 max-w-full overflow-x-clip">
           {!isLanding && (
             <Sidebar
               open={sidebarOpen}
@@ -67,7 +67,7 @@ function LayoutContent() {
             role="region"
             aria-label="Main content"
             className={cn(
-              'flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300',
+              'flex-1 overflow-y-auto max-w-full overflow-x-clip transition-all duration-300',
               !isLanding && (collapsed ? "lg:ml-[72px]" : "lg:ml-[260px]"),
               isLanding ? '' : 'px-4 pt-4 sm:p-6 pb-24 lg:pb-8'
             )}

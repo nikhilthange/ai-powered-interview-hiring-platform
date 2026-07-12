@@ -121,23 +121,25 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
                 to={link.to}
                 onClick={onClose}
                 className={cn(
-                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  'relative flex items-center gap-3 rounded-[14px] px-3.5 py-2.5 text-sm font-medium transition-all duration-200',
                   collapsed && 'justify-center px-2',
                   isActive
-                    ? 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-indigo-500/10 dark:text-indigo-400 shadow-sm'
+                    ? 'text-[var(--color-primary-700)] dark:text-indigo-300 font-semibold'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
                 )}
                 aria-current={isActive ? 'page' : undefined}
                 title={collapsed ? link.label : undefined}
               >
-                <Icon className={cn('shrink-0', collapsed ? 'h-5 w-5' : 'h-5 w-5')} aria-hidden="true" />
-                {!collapsed && <span>{link.label}</span>}
-                {isActive && !collapsed && (
-                  <motion.span
-                    layoutId="activeIndicator"
-                    className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--color-primary-500)]"
+                {isActive && (
+                  <motion.div
+                    layoutId="sidebarActiveIndicator"
+                    className="absolute inset-0 rounded-[14px] bg-[var(--color-primary-50)] dark:bg-indigo-500/10 border border-[var(--color-primary-100)] dark:border-indigo-500/20 shadow-sm z-0"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
+                <Icon className={cn('shrink-0 relative z-10', collapsed ? 'h-5 w-5' : 'h-5 w-5', isActive && 'text-[var(--color-primary-600)] dark:text-indigo-400')} aria-hidden="true" />
+                {!collapsed && <span className="relative z-10">{link.label}</span>}
               </Link>
             )
           })}

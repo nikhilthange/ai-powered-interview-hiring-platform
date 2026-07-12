@@ -48,8 +48,8 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
   }, [job._id, onSaveToggle])
 
   return (
-    <motion.div variants={itemVariants} whileHover={{ y: -2 }}>
-      <div className="rounded-2xl border bg-[var(--bg-primary)] p-5 transition-all border-[var(--border-color)] shadow-sm hover:shadow-md hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30">
+    <motion.div variants={itemVariants}>
+      <div className="surface-card p-5 group cursor-pointer h-full flex flex-col justify-between">
         <div className="flex items-start gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 dark:from-indigo-950 dark:to-indigo-900 dark:text-indigo-400 font-bold text-lg">
             {job.title?.charAt(0) || 'J'}

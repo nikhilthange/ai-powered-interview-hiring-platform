@@ -96,7 +96,7 @@ export default function ResumeList() {
       </div>
 
       {resumes?.length === 0 ? (
-        <Card className="border-dashed border-2 border-[var(--border-color)] bg-[var(--bg-secondary)]">
+        <Card className="surface-card border-dashed border-2">
           <CardContent className="p-12 text-center flex flex-col items-center">
             <div className="h-16 w-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-4">
               <FileText className="h-8 w-8" />
@@ -111,7 +111,7 @@ export default function ResumeList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {resumes?.map(resume => (
-            <Card key={resume._id} className="hover:border-indigo-300 transition-colors group">
+            <Card key={resume._id} className="surface-card group hover:border-[var(--color-primary-300)] cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="h-10 w-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">

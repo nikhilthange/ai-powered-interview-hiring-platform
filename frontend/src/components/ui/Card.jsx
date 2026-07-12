@@ -10,8 +10,7 @@ export function Card({ className, hover, children, highlight, ...props }) {
   return (
     <Component
       className={cn(
-        'rounded-2xl border bg-[var(--bg-primary)] border-[var(--border-color)] shadow-sm transition-shadow duration-200',
-        (hover || highlight) && 'card-hover-effect',
+        'rounded-[24px] bg-[var(--bg-primary)] surface-card',
         highlight && 'relative overflow-hidden',
         className
       )}

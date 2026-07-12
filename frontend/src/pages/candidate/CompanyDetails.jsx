@@ -95,7 +95,7 @@ const CompanyDetails = () => {
     <div className="bg-[var(--bg-secondary)] min-h-screen pb-12">
       {/* Cover Image Container */}
       <div className="max-w-7xl mx-auto md:mt-6 md:px-6 lg:px-8">
-        <div className="bg-[var(--bg-primary)] md:rounded-2xl shadow-sm border-x md:border border-b border-[var(--border-color)] overflow-hidden">
+        <div className="surface-card md:rounded-3xl border border-[var(--border-color)] overflow-hidden">
           
           <div className="h-48 md:h-72 lg:h-96 w-full relative bg-gray-100 dark:bg-gray-800">
             {company.coverImage && company.coverImage !== 'default-company-cover.png' ? (
@@ -220,7 +220,7 @@ const CompanyDetails = () => {
             <AnimatePresence mode="wait">
             {activeTab === 'about' && (
               <motion.div key="about" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
-                <section className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 lg:p-8 hover:shadow-md transition-shadow">
+                <section className="surface-card p-6 lg:p-8 hover:shadow-md transition-shadow">
                   <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                     <Building2 className="h-5 w-5 text-indigo-500" />
                     Overview
@@ -234,7 +234,7 @@ const CompanyDetails = () => {
 
             {activeTab === 'jobs' && (
               <motion.div key="jobs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
-                <section className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 lg:p-8">
+                <section className="surface-card p-6 lg:p-8 hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
                       <Briefcase className="h-5 w-5 text-indigo-500" />
@@ -281,7 +281,7 @@ const CompanyDetails = () => {
             {activeTab === 'life' && (
               <motion.div key="life" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6">
                 {company.culture && (
-                  <section className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 lg:p-8 hover:shadow-md transition-shadow">
+                  <section className="surface-card p-6 lg:p-8 hover:shadow-md transition-shadow">
                     <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                       <Heart className="h-5 w-5 text-pink-500" />
                       Culture & Values
@@ -292,7 +292,7 @@ const CompanyDetails = () => {
                   </section>
                 )}
                 {company.officePhotos && company.officePhotos.length > 0 && (
-                  <section className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 lg:p-8">
+                  <section className="surface-card p-6 lg:p-8 hover:shadow-md transition-shadow">
                     <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
                       <Building2 className="h-5 w-5 text-indigo-500" />
                       Office & Environment
@@ -326,7 +326,7 @@ const CompanyDetails = () => {
           <div className="space-y-6">
             {/* Side Content: Benefits */}
             {company.benefits && company.benefits.length > 0 && (
-              <section className="bg-[var(--bg-primary)] rounded-2xl shadow-sm border border-[var(--border-color)] p-6">
+              <section className="surface-card p-6">
                 <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Benefits & Perks</h2>
                 <ul className="space-y-3">
                   {company.benefits.map((benefit, idx) => (
@@ -341,7 +341,7 @@ const CompanyDetails = () => {
 
             {/* Side Content: Socials */}
             {(company.socialLinks?.linkedin || company.socialLinks?.twitter || company.socialLinks?.facebook) && (
-              <section className="bg-[var(--bg-primary)] rounded-2xl shadow-sm border border-[var(--border-color)] p-6">
+              <section className="surface-card p-6">
                 <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Connect</h2>
                 <div className="flex gap-4">
                   {company.socialLinks?.linkedin && (

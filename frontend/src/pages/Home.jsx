@@ -198,9 +198,12 @@ export default function Home() {
                 key={feature.title}
                 whileHover={{ y: -5 }}
                 transition={{ type: 'spring', stiffness: 300 }}
-                className="group rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-6 hover:shadow-lg hover:border-[var(--color-primary-300)] dark:hover:border-indigo-500/30 transition-all cursor-default"
+                className="group surface-card p-6 cursor-default relative overflow-hidden"
               >
-                <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br', feature.bg, 'group-hover:scale-110 transition-transform duration-200')}>
+                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-transform group-hover:scale-150 duration-500">
+                   <Icon className="w-32 h-32" />
+                </div>
+                <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br relative z-10', feature.bg, 'group-hover:scale-110 transition-transform duration-200')}>
                     <Icon className={cn('h-6 w-6', feature.iconColor)} aria-hidden="true" />
                 </div>
                 <h3 className="mt-4 font-semibold text-[var(--text-primary)] group-hover:text-[var(--color-primary-600)] transition-colors">{feature.title}</h3>

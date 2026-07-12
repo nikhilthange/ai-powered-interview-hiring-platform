@@ -71,7 +71,7 @@ const Navbar = memo(function Navbar() {
   return (
     <header 
       className={cn(
-        "sticky top-0 z-50 w-full flex h-[72px] items-center justify-between border-b bg-white dark:bg-[#0f172a] border-[var(--border-color)] px-4 md:px-8 shadow-sm transition-all duration-300"
+        "sticky top-0 z-50 w-full flex h-[72px] items-center justify-between border-b bg-white/70 dark:bg-[#0f172a]/70 backdrop-blur-xl border-[var(--border-color)] px-4 md:px-8 shadow-sm transition-all duration-300"
       )}
     >
       {/* Left Section */}

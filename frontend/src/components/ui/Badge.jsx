@@ -7,6 +7,7 @@ const variants = {
   warning: 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
   danger: 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300',
   info: 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  premium: 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-sm bg-[length:200%_200%] animate-gradient-shift font-semibold tracking-wide',
 }
 
 const sizes = {

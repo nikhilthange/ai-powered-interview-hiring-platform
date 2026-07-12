@@ -40,12 +40,12 @@
   --border-color: #e2e8f0;
   --border-light: #f1f5f9;
 
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04);
-  --shadow-elevated: 0 25px 50px -12px rgba(0,0,0,0.15);
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-lg: 0 16px 32px rgba(0,0,0,0.08);
+  --shadow-xl: 0 24px 48px rgba(0,0,0,0.1);
+  --shadow-elevated: 0 32px 64px rgba(0,0,0,0.12);
   --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
   --shadow-glow-lg: 0 0 40px rgba(99, 102, 241, 0.2);
 }
@@ -300,22 +300,34 @@ input[type="text"], input[type="email"], input[type="password"], input[type="sea
 .animate-load-bar { animation: load-bar 1.5s ease-in-out infinite; }
 
 .surface {
-  background-color: var(--bg-primary);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 24px;
   box-shadow: var(--shadow-sm);
+}
+.dark .surface {
+  background-color: rgba(15, 23, 42, 0.85);
 }
 
 .surface-card {
-  background-color: var(--bg-primary);
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
-  box-shadow: var(--shadow-xs);
-  transition: box-shadow 200ms ease, transform 200ms ease;
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dark .surface-card {
+  background-color: rgba(30, 41, 59, 0.7);
 }
 .surface-card:hover {
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  border-color: var(--color-primary-200);
+}
+.dark .surface-card:hover {
+  border-color: var(--color-primary-700);
 }
 
 .text-gradient {
@@ -350,6 +362,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="sea
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
 }
 .dark .glass {
   background: rgba(15,23,42,0.8);
@@ -362,6 +375,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="sea
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.3);
   box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+  border-radius: 24px;
 }
 .dark .glass-card {
   background: rgba(15,23,42,0.6);

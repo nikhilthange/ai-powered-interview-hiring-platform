@@ -70,10 +70,10 @@ export default function DataTable({
         </div>
       )}
 
-        <div className="overflow-x-auto rounded-2xl border border-[var(--border-color)]">
+        <div className="overflow-x-auto surface-card">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/80">
+            <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/50 backdrop-blur-md">
               {selectable && (
                 <th className="px-4 py-3 text-left w-10">
                   <input

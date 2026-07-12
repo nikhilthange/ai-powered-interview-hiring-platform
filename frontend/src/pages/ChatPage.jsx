@@ -113,7 +113,7 @@ export default function ChatPage() {
           'w-full sm:w-80 lg:w-[350px] shrink-0 flex flex-col',
           selectedRoom && 'hidden lg:flex'
         )}>
-          <Card className="h-full flex flex-col">
+          <Card className="h-full flex flex-col surface-card overflow-hidden">
             <CardContent className="p-0 flex-1 flex flex-col min-h-0">
               <div className="p-4 border-b border-[var(--border-color)]">
                 <div className="flex items-center justify-between mb-4">
@@ -211,7 +211,7 @@ export default function ChatPage() {
           !selectedRoom && 'hidden lg:flex'
         )}>
           {selectedRoom ? (
-            <Card className="h-full flex flex-col shadow-sm">
+            <Card className="h-full flex flex-col surface-card overflow-hidden">
               <CardContent className="p-0 flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-3 p-4 border-b border-[var(--border-color)] bg-[var(--bg-primary)] z-10 relative">
                   <button
@@ -279,7 +279,7 @@ export default function ChatPage() {
         {/* Right Panel: User Details */}
         {selectedRoom && otherUser && (
           <div className="hidden xl:flex w-72 shrink-0 flex-col">
-            <Card className="h-full overflow-y-auto">
+            <Card className="h-full overflow-y-auto surface-card border-l-0">
               <CardContent className="p-6">
                 <div className="flex flex-col items-center text-center">
                   <div className="h-20 w-20 rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-2xl font-bold mb-4 relative">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, Save, Upload, Link as LinkIcon, Users, Image as ImageIcon, CheckCircle2, ChevronRight, ChevronLeft } from 'lucide-react';
 import companyService from '../../services/companyService';
@@ -68,7 +68,7 @@ const CompanyProfileForm = () => {
             officePhotos: comp.officePhotos?.map(p => `${baseUrl}/uploads/${p}`) || []
           });
         }
-      } catch (error) {
+      } catch (_error) {
         toast.error('Failed to load company profile');
       } finally {
         setFetching(false);

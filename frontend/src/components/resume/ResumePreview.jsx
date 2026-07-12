@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import ClassicTemplate from './ResumeTemplates/ClassicTemplate';
 import ModernTemplate from './ResumeTemplates/ModernTemplate';
 import MinimalTemplate from './ResumeTemplates/MinimalTemplate';

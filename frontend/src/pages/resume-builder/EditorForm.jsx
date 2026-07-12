@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronUp, ArrowUp, ArrowDown } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -15,7 +15,7 @@ import InterestsSection from '../../components/resume/InterestsSection';
 import ReferenceSection from '../../components/resume/ReferenceSection';
 import ResumeTemplateSelector from '../../components/resume/ResumeTemplateSelector';
 
-const SectionWrapper = ({ id, title, children, onMoveUp, onMoveDown, isFirst, isLast }) => {
+const SectionWrapper = ({ title, children, onMoveUp, onMoveDown, isFirst, isLast }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   return (

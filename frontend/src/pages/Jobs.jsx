@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { memo, useState, useCallback, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'
@@ -112,7 +112,7 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
   )
 })
 
-const FiltersPanel = memo(function FiltersPanel({ filters, setFilters, jobTypes, expLevels, showFilters, setShowFilters, hasActiveFilters }) {
+const FiltersPanel = memo(function FiltersPanel({ filters, setFilters, jobTypes, expLevels, showFilters, setShowFilters }) {
   return (
     <div className={cn(
       'w-full lg:w-64 shrink-0 space-y-4',
@@ -223,7 +223,7 @@ export default function Jobs() {
 
   const saveToggleMutation = useMutation({
     mutationFn: (jobId) => savedJobApi.saveJob(jobId),
-    onSuccess: (_, jobId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-jobs'] })
       toast.success('Job saved')
     },
@@ -263,7 +263,7 @@ export default function Jobs() {
     return mapped
   }, [filters])
 
-  const { data, isLoading, isError, error, refetch, isFetching, fetchStatus } = useQuery({
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey,
     queryFn: () => jobApi.getJobsPaginated({ search: debouncedSearch, page, limit: 10, ...apiFilters }).then((r) => r.data),
     placeholderData: (prev) => prev,

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { interviewApi } from '../../services/interviewApi'
 import { Card, CardContent } from '../../components/ui/Card'

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { applicationApi } from '../../services/applicationApi'
@@ -14,8 +14,8 @@ import { useToast } from '../../components/ui/Toast'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '../../lib/utils'
 import {
-  ArrowLeft, Users, Star, Clock, FileText, CheckCircle, MessageCircle,
-  Sparkles, Brain, Trophy, Mail, XCircle, RefreshCw
+  ArrowLeft, Users, Star, Clock, CheckCircle, MessageCircle,
+  Sparkles, RefreshCw
 } from 'lucide-react'
 import {
   SummarizeResumeModal, CompareCandidatesModal, RankApplicantsModal,

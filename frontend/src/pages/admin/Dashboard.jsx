@@ -4,12 +4,11 @@ import { adminApi } from '../../services/adminApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import StatCard from '../../components/ui/StatCard'
 import { SkeletonMetrics, SkeletonChart } from '../../components/ui/Skeleton'
-import { Users, Briefcase, FileText, Activity, Bot, UserCheck, UserPlus, Sparkles } from 'lucide-react'
+import { Users, Briefcase, FileText, Activity, Bot, UserCheck, UserPlus } from 'lucide-react'
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area,
 } from 'recharts'
-import { Link } from 'react-router-dom'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -58,7 +57,7 @@ export default function AdminDashboard() {
 
   const stats = analytics?.data?.stats || {}
   const userStats = analytics?.data?.userStats || []
-  const appStats = analytics?.data?.applicationStats || []
+
 
   const registrations = chartData?.data?.registrations || []
   const appsPerDay = chartData?.data?.applicationsPerDay || []

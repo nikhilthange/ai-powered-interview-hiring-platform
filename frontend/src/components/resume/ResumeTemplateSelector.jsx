@@ -1,4 +1,3 @@
-import React from 'react';
 import Input from '../ui/Input';
 
 export default function ResumeTemplateSelector({ title, template, onChange }) {

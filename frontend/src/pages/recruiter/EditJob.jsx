@@ -9,7 +9,7 @@ import Input from '../../components/ui/Input'
 import Modal from '../../components/ui/Modal'
 import { SkeletonPage } from '../../components/ui/Skeleton'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Save, Sparkles, FileQuestion, DollarSign, ClipboardList } from 'lucide-react'
+import { ArrowLeft, Save, FileQuestion, DollarSign, ClipboardList } from 'lucide-react'
 import { useMutation as useAiMutation } from '@tanstack/react-query'
 import { recruiterAiApi } from '../../services/recruiterAiApi'
 
@@ -57,17 +57,17 @@ export default function EditJob() {
     questions: useAiMutation({
       mutationFn: () => recruiterAiApi.generateInterviewQuestions(id),
       onSuccess: (res) => { setAiModal({ type: 'questions', open: true, data: res?.data, loading: false }) },
-      onError: (err) => { toast.error('Failed to generate questions.'); setAiModal((p) => ({ ...p, loading: false })) },
+      onError: (_err) => { toast.error('Failed to generate questions.'); setAiModal((p) => ({ ...p, loading: false })) },
     }),
     salary: useAiMutation({
       mutationFn: () => recruiterAiApi.suggestSalaryRange(id),
       onSuccess: (res) => { setAiModal({ type: 'salary', open: true, data: res?.data, loading: false }) },
-      onError: (err) => { toast.error('Failed to get salary suggestion.'); setAiModal((p) => ({ ...p, loading: false })) },
+      onError: (_err) => { toast.error('Failed to get salary suggestion.'); setAiModal((p) => ({ ...p, loading: false })) },
     }),
     assignment: useAiMutation({
       mutationFn: () => recruiterAiApi.generateTechnicalAssignment(id),
       onSuccess: (res) => { setAiModal({ type: 'assignment', open: true, data: res?.data, loading: false }) },
-      onError: (err) => { toast.error('Failed to generate assignment.'); setAiModal((p) => ({ ...p, loading: false })) },
+      onError: (_err) => { toast.error('Failed to generate assignment.'); setAiModal((p) => ({ ...p, loading: false })) },
     }),
   }
 

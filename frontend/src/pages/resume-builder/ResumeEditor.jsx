@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { resumeBuilderApi } from '../../services/resumeBuilderApi';
 import EditorForm from './EditorForm';
@@ -8,8 +8,6 @@ import AIAssistantModal from './AIAssistantModal';
 import ResumeToolbar from '../../components/resume/ResumeToolbar';
 import { SkeletonPage } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
-import { ArrowLeft, Save } from 'lucide-react';
-import Button from '../../components/ui/Button';
 
 export default function ResumeEditor() {
   const { id } = useParams();

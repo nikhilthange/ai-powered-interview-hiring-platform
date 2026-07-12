@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { resumeBuilderApi } from '../../services/resumeBuilderApi';
 import Button from '../../components/ui/Button';

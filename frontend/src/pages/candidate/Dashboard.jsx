@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
 import { useQueries } from '@tanstack/react-query'
-import { jobApi } from '../../services/jobApi'
 import { applicationApi } from '../../services/applicationApi'
 import { savedJobApi } from '../../services/savedJobApi'
 import { interviewApi } from '../../services/interviewApi'

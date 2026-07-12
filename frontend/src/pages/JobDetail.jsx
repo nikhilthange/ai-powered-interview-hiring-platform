@@ -13,7 +13,7 @@ import { cn } from '../lib/utils'
 import { useAuth } from '../hooks/useAuth'
 import {
   MapPin, Briefcase, DollarSign,
-  Share2, Bookmark, ArrowLeft, CheckCircle,
+  Share2, Bookmark, ArrowLeft,
   GraduationCap, Bot, MessageCircle
 } from 'lucide-react'
 

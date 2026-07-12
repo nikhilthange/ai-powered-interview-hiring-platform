@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Building2, Globe, Users, Briefcase, MapPin, ExternalLink, Heart, ArrowLeft, Link as LinkIcon, Star, BadgeCheck, Plus } from 'lucide-react';
+import { Building2, Users, Briefcase, MapPin, ExternalLink, Heart, ArrowLeft, Link as LinkIcon, Star, BadgeCheck, Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../hooks/useAuth';
 import { useMutation } from '@tanstack/react-query';
@@ -20,26 +20,25 @@ const CompanyDetails = () => {
   const [followLoading, setFollowLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('about');
 
-  const fetchCompanyDetails = async () => {
-    try {
-      const response = await companyService.getCompanyById(id);
-      setCompany(response.data.company);
-    } catch (error) {
-      toast.error('Failed to load company details');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const response = await companyService.getCompanyById(id);
+        setCompany(response.data.company);
+      } catch (_error) {
+        toast.error('Failed to load company details');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCompanyDetails();
+  }, [id, toast]);
 
   const messageMutation = useMutation({
     mutationFn: (recruiterId) => chatApi.getOrCreateRoom(recruiterId),
     onSuccess: () => navigate('/chat'),
     onError: () => toast.error('Failed to start conversation.')
   });
-
-  useEffect(() => {
-    fetchCompanyDetails();
-  }, [id]);
 
   useEffect(() => {
     if (user?.followingCompanies && company) {
@@ -66,7 +65,7 @@ const CompanyDetails = () => {
         setCompany(prev => ({ ...prev, followersCount: (prev.followersCount || 0) + 1 }));
         toast.success(`Following ${company.name}`);
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Action failed. Please try again.');
     } finally {
       setFollowLoading(false);

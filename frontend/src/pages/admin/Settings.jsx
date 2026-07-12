@@ -25,7 +25,7 @@ export default function AdminSettings() {
   const { toast } = useToast()
   const [form, setForm] = useState({})
 
-  const { data, isLoading } = useQuery({
+  const { isLoading } = useQuery({
     queryKey: ['admin-settings'],
     queryFn: async () => {
       const res = await adminApi.getSettings()

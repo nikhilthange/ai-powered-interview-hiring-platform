@@ -9,7 +9,7 @@ import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import Modal from '../../components/ui/Modal'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Save, AlertCircle, Plus, X, Sparkles } from 'lucide-react'
+import { ArrowLeft, Save, AlertCircle, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function CreateJob() {

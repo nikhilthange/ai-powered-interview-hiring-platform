@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function ClassicTemplate({ data }) {
   const { personalInfo, summary, experience, education, skills, certifications, achievements, languages, interests, references, sectionOrder } = data;

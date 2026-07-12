@@ -11,10 +11,9 @@ import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonMetrics, SkeletonChart } from '../../components/ui/Skeleton'
 import { Link } from 'react-router-dom'
 import { cn } from '../../lib/utils'
-import { Briefcase, Users, CalendarCheck, TrendingUp, Plus, ArrowRight, Activity, Sparkles, ChevronRight, Target, BarChart3 } from 'lucide-react'
+import { Briefcase, Users, CalendarCheck, TrendingUp, Plus, Activity, ChevronRight, Target, BarChart3 } from 'lucide-react'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line, AreaChart, Area,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
 } from 'recharts'
 
 const containerVariants = {

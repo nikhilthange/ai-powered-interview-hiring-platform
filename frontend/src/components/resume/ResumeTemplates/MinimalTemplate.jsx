@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function MinimalTemplate({ data }) {
   const { personalInfo, summary, experience, education, skills, projects, certifications, achievements, languages, interests, references, sectionOrder } = data;

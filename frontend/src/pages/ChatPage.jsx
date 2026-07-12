@@ -12,7 +12,6 @@ import ChatInput from '../components/chat/ChatInput'
 import { Card, CardContent } from '../components/ui/Card'
 import { SkeletonList } from '../components/ui/Skeleton'
 import Button from '../components/ui/Button'
-import EmptyState from '../components/ui/EmptyState'
 import { MessageCircle, ArrowLeft, MoreHorizontal, Briefcase, Mail, Phone, Video, Search, Edit } from 'lucide-react'
 import { cn } from '../lib/utils'
 
@@ -46,16 +45,15 @@ export default function ChatPage() {
     }
   })
 
-  const allRooms = Array.isArray(roomsData) ? roomsData : []
-  
   const rooms = useMemo(() => {
+    const allRooms = Array.isArray(roomsData) ? roomsData : []
     if (!searchQuery || isSearchingGlobal) return allRooms
     return allRooms.filter((r) => {
       const otherUser = user?._id === r.candidateId?._id ? r.recruiterId : r.candidateId
       const name = otherUser?.name || otherUser?.email?.split('@')[0] || ''
       return name.toLowerCase().includes(searchQuery.toLowerCase())
     })
-  }, [allRooms, searchQuery, isSearchingGlobal, user?._id])
+  }, [roomsData, searchQuery, isSearchingGlobal, user?._id])
 
   useEffect(() => {
     if (!isSearchingGlobal || !searchQuery.trim()) {

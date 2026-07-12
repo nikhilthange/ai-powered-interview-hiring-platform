@@ -12,7 +12,7 @@ import {
   Mic, MicOff, Send, CheckCircle,
   ArrowLeft, Loader2, Sparkles, Brain,
   BarChart3, Star, Target, MessageCircle, StopCircle,
-  Award, Briefcase, Upload, AlertTriangle,
+  Award, Briefcase, AlertTriangle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 

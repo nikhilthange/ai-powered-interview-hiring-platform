@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Building2, MapPin, Users, ChevronRight, Star, BadgeCheck, Filter, X } from 'lucide-react';
+import { Search, Building2, MapPin, Users, ChevronRight, Star, BadgeCheck, Filter } from 'lucide-react';
 import companyService from '../../services/companyService';
 import { toast } from 'react-hot-toast';
-import { getMediaUrl, cn } from '../../lib/utils';
+import { getMediaUrl } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const INDUSTRIES = ['Technology', 'FinTech', 'HealthTech', 'E-commerce', 'SaaS', 'AI', 'EdTech', 'Cybersecurity'];
@@ -43,7 +43,7 @@ const CompaniesList = () => {
       
       setCompanies(compRes.data?.companies || []);
       setRecommended(recRes.data?.companies || []);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to load companies');
     } finally {
       setLoading(false);

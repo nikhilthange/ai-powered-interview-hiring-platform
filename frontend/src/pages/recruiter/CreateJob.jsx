@@ -125,9 +125,10 @@ export default function CreateJob() {
         <p className="text-sm text-[var(--text-secondary)] mt-1">Create a new job listing to find the perfect candidate</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="relative">
           <Input 
+            floating={false}
             label="Job Title" 
             placeholder="e.g. Senior Frontend Developer" 
             value={form.title} 
@@ -239,27 +240,30 @@ export default function CreateJob() {
         <form onSubmit={handleSubmit} className="space-y-6 pt-4 border-t border-[var(--border-color)]">
           <h3 className="font-semibold text-lg text-[var(--text-primary)]">Manual Job Details</h3>
           
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Location" placeholder="e.g. San Francisco, CA or Remote" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} required />
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Input floating={false} label="Location" placeholder="e.g. San Francisco, CA or Remote" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} required />
             <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Job Type</label>
-              <select value={form.jobType} onChange={(e) => setForm({ ...form, jobType: e.target.value })} className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Job Type</label>
+              <select value={form.jobType} onChange={(e) => setForm({ ...form, jobType: e.target.value })} className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm">
                 {['Full-time', 'Part-time', 'Contract', 'Remote'].map((t) => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Experience Level</label>
-              <select value={form.experienceLevel} onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })} className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Experience Level</label>
+              <select value={form.experienceLevel} onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })} className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm">
                 {['Junior', 'Mid', 'Senior'].map((l) => (
                   <option key={l} value={l}>{l}</option>
                 ))}
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Input label="Min Salary (₹)" placeholder="e.g. 50000" type="number" value={form.salaryMin} onChange={(e) => setForm({ ...form, salaryMin: e.target.value })} />
-              <Input label="Max Salary (₹)" placeholder="e.g. 150000" type="number" value={form.salaryMax} onChange={(e) => setForm({ ...form, salaryMax: e.target.value })} />
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Salary Range (₹)</label>
+              <div className="grid grid-cols-2 gap-3">
+                <Input floating={false} placeholder="Min (e.g. 50000)" type="number" value={form.salaryMin} onChange={(e) => setForm({ ...form, salaryMin: e.target.value })} />
+                <Input floating={false} placeholder="Max (e.g. 150000)" type="number" value={form.salaryMax} onChange={(e) => setForm({ ...form, salaryMax: e.target.value })} />
+              </div>
             </div>
           </div>
 

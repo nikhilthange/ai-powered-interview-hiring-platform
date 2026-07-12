@@ -75,7 +75,7 @@ export default function ResumeEditor() {
   if (isLoading || !resumeData) return <SkeletonPage />;
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col -m-6 sm:-m-8">
+    <div className="h-[calc(100vh-4rem)] flex flex-col -m-4 sm:-m-6 lg:-m-8">
       {/* Editor Header */}
       <ResumeToolbar 
         title={resumeData.title}
@@ -86,9 +86,9 @@ export default function ResumeEditor() {
       />
 
       {/* Editor Body */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
         {/* Left Pane - Form */}
-        <div className="w-full lg:w-[45%] h-full border-r border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 sm:p-6">
+        <div className="w-full lg:w-[45%] h-auto lg:h-full shrink-0 border-b lg:border-b-0 lg:border-r border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 sm:p-6">
           <EditorForm 
             resumeData={resumeData} 
             onChange={handleDataChange} 
@@ -97,7 +97,7 @@ export default function ResumeEditor() {
         </div>
 
         {/* Right Pane - Preview */}
-        <div className="hidden lg:block lg:w-[55%] h-full bg-[var(--bg-tertiary)] p-6">
+        <div className="block lg:w-[55%] h-[600px] lg:h-full shrink-0 bg-[var(--bg-tertiary)] p-4 sm:p-6">
           <ResumePreview resumeData={resumeData} />
         </div>
       </div>

@@ -88,9 +88,9 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
                 )}
               </div>
             </Link>
-            <div className="flex items-center gap-2 mt-4">
-              <Link to={`/jobs/${job._id}/apply`}>
-                <Button size="sm">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-4">
+              <Link to={`/jobs/${job._id}/apply`} className="w-full sm:w-auto">
+                <Button size="sm" className="w-full">
                   <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
                   Apply Now
                 </Button>
@@ -100,6 +100,7 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
                 size="sm"
                 onClick={handleSaveClick}
                 disabled={savePending}
+                className="w-full sm:w-auto"
               >
                 <Bookmark className={cn('h-3.5 w-3.5', isSaved && 'fill-current')} aria-hidden="true" />
                 {isSaved ? 'Saved' : 'Save'}

@@ -18,7 +18,16 @@ const Navbar = memo(function Navbar() {
   const { theme, toggleTheme } = useTheme()
   const { toggleSidebar } = useLayout()
   const [profileOpen, setProfileOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const ref = useClickOutside(() => setProfileOpen(false))
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -58,7 +67,10 @@ const Navbar = memo(function Navbar() {
   return (
     <header 
       className={cn(
-        "sticky top-0 z-50 w-full flex h-[72px] items-center justify-between border-b bg-white/70 dark:bg-[#0f172a]/70 backdrop-blur-xl border-[var(--border-color)] px-4 md:px-8 shadow-sm transition-all duration-300"
+        "sticky top-0 z-50 w-full flex h-[72px] items-center justify-between px-4 md:px-8 transition-all duration-300 border-b",
+        scrolled 
+          ? "bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-xl border-[var(--border-color)] shadow-sm"
+          : "bg-white/40 dark:bg-[#0f172a]/40 backdrop-blur-md border-transparent"
       )}
     >
       {/* Left Section */}

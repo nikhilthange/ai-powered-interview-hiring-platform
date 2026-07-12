@@ -308,7 +308,7 @@ export default function FloatingAIChatWidget() {
               fixed z-[70] flex flex-col overflow-hidden bg-[var(--bg-primary)] shadow-2xl border border-[var(--border-color)]
               ${isExpanded 
                 ? 'inset-0 sm:inset-4 sm:rounded-2xl' 
-                : 'bottom-0 right-0 w-full h-[100dvh] sm:bottom-24 sm:right-6 sm:w-[400px] sm:h-[600px] sm:rounded-2xl'}
+                : 'bottom-[10px] right-[10px] w-[calc(100vw-20px)] h-[calc(100dvh-20px)] rounded-2xl md:bottom-24 md:right-6 md:w-[340px] md:h-[600px] lg:w-[380px]'}
             `}
           >
             {/* Header */}

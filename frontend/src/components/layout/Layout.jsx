@@ -69,7 +69,7 @@ function LayoutContent() {
             className={cn(
               'flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300',
               !isLanding && (collapsed ? "lg:ml-[72px]" : "lg:ml-[260px]"),
-              isLanding ? '' : 'p-3 sm:p-4 lg:p-6 pb-20 lg:pb-6'
+              isLanding ? '' : 'px-4 pt-4 sm:p-6 pb-24 lg:pb-8'
             )}
           >
             <div className={cn(isLanding ? 'w-full' : 'mx-auto w-full max-w-7xl')}>

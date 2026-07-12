@@ -288,12 +288,12 @@ export default function FloatingAIChatWidget() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsOpen(true)}
-            className={`fixed bottom-[90px] right-[16px] sm:bottom-[30px] sm:right-[30px] z-[8500] p-4 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 hover:scale-105 hover:shadow-indigo-500/30 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${sidebarOpen ? 'opacity-0 pointer-events-none' : ''}`}
+            className={`fixed bottom-[90px] right-[16px] sm:bottom-[30px] sm:right-[30px] z-[8500] h-14 w-14 sm:h-16 sm:w-16 flex items-center justify-center rounded-full bg-indigo-600 text-white shadow-xl hover:bg-indigo-700 hover:scale-105 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${sidebarOpen ? 'opacity-0 pointer-events-none' : ''}`}
             aria-label="Open AI Career Assistant"
           >
-            <Bot className="h-6 w-6" />
+            <Bot className="h-6 w-6 sm:h-7 sm:w-7" />
             {hasUnread && (
-              <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-red-500 border-2 border-white dark:border-slate-900" />
+              <span className="absolute top-0 right-0 h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-red-500 border-2 border-white dark:border-slate-900" />
             )}
           </motion.button>
         )}

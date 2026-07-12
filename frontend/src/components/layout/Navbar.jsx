@@ -94,23 +94,24 @@ const Navbar = memo(function Navbar() {
 
       {/* Center Section */}
       {isAuthenticated && (
-        <div className="hidden md:flex items-center justify-center flex-1 px-4">
-          <GlobalSearch />
-        </div>
-      )}
-
-      {/* Right Section */}
-      <div className="flex items-center gap-1 md:gap-3 shrink-0">
-        {isAuthenticated && (
-          <div className="md:hidden flex items-center">
+        <>
+          <div className="hidden md:flex items-center justify-center flex-1 px-4">
+            <GlobalSearch />
+          </div>
+          <div className="flex md:hidden items-center justify-center flex-1 px-2">
             <button 
               onClick={() => setMobileSearchOpen(true)}
               className="rounded-xl p-2 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+              aria-label="Open search"
             >
               <Search className="h-5 w-5" />
             </button>
           </div>
-        )}
+        </>
+      )}
+
+      {/* Right Section */}
+      <div className="flex items-center gap-1 md:gap-3 shrink-0">
 
         {isAuthenticated && (
           <motion.button

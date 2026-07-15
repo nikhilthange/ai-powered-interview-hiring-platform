@@ -2,7 +2,7 @@ const Job = require('../models/Job');
 const Company = require('../models/Company');
 const User = require('../models/User');
 const Profile = require('../models/Profile');
-const catchAsync = require('../utils/catchAsync');
+const catchAsync = require('../utils/asyncHandler');
 
 exports.globalSearch = catchAsync(async (req, res, next) => {
   const { q } = req.query;

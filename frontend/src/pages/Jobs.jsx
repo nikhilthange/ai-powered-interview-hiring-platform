@@ -122,6 +122,7 @@ const FiltersPanel = memo(function FiltersPanel({ filters, setFilters, jobTypes,
   return (
     <div className={cn(
       'w-full lg:w-64 shrink-0 space-y-4',
+      'lg:sticky lg:top-[88px] lg:self-start lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto scrollbar-none',
       showFilters ? 'block' : 'hidden lg:block'
     )}>
       <Card>

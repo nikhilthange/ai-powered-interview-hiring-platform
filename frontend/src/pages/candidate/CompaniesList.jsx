@@ -171,7 +171,7 @@ const CompaniesList = () => {
               initial={{ opacity: 0, x: -20, height: 0 }}
               animate={{ opacity: 1, x: 0, height: 'auto' }}
               exit={{ opacity: 0, x: -20, height: 0 }}
-              className="w-full md:w-64 shrink-0 space-y-6"
+              className="w-full md:w-64 shrink-0 space-y-6 md:sticky md:top-[88px] md:self-start md:max-h-[calc(100vh-100px)] md:overflow-y-auto scrollbar-none"
             >
               <div className="bg-[var(--bg-primary)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm">
                 <div className="flex items-center justify-between mb-4">

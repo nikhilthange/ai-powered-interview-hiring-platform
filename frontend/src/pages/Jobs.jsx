@@ -327,8 +327,6 @@ export default function Jobs() {
     isLoading: isFetching,
   })
 
-  const handleSearchClear = useCallback(() => setSearch(''), [])
-
   const jobTypes = useMemo(() =>
     [...new Set(jobs.map((j) => j.jobType).filter(Boolean))],
     [jobs]
@@ -406,7 +404,6 @@ export default function Jobs() {
               <span className="flex h-2 w-2 rounded-full bg-indigo-500" />
             )}
           </Button>
-        </div>
         </div>
       </div>
 

@@ -149,6 +149,7 @@ const CompaniesList = () => {
             View Profile <ChevronRight className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" />
           </span>
         </div>
+      </div>
       </Link>
     </motion.div>
   );

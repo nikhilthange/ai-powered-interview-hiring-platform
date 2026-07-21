@@ -1,4 +1,4 @@
-import { memo, useMemo, useEffect } from 'react'
+import { memo, useMemo, useEffect, useState, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
@@ -8,7 +8,7 @@ import { getMediaUrl, cn } from '../../lib/utils'
 import {
   LayoutDashboard, Briefcase, FileText, Bookmark, MessageCircle,
   GraduationCap, Search, Target, BarChart3,
-  Users, X, Calendar, ChevronLeft, Bell,
+  Users, X, Calendar, ChevronLeft, Bell, ChevronDown,
   User, LogOut, Settings, Sparkles,
   ScrollText, Megaphone, Cpu, Building2
 } from 'lucide-react'
@@ -57,6 +57,35 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
   )
   const avatarUrl = getMediaUrl(profileData?.data?.profile?.avatarUrl)
 
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const profileMenuRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false)
+      }
+    }
+    
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsProfileMenuOpen(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [])
+  
+  useEffect(() => {
+    setIsProfileMenuOpen(false)
+  }, [location.pathname])
+
   const links = useMemo(() => {
     if (!user) return []
     switch (user.role) {
@@ -77,10 +106,7 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
     }
   }, [open])
 
-  const bottomLinks = useMemo(() => [
-    { to: user?.role === 'recruiter' ? '/recruiter/profile' : '/profile', label: 'Profile', icon: User },
-    { to: '/notifications', label: 'Notifications', icon: Bell },
-  ], [user?.role])
+
 
   return (
     <>
@@ -158,63 +184,84 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
           })}
         </nav>
 
-        <div className="border-t border-[var(--border-color)] p-3 space-y-1">
-          {bottomLinks.map((link) => {
-            const Icon = link.icon
-            const isActive = location.pathname === link.to
-            return (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={onClose}
-                className={cn(
-                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                  collapsed && 'justify-center px-2',
-                  isActive
-                    ? 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-indigo-500/10 dark:text-indigo-400'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
-                )}
-                title={collapsed ? link.label : undefined}
-              >
-                <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-                {!collapsed && <span>{link.label}</span>}
-              </Link>
-            )
-          })}
-          <button
-            onClick={logout}
-            className={cn(
-              'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30',
-              collapsed && 'justify-center px-2'
-            )}
-            title={collapsed ? 'Logout' : undefined}
-          >
-            <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
-            {!collapsed && <span>Logout</span>}
-          </button>
-        </div>
+        {user && (
+          <div className="relative border-t border-[var(--border-color)] p-3" ref={profileMenuRef}>
+            <AnimatePresence>
+              {isProfileMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className={cn(
+                    "absolute z-50 rounded-xl border border-[var(--border-color)] bg-white/90 dark:bg-[#1e293b]/90 backdrop-blur-md p-1.5 shadow-xl",
+                    collapsed ? "left-full bottom-0 ml-2 w-56" : "bottom-full mb-2 left-0 w-full"
+                  )}
+                >
+                  <Link
+                    to={user?.role === 'recruiter' ? '/recruiter/profile' : '/profile'}
+                    onClick={() => { onClose?.(); setIsProfileMenuOpen(false); }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                  >
+                    <User className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>My Profile</span>
+                  </Link>
+                  <Link
+                    to="/notifications"
+                    onClick={() => { onClose?.(); setIsProfileMenuOpen(false); }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                  >
+                    <Bell className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>Notifications</span>
+                  </Link>
+                  <div className="my-1 border-t border-[var(--border-color)]" />
+                  <button
+                    onClick={() => { logout(); setIsProfileMenuOpen(false); }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>Logout</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        {!collapsed && user && (
-          <div className="border-t border-[var(--border-color)] p-3">
-            <Link
-              to={user?.role === 'recruiter' ? '/recruiter/profile' : '/profile'}
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            <button
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]",
+                isProfileMenuOpen && "bg-[var(--bg-tertiary)]",
+                collapsed && "justify-center px-2"
+              )}
+              aria-expanded={isProfileMenuOpen}
+              aria-haspopup="true"
             >
-              <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm">
+              <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm flex items-center justify-center">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-white font-semibold text-xs">
+                  <span className="text-white font-semibold text-xs">
                     {(user?.name?.charAt(0) || 'U').toUpperCase()}
-                  </div>
+                  </span>
                 )}
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-[var(--text-primary)]">{user?.name || user?.email?.split('@')[0] || 'User'}</p>
-                <p className="truncate text-xs text-[var(--text-tertiary)] capitalize">{user?.role}</p>
-              </div>
-            </Link>
+              {!collapsed && (
+                <>
+                  <div className="min-w-0 flex-1 text-left">
+                    <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+                      {user?.name || user?.email?.split('@')[0] || 'User'}
+                    </p>
+                    <p className="truncate text-xs text-[var(--text-tertiary)] capitalize">
+                      {user?.role}
+                    </p>
+                  </div>
+                  <ChevronDown className={cn(
+                    "h-4 w-4 shrink-0 transition-transform duration-200",
+                    isProfileMenuOpen && "rotate-180"
+                  )} />
+                </>
+              )}
+            </button>
           </div>
         )}
       </aside>

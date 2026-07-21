@@ -26,8 +26,8 @@ const containerVariants = {
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0 },
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } },
 }
 
 const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, savePending }) {
@@ -50,7 +50,7 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
 
   return (
     <motion.div variants={itemVariants}>
-      <div className="surface-card p-5 group cursor-pointer h-full flex flex-col justify-between">
+      <div className="bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] p-5 group cursor-pointer h-full flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300">
         <div className="flex items-start gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] overflow-hidden font-bold text-lg">
             {job.companyId?.logo && job.companyId.logo !== 'default-company-logo.png' ? (
@@ -118,7 +118,7 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
   )
 })
 
-const FiltersPanel = memo(function FiltersPanel({ filters, setFilters, jobTypes, expLevels, showFilters, setShowFilters }) {
+const FiltersPanel = memo(function FiltersPanel({ search, setSearch, filters, setFilters, jobTypes, expLevels, showFilters, setShowFilters }) {
   return (
     <div className={cn(
       'w-full lg:w-64 shrink-0 space-y-4',
@@ -130,11 +130,34 @@ const FiltersPanel = memo(function FiltersPanel({ filters, setFilters, jobTypes,
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-[var(--text-primary)] text-sm">Filters</h3>
             <button
-              onClick={() => { setFilters({}); setShowFilters(false) }}
+              onClick={() => { setFilters({}); setSearch(''); setShowFilters(false) }}
               className="text-xs text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors"
             >
               Clear all
             </button>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Search</label>
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" aria-hidden="true" />
+              <input
+                type="text"
+                placeholder="Title, company..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search jobs"
+                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-9 pr-8 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all shadow-sm"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  <X className="h-3 w-3" aria-hidden="true" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div>
@@ -384,31 +407,13 @@ export default function Jobs() {
             )}
           </Button>
         </div>
-      </div>
-
-      <div className="relative group">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" aria-hidden="true" />
-        <input
-          type="text"
-          placeholder="Search by title, company, or location..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          aria-label="Search jobs"
-          className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-12 pr-12 py-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all shadow-sm"
-        />
-        {search && (
-          <button
-            onClick={handleSearchClear}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-            aria-label="Clear search"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        )}
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
         <FiltersPanel
+          search={search}
+          setSearch={setSearch}
           filters={filters}
           setFilters={handleSetFilters}
           jobTypes={jobTypes}
@@ -419,21 +424,62 @@ export default function Jobs() {
         />
 
         <div className="flex-1 min-w-0 space-y-3">
-          <div className="sticky top-[88px] z-10 flex items-center justify-between mb-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 border-b border-[var(--border-color)] -mx-2 px-2 rounded-t-xl transition-all">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-              {jobs.length} Jobs <span className="text-sm font-normal text-[var(--text-tertiary)] ml-2">Found</span>
-            </h2>
-            <div className="text-sm text-[var(--text-secondary)] font-medium cursor-pointer flex items-center gap-1 hover:text-[var(--text-primary)] transition-colors">
-              Sort by: <span className="text-[var(--text-primary)] font-semibold">Recommended</span>
-              <svg className="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+          <div className="sticky top-[88px] z-10 flex flex-col gap-3 mb-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 border-b border-[var(--border-color)] -mx-2 px-2 rounded-t-xl transition-all">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+                {jobs.length} Jobs <span className="text-sm font-normal text-[var(--text-tertiary)] ml-2">Found</span>
+              </h2>
+              <div className="text-sm text-[var(--text-secondary)] font-medium cursor-pointer flex items-center gap-1 hover:text-[var(--text-primary)] transition-colors">
+                Sort by: <span className="text-[var(--text-primary)] font-semibold">Recommended</span>
+                <svg className="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
             </div>
+            
+            {(search || Object.keys(filters).length > 0) && (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {search && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-xs font-medium border border-indigo-100 dark:border-indigo-500/20 shadow-sm">
+                    "{search}"
+                    <button onClick={() => setSearch('')} className="hover:text-indigo-900 dark:hover:text-indigo-200 transition-colors"><X className="h-3 w-3"/></button>
+                  </span>
+                )}
+                {filters.type && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-xs font-medium border border-indigo-100 dark:border-indigo-500/20 shadow-sm">
+                    {filters.type}
+                    <button onClick={() => handleSetFilters(f => ({...f, type: undefined}))} className="hover:text-indigo-900 dark:hover:text-indigo-200 transition-colors"><X className="h-3 w-3"/></button>
+                  </span>
+                )}
+                {filters.level && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-xs font-medium border border-indigo-100 dark:border-indigo-500/20 shadow-sm">
+                    {filters.level}
+                    <button onClick={() => handleSetFilters(f => ({...f, level: undefined}))} className="hover:text-indigo-900 dark:hover:text-indigo-200 transition-colors"><X className="h-3 w-3"/></button>
+                  </span>
+                )}
+                {filters.location && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-xs font-medium border border-indigo-100 dark:border-indigo-500/20 shadow-sm">
+                    {filters.location}
+                    <button onClick={() => handleSetFilters(f => ({...f, location: undefined}))} className="hover:text-indigo-900 dark:hover:text-indigo-200 transition-colors"><X className="h-3 w-3"/></button>
+                  </span>
+                )}
+                <button onClick={() => { setSearch(''); handleSetFilters({}) }} className="text-xs font-medium text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:underline ml-1 transition-colors">
+                  Clear all filters
+                </button>
+              </div>
+            )}
           </div>
           {jobs.length === 0 ? (
-            <EmptyState
-              icon={Search}
-              title="No jobs found"
-              description="Try adjusting your search or filters"
-            />
+            <div className="py-12 flex flex-col items-center text-center bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] shadow-sm">
+              <div className="h-20 w-20 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center mb-4">
+                <Search className="h-8 w-8 text-indigo-500" />
+              </div>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">No jobs found</h3>
+              <p className="text-[var(--text-secondary)] text-sm max-w-sm mb-6">
+                We couldn't find any jobs matching your criteria. Try adjusting your filters or search terms.
+              </p>
+              <Button onClick={() => { setSearch(''); handleSetFilters({}) }} variant="outline">
+                Clear Filters
+              </Button>
+            </div>
           ) : (
             <>
               {jobs.map((job) => (

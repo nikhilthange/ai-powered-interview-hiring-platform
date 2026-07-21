@@ -126,7 +126,7 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
 
       <aside
         className={cn(
-          'fixed left-0 flex flex-col border-r bg-white dark:bg-[#0f172a] transition-all duration-300',
+          'fixed left-0 flex flex-col border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition-all duration-300',
           'top-0 h-[100vh] z-[10000] w-[85%] max-w-[340px] rounded-r-2xl shadow-2xl pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]',
           'lg:top-[64px] lg:h-[calc(100vh-64px)] lg:z-40 lg:rounded-none lg:shadow-none lg:pt-0 lg:pb-0',
           collapsed ? 'lg:w-[72px]' : 'lg:w-[260px]',
@@ -140,12 +140,12 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
         )}>
           <button
             onClick={onToggle}
-            className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] transition-colors hidden lg:block"
+            className="rounded-lg p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors hidden lg:block"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} aria-hidden="true" />
           </button>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] lg:hidden transition-colors" aria-label="Close sidebar">
+          <button onClick={onClose} className="rounded-lg p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 lg:hidden transition-colors" aria-label="Close sidebar">
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
@@ -163,8 +163,8 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
                   'relative flex items-center gap-3 rounded-[14px] px-3.5 py-2.5 text-sm font-medium transition-all duration-200',
                   collapsed && 'justify-center px-2',
                   isActive
-                    ? 'text-[var(--color-primary-700)] dark:text-indigo-300 font-semibold'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+                    ? 'text-indigo-700 dark:text-indigo-300 font-semibold'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100'
                 )}
                 aria-current={isActive ? 'page' : undefined}
                 title={collapsed ? link.label : undefined}
@@ -172,12 +172,12 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
                 {isActive && (
                   <motion.div
                     layoutId="sidebarActiveIndicator"
-                    className="absolute inset-0 rounded-[14px] bg-[var(--color-primary-50)] dark:bg-indigo-500/10 border border-[var(--color-primary-100)] dark:border-indigo-500/20 shadow-sm z-0"
+                    className="absolute inset-0 rounded-[14px] bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 shadow-sm z-0"
                     initial={false}
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
-                <Icon className={cn('shrink-0 relative z-10', collapsed ? 'h-5 w-5' : 'h-5 w-5', isActive && 'text-[var(--color-primary-600)] dark:text-indigo-400')} aria-hidden="true" />
+                <Icon className={cn('shrink-0 relative z-10 h-5 w-5', isActive && 'text-indigo-600 dark:text-indigo-400')} aria-hidden="true" />
                 {!collapsed && <span className="relative z-10">{link.label}</span>}
               </Link>
             )
@@ -185,7 +185,7 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
         </nav>
 
         {user && (
-          <div className="relative border-t border-[var(--border-color)] p-3" ref={profileMenuRef}>
+          <div className="relative border-t border-gray-200 dark:border-slate-800 p-3" ref={profileMenuRef}>
             <AnimatePresence>
               {isProfileMenuOpen && (
                 <motion.div
@@ -194,14 +194,14 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
                   exit={{ opacity: 0, scale: 0.95, y: 10 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
                   className={cn(
-                    "absolute z-50 rounded-xl border border-[var(--border-color)] bg-white/90 dark:bg-[#1e293b]/90 backdrop-blur-md p-1.5 shadow-xl",
+                    "absolute z-50 rounded-xl border border-gray-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-1.5 shadow-xl",
                     collapsed ? "left-full bottom-0 ml-2 w-56" : "bottom-full mb-2 left-0 w-full"
                   )}
                 >
                   <Link
                     to={user?.role === 'recruiter' ? '/recruiter/profile' : '/profile'}
                     onClick={() => { onClose?.(); setIsProfileMenuOpen(false); }}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   >
                     <User className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span>My Profile</span>
@@ -209,12 +209,12 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
                   <Link
                     to="/notifications"
                     onClick={() => { onClose?.(); setIsProfileMenuOpen(false); }}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   >
                     <Bell className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span>Notifications</span>
                   </Link>
-                  <div className="my-1 border-t border-[var(--border-color)]" />
+                  <div className="my-1 border-t border-gray-200 dark:border-slate-800" />
                   <button
                     onClick={() => { logout(); setIsProfileMenuOpen(false); }}
                     className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
@@ -229,8 +229,8 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
             <button
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               className={cn(
-                "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-500)]",
-                isProfileMenuOpen && "bg-[var(--bg-tertiary)]",
+                "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+                isProfileMenuOpen && "bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-gray-100",
                 collapsed && "justify-center px-2"
               )}
               aria-expanded={isProfileMenuOpen}
@@ -248,10 +248,10 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
               {!collapsed && (
                 <>
                   <div className="min-w-0 flex-1 text-left">
-                    <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+                    <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
                       {user?.name || user?.email?.split('@')[0] || 'User'}
                     </p>
-                    <p className="truncate text-xs text-[var(--text-tertiary)] capitalize">
+                    <p className="truncate text-xs text-gray-500 dark:text-gray-400 capitalize">
                       {user?.role}
                     </p>
                   </div>

@@ -150,7 +150,7 @@ const Sidebar = memo(function Sidebar({ open, onClose, collapsed, onToggle }) {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-thin">
+        <nav className="flex-1 overflow-hidden p-3 space-y-1">
           {links.map((link) => {
             const Icon = link.icon
             const isActive = location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to + '/'))

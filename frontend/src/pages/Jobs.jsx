@@ -125,7 +125,7 @@ const FiltersPanel = memo(function FiltersPanel({ filters, setFilters, jobTypes,
       'lg:sticky lg:top-[88px] lg:self-start lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto scrollbar-none',
       showFilters ? 'block' : 'hidden lg:block'
     )}>
-      <Card>
+      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-sm border border-[var(--border-color)] transition-all duration-300">
         <CardContent className="p-5 space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-[var(--text-primary)] text-sm">Filters</h3>
@@ -361,7 +361,7 @@ export default function Jobs() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-6"
+      className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 min-h-screen"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="min-w-0">
@@ -419,6 +419,15 @@ export default function Jobs() {
         />
 
         <div className="flex-1 min-w-0 space-y-3">
+          <div className="sticky top-[88px] z-10 flex items-center justify-between mb-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 border-b border-[var(--border-color)] -mx-2 px-2 rounded-t-xl transition-all">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+              {jobs.length} Jobs <span className="text-sm font-normal text-[var(--text-tertiary)] ml-2">Found</span>
+            </h2>
+            <div className="text-sm text-[var(--text-secondary)] font-medium cursor-pointer flex items-center gap-1 hover:text-[var(--text-primary)] transition-colors">
+              Sort by: <span className="text-[var(--text-primary)] font-semibold">Recommended</span>
+              <svg className="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
           {jobs.length === 0 ? (
             <EmptyState
               icon={Search}

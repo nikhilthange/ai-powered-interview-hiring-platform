@@ -143,7 +143,7 @@ const CompaniesList = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen">
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
@@ -173,7 +173,7 @@ const CompaniesList = () => {
               exit={{ opacity: 0, x: -20, height: 0 }}
               className="w-full md:w-64 shrink-0 space-y-6 md:sticky md:top-[88px] md:self-start md:max-h-[calc(100vh-100px)] md:overflow-y-auto scrollbar-none"
             >
-              <div className="bg-[var(--bg-primary)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm">
+              <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-[var(--border-color)] shadow-sm transition-all duration-300">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-[var(--text-primary)]">Filters</h3>
                   {(filters.industry.length > 0 || filters.size.length > 0 || filters.location || filters.isVerified || searchTerm) && (
@@ -341,10 +341,14 @@ const CompaniesList = () => {
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between mb-4">
+              <div className="sticky top-[88px] z-10 flex items-center justify-between mb-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 border-b border-[var(--border-color)] -mx-2 px-2 rounded-t-xl transition-all">
                 <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                   All Companies <span className="text-sm font-normal text-[var(--text-tertiary)] ml-2">({companies.length})</span>
                 </h2>
+                <div className="text-sm text-[var(--text-secondary)] font-medium cursor-pointer flex items-center gap-1 hover:text-[var(--text-primary)] transition-colors">
+                  Sort by: <span className="text-[var(--text-primary)] font-semibold">Recommended</span>
+                  <svg className="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {companies.map((company) => (

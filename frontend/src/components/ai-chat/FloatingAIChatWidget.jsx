@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { aiChatApi } from '../../services/aiChatApi'
 import { useAuth } from '../../hooks/useAuth'
-import { useLayout } from '../../context/LayoutContext'
+import { cn } from '../../lib/utils'
 import AIChatSidebar from './AIChatSidebar'
 import AIChatMessage from './AIChatMessage'
 import AIChatInput from './AIChatInput'
@@ -44,7 +44,6 @@ function ChatSkeleton() {
 
 export default function FloatingAIChatWidget() {
   const { user } = useAuth()
-  const { sidebarOpen } = useLayout()
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()

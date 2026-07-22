@@ -1,5 +1,4 @@
 import { Outlet, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
 import BottomNav from './BottomNav'
@@ -23,12 +22,6 @@ function RouteAnnouncer() {
 }
 
 const authPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/verify-email-prompt']
-
-const pageVariants = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1, transition: { duration: 0.25, ease: 'easeOut' } },
-  exit: { opacity: 0, transition: { duration: 0.15 } },
-}
 
 function LayoutContent() {
   const { sidebarOpen, collapsed, closeSidebar, toggleCollapsed } = useLayout()

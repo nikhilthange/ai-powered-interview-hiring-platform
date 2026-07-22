@@ -175,7 +175,7 @@ const CompaniesList = () => {
         </button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="flex flex-col md:flex-row gap-8">
         {/* Left Sidebar - Filters */}
         <AnimatePresence>
           {(showMobileFilters || window.innerWidth >= 768) && (

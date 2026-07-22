@@ -403,7 +403,7 @@ export default function Jobs() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6">
         <FiltersPanel
           search={search}
           setSearch={setSearch}

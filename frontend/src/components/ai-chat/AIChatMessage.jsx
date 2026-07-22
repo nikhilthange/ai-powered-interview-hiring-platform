@@ -163,7 +163,7 @@ function AIChatMessageInner({ message, isStreaming, onRegenerate }) {
         isUser ? 'flex flex-col items-end' : ''
       )}>
         <div className={cn(
-          'rounded-2xl px-4 py-3',
+          'rounded-2xl px-4 py-3 min-w-0 max-w-full break-words',
           isUser
             ? 'bg-indigo-500 text-white'
             : 'bg-[var(--bg-tertiary)]'

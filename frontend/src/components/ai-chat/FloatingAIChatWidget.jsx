@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { aiChatApi } from '../../services/aiChatApi'
@@ -278,7 +279,7 @@ export default function FloatingAIChatWidget() {
 
   if (!user) return null;
 
-  return (
+  return createPortal(
     <>
       {/* Floating Action Button */}
       <AnimatePresence>
@@ -288,12 +289,12 @@ export default function FloatingAIChatWidget() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsOpen(true)}
-            className={`fixed bottom-[90px] right-[16px] sm:bottom-[30px] sm:right-[30px] z-[8500] h-14 w-14 sm:h-16 sm:w-16 flex items-center justify-center rounded-full bg-indigo-600 text-white shadow-xl hover:bg-indigo-700 hover:scale-105 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${sidebarOpen ? 'opacity-0 pointer-events-none' : ''}`}
+            className="fixed bottom-6 right-6 z-[99998] h-14 w-14 sm:h-16 sm:w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             aria-label="Open AI Career Assistant"
           >
             <Bot className="h-6 w-6 sm:h-7 sm:w-7" />
             {hasUnread && (
-              <span className="absolute top-0 right-0 h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-red-500 border-2 border-white dark:border-slate-900" />
+              <span className="absolute top-0 right-0 h-3.5 w-3.5 rounded-full bg-red-500 border-2 border-white dark:border-slate-900" />
             )}
           </motion.button>
         )}
@@ -303,18 +304,19 @@ export default function FloatingAIChatWidget() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95, transition: { duration: 0.2 } }}
-            className={`
-              fixed z-[70] flex flex-col overflow-hidden bg-[var(--bg-primary)] shadow-2xl border border-[var(--border-color)]
-              ${isExpanded 
-                ? 'inset-0 sm:inset-4 sm:rounded-2xl' 
-                : 'bottom-[10px] right-[10px] w-[calc(100%-20px)] h-[calc(100dvh-20px)] rounded-2xl md:bottom-24 md:right-6 md:w-[340px] md:h-[600px] lg:w-[380px]'}
-            `}
+            exit={{ opacity: 0, y: 20, scale: 0.98, transition: { duration: 0.2 } }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className={cn(
+              'fixed z-[99999] flex flex-col overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-2xl border border-[var(--border-color)] transition-all duration-200',
+              isExpanded
+                ? 'inset-3 md:inset-6 rounded-2xl md:rounded-3xl'
+                : 'bottom-6 right-6 w-[calc(100vw-32px)] md:w-[360px] lg:w-[390px] 2xl:w-[420px] max-w-[calc(100vw-32px)] h-[min(700px,calc(100vh-100px))] max-h-[calc(100vh-100px)] rounded-2xl max-md:fixed max-md:inset-0 max-md:w-full max-md:h-[100dvh] max-md:max-h-[100dvh] max-md:rounded-none max-md:bottom-0 max-md:right-0'
+            )}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-sm shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-600 via-indigo-600 to-purple-600 text-white shadow-sm shrink-0 h-14">
               <div className="flex items-center gap-2">
                 {showHistory ? (
                   <button onClick={() => setShowHistory(false)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-white/20 transition-colors">
@@ -323,7 +325,7 @@ export default function FloatingAIChatWidget() {
                 ) : (
                   <Bot className="h-6 w-6 text-indigo-200" />
                 )}
-                <h2 className="font-semibold">{showHistory ? 'Conversation History' : 'AI Assistant'}</h2>
+                <h2 className="font-semibold text-base">{showHistory ? 'Conversation History' : 'AI Assistant'}</h2>
               </div>
               <div className="flex items-center gap-1">
                 {!showHistory && (
@@ -353,9 +355,9 @@ export default function FloatingAIChatWidget() {
             </div>
 
             {/* Body */}
-            <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden bg-[var(--bg-secondary)]">
+            <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col bg-[var(--bg-secondary)]">
               {showHistory ? (
-                <div className="flex-1 overflow-y-auto w-full [&_>_div]:w-full">
+                <div className="flex-1 min-h-0 overflow-y-auto w-full [&_>_div]:w-full scrollbar-thin">
                    <AIChatSidebar
                     conversations={conversations}
                     activeId={activeId}
@@ -371,16 +373,16 @@ export default function FloatingAIChatWidget() {
                   />
                 </div>
               ) : (
-                <div ref={chatContainerRef} className="flex-1 overflow-y-auto bg-[var(--bg-primary)]">
+                <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto bg-[var(--bg-primary)] p-4 space-y-4 scrollbar-thin">
                   {isLoadingMessages && <ChatSkeleton />}
 
                   {!isLoadingMessages && showPrompts && (
-                    <div className="flex flex-col items-center justify-center min-h-full px-4 py-8">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/30 mb-4">
+                    <div className="flex flex-col items-center justify-center min-h-full px-2 py-6">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/30 mb-3">
                         <Bot className="h-6 w-6 text-indigo-500" />
                       </div>
-                      <h3 className="font-medium text-[var(--text-primary)] mb-1">How can I help?</h3>
-                      <p className="text-xs text-[var(--text-secondary)] text-center mb-6 max-w-[240px]">
+                      <h3 className="font-semibold text-[var(--text-primary)] mb-1 text-base">How can I help?</h3>
+                      <p className="text-xs text-[var(--text-secondary)] text-center mb-5 max-w-[240px]">
                         Get help with resumes, interviews, or career advice.
                       </p>
                       <div className="w-full">
@@ -397,7 +399,7 @@ export default function FloatingAIChatWidget() {
                   )}
 
                   {allMessages.length > 0 && (
-                    <div className="px-3 py-4 space-y-4">
+                    <div className="space-y-4">
                       {allMessages.map((msg) => (
                         <AIChatMessage
                           key={msg._id}
@@ -422,7 +424,7 @@ export default function FloatingAIChatWidget() {
                   )}
 
                   {streamError && (
-                    <div className="px-3 pb-2">
+                    <div className="pb-2">
                       <div className="flex items-center gap-2 p-2.5 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/30">
                         <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
                         <p className="text-xs text-red-600 dark:text-red-400 flex-1">{streamError}</p>
@@ -445,7 +447,7 @@ export default function FloatingAIChatWidget() {
 
             {/* Footer Input */}
             {!showHistory && (
-              <div className="p-3 bg-[var(--bg-secondary)] border-t border-[var(--border-color)] shrink-0">
+              <div className="p-3 bg-[var(--bg-secondary)] border-t border-[var(--border-color)] shrink-0 pb-[calc(12px+env(safe-area-inset-bottom))]">
                 <AIChatInput
                   onSend={handleSend}
                   onStop={handleStop}
@@ -460,6 +462,7 @@ export default function FloatingAIChatWidget() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </>,
+    document.body
   )
 }

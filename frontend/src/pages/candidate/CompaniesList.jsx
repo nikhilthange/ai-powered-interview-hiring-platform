@@ -155,8 +155,8 @@ const CompaniesList = () => {
   );
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen">
-      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="w-full h-full flex flex-col overflow-hidden space-y-4">
+      <div className="mb-2 shrink-0 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
             Discover Companies
@@ -175,14 +175,14 @@ const CompaniesList = () => {
         </button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="flex flex-col md:flex-row gap-8 flex-1 min-h-0 overflow-hidden items-stretch">
         {/* Left Sidebar - Filters */}
         <AnimatePresence>
           {(showMobileFilters || window.innerWidth >= 768) && (
             <aside 
-              className="w-full md:w-64 shrink-0"
+              className="w-full md:w-64 shrink-0 md:h-full md:overflow-y-auto scrollbar-none pb-4"
             >
-              <div className="md:sticky md:top-[88px] self-start h-fit space-y-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-[var(--border-color)] shadow-sm transition-all duration-300">
+              <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-[var(--border-color)] shadow-sm transition-all duration-300">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-[var(--text-primary)]">Filters</h3>
                   {(filters.industry.length > 0 || filters.size.length > 0 || filters.location || filters.isVerified || searchTerm) && (
@@ -299,7 +299,7 @@ const CompaniesList = () => {
         </AnimatePresence>
 
         {/* Right Content - Grid */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 h-full overflow-y-auto space-y-4 pr-1 scrollbar-thin">
           
           {/* Recommendations Block (only show on page 1 without filters for cleaner UX) */}
           {recommended.length > 0 && !searchTerm && filters.industry.length === 0 && (

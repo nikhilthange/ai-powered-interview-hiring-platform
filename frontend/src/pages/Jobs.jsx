@@ -121,10 +121,11 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
 const FiltersPanel = memo(function FiltersPanel({ search, setSearch, filters, setFilters, jobTypes, expLevels, showFilters, setShowFilters }) {
   return (
     <aside className={cn(
-      'w-full lg:w-80 shrink-0 lg:h-full lg:overflow-y-auto scrollbar-none pb-4',
+      'w-full lg:w-80 shrink-0',
       showFilters ? 'block' : 'hidden lg:block'
     )}>
-      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-sm border border-[var(--border-color)] transition-all duration-300">
+      <div className="sticky top-24 self-start space-y-4">
+        <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-sm border border-[var(--border-color)] transition-all duration-300">
           <CardContent className="p-5 space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-[var(--text-primary)] text-sm">Filters</h3>
@@ -226,6 +227,7 @@ const FiltersPanel = memo(function FiltersPanel({ search, setSearch, filters, se
             </div>
           </CardContent>
         </Card>
+      </div>
     </aside>
   )
 })
@@ -377,8 +379,8 @@ export default function Jobs() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+    <div className="w-full space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] truncate">Find Jobs</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
@@ -401,7 +403,7 @@ export default function Jobs() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0 overflow-hidden items-stretch">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         <FiltersPanel
           search={search}
           setSearch={setSearch}
@@ -414,7 +416,7 @@ export default function Jobs() {
           hasActiveFilters={hasActiveFilters}
         />
 
-        <main className="flex-1 min-w-0 h-full overflow-y-auto space-y-3 pr-1 scrollbar-thin">
+        <main className="flex-1 min-w-0 space-y-3">
           <div className="flex flex-col gap-3 mb-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 border-b border-[var(--border-color)] -mx-2 px-2 rounded-t-xl transition-all">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">

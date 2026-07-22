@@ -67,12 +67,12 @@ function LayoutContent() {
             role="region"
             aria-label="Main content"
             className={cn(
-              'flex-1 min-w-0 max-w-full lg:h-[calc(100vh-64px)] lg:overflow-hidden flex flex-col transition-all duration-300',
+              'flex-1 min-w-0 max-w-full transition-all duration-300',
               !isLanding && (collapsed ? "lg:ml-[72px]" : "lg:ml-[260px]"),
               isLanding ? '' : 'px-4 pt-4 sm:p-6 pb-24 lg:pb-8'
             )}
           >
-            <div className={cn(isLanding ? 'w-full' : 'mx-auto w-full max-w-[1440px] h-full flex flex-col flex-1 min-h-0')}>
+            <div className={cn(isLanding ? 'w-full' : 'mx-auto w-full max-w-[1440px]')}>
               <Outlet />
             </div>
           </main>

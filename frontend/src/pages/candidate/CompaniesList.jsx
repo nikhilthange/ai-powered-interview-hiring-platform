@@ -179,10 +179,7 @@ const CompaniesList = () => {
         {/* Left Sidebar - Filters */}
         <AnimatePresence>
           {(showMobileFilters || window.innerWidth >= 768) && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <aside 
               className="w-full md:w-64 shrink-0"
             >
               <div className="md:sticky md:top-[88px] self-start h-fit space-y-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-[var(--border-color)] shadow-sm transition-all duration-300">
@@ -297,12 +294,12 @@ const CompaniesList = () => {
                    </label>
                 </div>
               </div>
-            </motion.div>
+            </aside>
           )}
         </AnimatePresence>
 
         {/* Right Content - Grid */}
-        <div className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0">
           
           {/* Recommendations Block (only show on page 1 without filters for cleaner UX) */}
           {recommended.length > 0 && !searchTerm && filters.industry.length === 0 && (
@@ -411,7 +408,7 @@ const CompaniesList = () => {
               </motion.div>
             </>
           )}
-        </div>
+        </main>
       </div>
     </div>
   );

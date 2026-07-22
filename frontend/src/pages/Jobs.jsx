@@ -120,7 +120,7 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
 
 const FiltersPanel = memo(function FiltersPanel({ search, setSearch, filters, setFilters, jobTypes, expLevels, showFilters, setShowFilters }) {
   return (
-    <div className={cn(
+    <aside className={cn(
       'w-full lg:w-80 shrink-0',
       showFilters ? 'block' : 'hidden lg:block'
     )}>
@@ -228,7 +228,7 @@ const FiltersPanel = memo(function FiltersPanel({ search, setSearch, filters, se
           </CardContent>
         </Card>
       </div>
-    </div>
+    </aside>
   )
 })
 
@@ -379,12 +379,7 @@ export default function Jobs() {
   }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 min-h-screen"
-    >
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] truncate">Find Jobs</h1>
@@ -421,7 +416,7 @@ export default function Jobs() {
           hasActiveFilters={hasActiveFilters}
         />
 
-        <div className="flex-1 min-w-0 space-y-3">
+        <main className="flex-1 min-w-0 space-y-3">
           <div className="flex flex-col gap-3 mb-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 border-b border-[var(--border-color)] -mx-2 px-2 rounded-t-xl transition-all">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -493,8 +488,8 @@ export default function Jobs() {
               )}
             </>
           )}
-        </div>
+        </main>
       </div>
-    </motion.div>
+    </div>
   )
 }

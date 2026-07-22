@@ -73,17 +73,7 @@ function LayoutContent() {
             )}
           >
             <div className={cn(isLanding ? 'w-full' : 'mx-auto w-full max-w-7xl')}>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={location.pathname}
-                  variants={pageVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <Outlet />
-                </motion.div>
-              </AnimatePresence>
+              <Outlet />
             </div>
           </main>
         </div>

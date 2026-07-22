@@ -185,7 +185,7 @@ const CompaniesList = () => {
               exit={{ opacity: 0 }}
               className="w-full md:w-64 shrink-0"
             >
-              <div className="sticky top-24 self-start h-fit space-y-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-[var(--border-color)] shadow-sm transition-all duration-300">
+              <div className="md:sticky md:top-[88px] self-start h-fit space-y-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-[var(--border-color)] shadow-sm transition-all duration-300">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-[var(--text-primary)]">Filters</h3>
                   {(filters.industry.length > 0 || filters.size.length > 0 || filters.location || filters.isVerified || searchTerm) && (

@@ -124,7 +124,7 @@ const FiltersPanel = memo(function FiltersPanel({ search, setSearch, filters, se
       'w-full lg:w-80 shrink-0',
       showFilters ? 'block' : 'hidden lg:block'
     )}>
-      <div className="sticky top-24 self-start h-fit space-y-4">
+      <div className="lg:sticky lg:top-[88px] self-start h-fit space-y-4">
         <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-sm border border-[var(--border-color)] transition-all duration-300">
           <CardContent className="p-5 space-y-5">
             <div className="flex items-center justify-between">
@@ -422,7 +422,7 @@ export default function Jobs() {
         />
 
         <div className="flex-1 min-w-0 space-y-3">
-          <div className="sticky top-24 z-10 flex flex-col gap-3 mb-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 border-b border-[var(--border-color)] -mx-2 px-2 rounded-t-xl transition-all">
+          <div className="flex flex-col gap-3 mb-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 border-b border-[var(--border-color)] -mx-2 px-2 rounded-t-xl transition-all">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 {jobs.length} Jobs <span className="text-sm font-normal text-[var(--text-tertiary)] ml-2">Found</span>

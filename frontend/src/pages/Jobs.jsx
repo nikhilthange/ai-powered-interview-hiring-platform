@@ -121,112 +121,113 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
 const FiltersPanel = memo(function FiltersPanel({ search, setSearch, filters, setFilters, jobTypes, expLevels, showFilters, setShowFilters }) {
   return (
     <div className={cn(
-      'w-full lg:w-64 shrink-0 space-y-4',
-      'lg:sticky lg:top-[88px] lg:self-start lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto scrollbar-none',
+      'w-full lg:w-80 shrink-0',
       showFilters ? 'block' : 'hidden lg:block'
     )}>
-      <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-sm border border-[var(--border-color)] transition-all duration-300">
-        <CardContent className="p-5 space-y-5">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-[var(--text-primary)] text-sm">Filters</h3>
-            <button
-              onClick={() => { setFilters({}); setSearch(''); setShowFilters(false) }}
-              className="text-xs text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors"
-            >
-              Clear all
-            </button>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Search</label>
-            <div className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" aria-hidden="true" />
-              <input
-                type="text"
-                placeholder="Title, company..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                aria-label="Search jobs"
-                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-9 pr-8 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all shadow-sm"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-                >
-                  <X className="h-3 w-3" aria-hidden="true" />
-                </button>
-              )}
+      <div className="sticky top-24 self-start h-fit space-y-4">
+        <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-sm border border-[var(--border-color)] transition-all duration-300">
+          <CardContent className="p-5 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-[var(--text-primary)] text-sm">Filters</h3>
+              <button
+                onClick={() => { setFilters({}); setSearch(''); setShowFilters(false) }}
+                className="text-xs text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] transition-colors"
+              >
+                Clear all
+              </button>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Job Type</label>
-            <div className="space-y-1.5">
-              {jobTypes.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setFilters((f) => ({ ...f, type: f.type === type ? undefined : type }))}
-                  className={cn(
-                    'w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all',
-                    filters.type === type
-                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 font-medium'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
-                  )}
-                >
-                  <div className={cn(
-                    'h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
-                    filters.type === type ? 'border-indigo-500 bg-indigo-500' : 'border-[var(--border-color)]'
-                  )}>
-                    {filters.type === type && <Check className="h-3 w-3 text-white" aria-hidden="true" />}
-                  </div>
-                  {type}
-                </button>
-              ))}
+            <div>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Search</label>
+              <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)] transition-colors group-focus-within:text-[var(--color-primary-500)]" aria-hidden="true" />
+                <input
+                  type="text"
+                  placeholder="Title, company..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  aria-label="Search jobs"
+                  className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-9 pr-8 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all shadow-sm"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                  >
+                    <X className="h-3 w-3" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Experience Level</label>
-            <div className="space-y-1.5">
-              {expLevels.map((level) => (
-                <button
-                  key={level}
-                  onClick={() => setFilters((f) => ({ ...f, level: f.level === level ? undefined : level }))}
-                  className={cn(
-                    'w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all',
-                    filters.level === level
-                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 font-medium'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
-                  )}
-                >
-                  <div className={cn(
-                    'h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
-                    filters.level === level ? 'border-indigo-500 bg-indigo-500' : 'border-[var(--border-color)]'
-                  )}>
-                    {filters.level === level && <Check className="h-3 w-3 text-white" aria-hidden="true" />}
-                  </div>
-                  {level}
-                </button>
-              ))}
+            <div>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Job Type</label>
+              <div className="space-y-1.5">
+                {jobTypes.map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setFilters((f) => ({ ...f, type: f.type === type ? undefined : type }))}
+                    className={cn(
+                      'w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all',
+                      filters.type === type
+                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 font-medium'
+                        : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+                    )}
+                  >
+                    <div className={cn(
+                      'h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
+                      filters.type === type ? 'border-indigo-500 bg-indigo-500' : 'border-[var(--border-color)]'
+                    )}>
+                      {filters.type === type && <Check className="h-3 w-3 text-white" aria-hidden="true" />}
+                    </div>
+                    {type}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Location</label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" aria-hidden="true" />
-              <input
-                type="text"
-                placeholder="Filter by location..."
-                value={filters.location || ''}
-                onChange={(e) => setFilters((f) => ({ ...f, location: e.target.value || undefined }))}
-                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-10 pr-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
-              />
+            <div>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Experience Level</label>
+              <div className="space-y-1.5">
+                {expLevels.map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => setFilters((f) => ({ ...f, level: f.level === level ? undefined : level }))}
+                    className={cn(
+                      'w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all',
+                      filters.level === level
+                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 font-medium'
+                        : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+                    )}
+                  >
+                    <div className={cn(
+                      'h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
+                      filters.level === level ? 'border-indigo-500 bg-indigo-500' : 'border-[var(--border-color)]'
+                    )}>
+                      {filters.level === level && <Check className="h-3 w-3 text-white" aria-hidden="true" />}
+                    </div>
+                    {level}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+
+            <div>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2 uppercase tracking-wider">Location</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" aria-hidden="true" />
+                <input
+                  type="text"
+                  placeholder="Filter by location..."
+                  value={filters.location || ''}
+                  onChange={(e) => setFilters((f) => ({ ...f, location: e.target.value || undefined }))}
+                  className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] pl-10 pr-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/20 focus:border-[var(--color-primary-500)] transition-all"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 })
@@ -407,7 +408,7 @@ export default function Jobs() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         <FiltersPanel
           search={search}
           setSearch={setSearch}
@@ -421,7 +422,7 @@ export default function Jobs() {
         />
 
         <div className="flex-1 min-w-0 space-y-3">
-          <div className="sticky top-[88px] z-10 flex flex-col gap-3 mb-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 border-b border-[var(--border-color)] -mx-2 px-2 rounded-t-xl transition-all">
+          <div className="sticky top-24 z-10 flex flex-col gap-3 mb-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 border-b border-[var(--border-color)] -mx-2 px-2 rounded-t-xl transition-all">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 {jobs.length} Jobs <span className="text-sm font-normal text-[var(--text-tertiary)] ml-2">Found</span>

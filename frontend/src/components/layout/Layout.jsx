@@ -25,9 +25,9 @@ function RouteAnnouncer() {
 const authPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/verify-email-prompt']
 
 const pageVariants = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] } },
-  exit: { opacity: 0, y: -8, transition: { duration: 0.2 } },
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.25, ease: 'easeOut' } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
 }
 
 function LayoutContent() {
@@ -51,9 +51,9 @@ function LayoutContent() {
   return (
     <>
       <RouteAnnouncer />
-      <div className="flex flex-col min-h-screen bg-[var(--bg-secondary)] max-w-full overflow-x-clip">
+      <div className="flex flex-col min-h-screen bg-[var(--bg-secondary)] max-w-full">
         {!isLanding && <Navbar />}
-        <div className="flex flex-1 max-w-full overflow-x-clip">
+        <div className="flex flex-1 max-w-full">
           {!isLanding && (
             <Sidebar
               open={sidebarOpen}
@@ -67,7 +67,7 @@ function LayoutContent() {
             role="region"
             aria-label="Main content"
             className={cn(
-              'flex-1 overflow-y-auto max-w-full overflow-x-clip transition-all duration-300',
+              'flex-1 min-w-0 max-w-full transition-all duration-300',
               !isLanding && (collapsed ? "lg:ml-[72px]" : "lg:ml-[260px]"),
               isLanding ? '' : 'px-4 pt-4 sm:p-6 pb-24 lg:pb-8'
             )}

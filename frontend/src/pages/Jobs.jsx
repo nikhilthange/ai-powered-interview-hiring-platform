@@ -1,5 +1,5 @@
 import { memo, useState, useCallback, useMemo, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'
 import { savedJobApi } from '../services/savedJobApi'
@@ -10,24 +10,20 @@ import { SkeletonCard } from '../components/ui/Skeleton'
 import EmptyState from '../components/ui/EmptyState'
 import { useToast } from '../components/ui/Toast'
 import { Link } from 'react-router-dom'
-import { cn } from '../lib/utils'
+import { cn, getMediaUrl } from '../lib/utils'
 import { useDebounce } from '../hooks/useDebounce'
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
+import { staggerContainer, staggerItem, stateToggleMotion } from '../lib/motion'
 import {
   Search, MapPin, Briefcase,
   Check, Bookmark, DollarSign,
   GraduationCap, X, Filter, Building2
 } from 'lucide-react'
-import { getMediaUrl } from '../lib/utils'
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } },
-}
 
 const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, savePending }) {
   const queryClient = useQueryClient()
   const isSaved = savedIds?.has(job._id)
+  const shouldReduceMotion = useReducedMotion()
 
   const handleMouseEnter = useCallback(() => {
     queryClient.prefetchQuery({
@@ -44,7 +40,7 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
   }, [job._id, onSaveToggle])
 
   return (
-    <motion.div variants={itemVariants}>
+    <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
       <div className="bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] p-5 group cursor-pointer h-full flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300">
         <div className="flex items-start gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] overflow-hidden font-bold text-lg">
@@ -102,8 +98,17 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
                 disabled={savePending}
                 className="w-full sm:w-auto"
               >
-                <Bookmark className={cn('h-3.5 w-3.5', isSaved && 'fill-current')} aria-hidden="true" />
-                {isSaved ? 'Saved' : 'Save'}
+                <motion.span
+                  key={isSaved ? 'saved' : 'unsaved'}
+                  variants={shouldReduceMotion ? undefined : stateToggleMotion}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  className="inline-flex items-center gap-1.5"
+                >
+                  <Bookmark className={cn('h-3.5 w-3.5', isSaved && 'fill-current')} aria-hidden="true" />
+                  {isSaved ? 'Saved' : 'Save'}
+                </motion.span>
               </Button>
             </div>
           </div>
@@ -236,6 +241,7 @@ export default function Jobs() {
   const [jobs, setJobs] = useState([])
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const shouldReduceMotion = useReducedMotion()
 
   const savedQuery = useQuery({
     queryKey: ['saved-jobs'],
@@ -469,7 +475,12 @@ export default function Jobs() {
               </Button>
             </div>
           ) : (
-            <>
+            <motion.div
+              variants={shouldReduceMotion ? undefined : staggerContainer(0.05)}
+              initial="hidden"
+              animate="visible"
+              className="space-y-3"
+            >
               {jobs.map((job) => (
                 <JobListItem key={job._id} job={job} savedIds={savedJobIds} onSaveToggle={handleSaveToggle} savePending={savePending} />
               ))}
@@ -481,7 +492,7 @@ export default function Jobs() {
                   </div>
                 </div>
               )}
-            </>
+            </motion.div>
           )}
         </main>
       </div>

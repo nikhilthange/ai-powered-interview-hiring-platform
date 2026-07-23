@@ -1,11 +1,22 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
+import { cardHoverMotion, cardHighlightMotion } from '../../lib/motion'
 
 export function Card({ className, hover, children, highlight, ...props }) {
   const Component = hover || highlight ? motion.div : 'div'
+  const shouldReduceMotion = useReducedMotion()
   const motionProps = {}
-  if (hover) motionProps.whileHover = { y: -2, transition: { duration: 0.2 } }
-  if (highlight) motionProps.whileHover = { y: -4, transition: { duration: 0.2 } }
+
+  if (!shouldReduceMotion) {
+    if (hover) {
+      motionProps.whileHover = cardHoverMotion.whileHover
+      motionProps.whileTap = cardHoverMotion.whileTap
+    }
+    if (highlight) {
+      motionProps.whileHover = cardHighlightMotion.whileHover
+      motionProps.whileTap = cardHighlightMotion.whileTap
+    }
+  }
 
   return (
     <Component

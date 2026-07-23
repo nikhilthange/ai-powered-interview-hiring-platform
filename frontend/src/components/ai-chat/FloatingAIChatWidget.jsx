@@ -10,18 +10,10 @@ import AIChatMessage from './AIChatMessage'
 import AIChatInput from './AIChatInput'
 import SuggestedPrompts from './SuggestedPrompts'
 import { useToast } from '../ui/Toast'
+import { AnimatedDots } from '../ui/Spinner'
+import { modalContainerVariants, buttonMotion } from '../../lib/motion'
 import { Bot, AlertCircle, X, History, Maximize2, Minimize2, ChevronLeft } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
-
-function TypingDots() {
-  return (
-    <span className="inline-flex items-center gap-1 ml-1">
-      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '300ms' }} />
-    </span>
-  )
-}
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 
 function ChatSkeleton() {
   return (
@@ -47,12 +39,12 @@ export default function FloatingAIChatWidget() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
-  
-  // Widget specific state
+  const shouldReduceMotion = useReducedMotion()
+
   const [isOpen, setIsOpen] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false) // For mobile full screen or desktop expand
+  const [isExpanded, setIsExpanded] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
-  const [hasUnread] = useState(false) // Optional badging
+  const [hasUnread] = useState(false)
 
   const messagesEndRef = useRef(null)
   const abortControllerRef = useRef(null)
@@ -71,7 +63,6 @@ export default function FloatingAIChatWidget() {
   const jobTitle = searchParams.get('jobTitle')
   const jobDescription = searchParams.get('jobDescription')
 
-  // Listen for search param changes in case we want to trigger chat from anywhere
   useEffect(() => {
     const convId = searchParams.get('ai_conversation')
     if (convId && convId !== activeId) {
@@ -85,7 +76,7 @@ export default function FloatingAIChatWidget() {
     queryFn: () => searchQuery
       ? aiChatApi.searchConversations(searchQuery)
       : aiChatApi.getConversations(),
-    enabled: isOpen || hasUnread // Only fetch if open
+    enabled: isOpen || hasUnread
   })
 
   const { data: existingMessages = [], isLoading: msgsLoadingInitial } = useQuery({
@@ -284,11 +275,13 @@ export default function FloatingAIChatWidget() {
       <AnimatePresence>
         {!isOpen && (
           <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
+            initial={shouldReduceMotion ? false : { scale: 0, opacity: 0 }}
+            animate={shouldReduceMotion ? false : { scale: 1, opacity: 1 }}
+            exit={shouldReduceMotion ? false : { scale: 0, opacity: 0 }}
+            whileHover={shouldReduceMotion ? undefined : buttonMotion.whileHover}
+            whileTap={shouldReduceMotion ? undefined : buttonMotion.whileTap}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-[99998] h-14 w-14 sm:h-16 sm:w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            className="fixed bottom-6 right-6 z-[99998] h-14 w-14 sm:h-16 sm:w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-2xl transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             aria-label="Open AI Career Assistant"
           >
             <Bot className="h-6 w-6 sm:h-7 sm:w-7" />
@@ -303,10 +296,10 @@ export default function FloatingAIChatWidget() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.98, transition: { duration: 0.2 } }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            variants={shouldReduceMotion ? undefined : modalContainerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className={cn(
               'fixed z-[99999] flex flex-col overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-2xl border border-[var(--border-color)] transition-all duration-200',
               isExpanded
@@ -413,8 +406,8 @@ export default function FloatingAIChatWidget() {
                           <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800">
                             <Bot className="h-3.5 w-3.5" />
                           </div>
-                          <div className="rounded-xl px-3 py-2 bg-[var(--bg-tertiary)]">
-                            <TypingDots />
+                          <div className="rounded-xl px-3 py-2 bg-[var(--bg-tertiary)] flex items-center">
+                            <AnimatedDots className="text-indigo-500" />
                           </div>
                         </div>
                       )}

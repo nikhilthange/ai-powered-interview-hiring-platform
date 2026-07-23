@@ -1,8 +1,14 @@
+import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 
 export function Skeleton({ className, ...props }) {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
-    <div
+    <motion.div
+      initial={shouldReduceMotion ? false : { opacity: 0.6 }}
+      animate={shouldReduceMotion ? false : { opacity: [0.6, 1, 0.6] }}
+      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
       className={cn('skeleton-shimmer rounded-xl', className)}
       aria-hidden="true"
       {...props}
@@ -47,7 +53,7 @@ export function SkeletonTable({ rows = 5 }) {
 
 export function SkeletonPage() {
   return (
-    <div className="space-y-6 animate-fadeIn" role="status" aria-label="Loading page">
+    <div className="space-y-6" role="status" aria-label="Loading page">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton className="h-4 w-24 rounded-lg" />

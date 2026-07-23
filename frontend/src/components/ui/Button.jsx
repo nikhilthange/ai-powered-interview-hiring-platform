@@ -1,7 +1,8 @@
 import { forwardRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import { Loader2 } from 'lucide-react'
+import { buttonMotion } from '../../lib/motion'
 
 const variants = {
   primary: 'bg-[var(--color-primary-500)] text-white hover:bg-[var(--color-primary-600)] shadow-sm shadow-[var(--color-primary-500)]/20 hover:shadow-md hover:shadow-[var(--color-primary-500)]/30',
@@ -24,15 +25,18 @@ const Button = forwardRef(function Button(
   { className, variant = 'primary', size = 'md', loading, disabled, children, icon: Icon, ...props },
   ref
 ) {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
     <motion.button
       ref={ref}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      whileTap={{ scale: 0.97 }}
-      whileHover={!disabled && !loading ? { scale: 1.01 } : undefined}
+      whileTap={!disabled && !loading && !shouldReduceMotion ? buttonMotion.whileTap : undefined}
+      whileHover={!disabled && !loading && !shouldReduceMotion ? buttonMotion.whileHover : undefined}
+      transition={buttonMotion.transition}
       className={cn(
-        'inline-flex items-center justify-center gap-2 font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/30 disabled:opacity-50 disabled:cursor-not-allowed select-none relative overflow-hidden',
+        'inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/30 disabled:opacity-50 disabled:cursor-not-allowed select-none relative overflow-hidden',
         variants[variant],
         sizes[size],
         className
@@ -40,7 +44,13 @@ const Button = forwardRef(function Button(
       {...props}
     >
       {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+        <motion.div
+          animate={shouldReduceMotion ? {} : { rotate: 360 }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+          className="flex items-center justify-center"
+        >
+          <Loader2 className="h-4 w-4" aria-hidden="true" />
+        </motion.div>
       ) : Icon ? (
         <Icon className="h-4 w-4" aria-hidden="true" />
       ) : null}

@@ -1,10 +1,12 @@
 import { Outlet, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
 import BottomNav from './BottomNav'
 import FloatingAIChatWidget from '../ai-chat/FloatingAIChatWidget'
 import { LayoutProvider, useLayout } from '../../context/LayoutContext'
 import { cn } from '../../lib/utils'
+import { pageVariants } from '../../lib/motion'
 
 function RouteAnnouncer() {
   const location = useLocation()
@@ -26,6 +28,7 @@ const authPaths = ['/login', '/register', '/forgot-password', '/reset-password',
 function LayoutContent() {
   const { sidebarOpen, collapsed, closeSidebar, toggleCollapsed } = useLayout()
   const location = useLocation()
+  const shouldReduceMotion = useReducedMotion()
   const isAuthPage = authPaths.includes(location.pathname)
 
   if (isAuthPage) {
@@ -33,7 +36,18 @@ function LayoutContent() {
       <>
         <RouteAnnouncer />
         <main id="main-content" role="region" aria-label="Authentication" className="min-h-screen bg-[var(--bg-secondary)]">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={shouldReduceMotion ? undefined : pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="w-full min-h-screen flex flex-col justify-center"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
       </>
     )
@@ -66,7 +80,18 @@ function LayoutContent() {
             )}
           >
             <div className={cn(isLanding ? 'w-full' : 'mx-auto w-full max-w-[1440px]')}>
-              <Outlet />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  variants={shouldReduceMotion ? undefined : pageVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  className="w-full"
+                >
+                  <Outlet />
+                </motion.div>
+              </AnimatePresence>
             </div>
           </main>
         </div>

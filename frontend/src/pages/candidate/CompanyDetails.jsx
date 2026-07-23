@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Building2, Users, Briefcase, MapPin, ExternalLink, Heart, ArrowLeft, Link as LinkIcon, Star, BadgeCheck, Plus } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Building2, Users, Briefcase, MapPin, ExternalLink, Heart, ArrowLeft, Link as LinkIcon, Star, BadgeCheck, Plus, Check } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../hooks/useAuth';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { chatApi } from '../../services/chatApi';
 import { getMediaUrl, cn } from '../../lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import companyService from '../../services/companyService';
+import { stateToggleMotion, buttonMotion, modalContainerVariants, modalOverlayVariants } from '../../lib/motion';
 
 const CompanyDetails = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -163,30 +164,45 @@ const CompanyDetails = () => {
               </div>
 
               <div className="flex flex-col gap-3 w-full md:w-auto shrink-0 pb-1">
-                <button
+                <motion.button
+                  whileHover={shouldReduceMotion ? undefined : buttonMotion.whileHover}
+                  whileTap={shouldReduceMotion ? undefined : buttonMotion.whileTap}
                   onClick={handleFollowToggle}
                   disabled={followLoading}
                   className={cn(
-                    "w-full md:w-48 inline-flex justify-center items-center px-6 py-2.5 border text-sm font-semibold rounded-full shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
+                    "w-full md:w-48 inline-flex justify-center items-center px-6 py-2.5 border text-sm font-semibold rounded-full shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
                     isFollowing
                       ? "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                       : "border-transparent bg-indigo-600 text-white hover:bg-indigo-700"
                   )}
                 >
-                  {isFollowing ? (
-                    <>Following ✓</>
-                  ) : (
-                    <><Plus className="mr-1.5 h-4 w-4" /> Follow</>
-                  )}
-                </button>
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={isFollowing ? 'following' : 'not-following'}
+                      variants={shouldReduceMotion ? undefined : stateToggleMotion}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      className="inline-flex items-center justify-center gap-1.5"
+                    >
+                      {isFollowing ? (
+                        <>Following <Check className="h-4 w-4" /></>
+                      ) : (
+                        <><Plus className="h-4 w-4" /> Follow</>
+                      )}
+                    </motion.span>
+                  </AnimatePresence>
+                </motion.button>
                 {user && company.recruiterId && user._id !== company.recruiterId && (
-                  <button
+                  <motion.button
+                    whileHover={shouldReduceMotion ? undefined : buttonMotion.whileHover}
+                    whileTap={shouldReduceMotion ? undefined : buttonMotion.whileTap}
                     onClick={() => messageMutation.mutate(company.recruiterId)}
                     disabled={messageMutation.isPending}
                     className="w-full md:w-48 inline-flex justify-center items-center px-6 py-2.5 border border-indigo-600 text-indigo-600 dark:text-indigo-400 text-sm font-semibold rounded-full shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all focus:outline-none"
                   >
                     {messageMutation.isPending ? 'Starting...' : 'Message Recruiter'}
-                  </button>
+                  </motion.button>
                 )}
                 {company.website && (
                   <a 
@@ -388,16 +404,18 @@ const CompanyDetails = () => {
         {showUnfollowConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
+              variants={shouldReduceMotion ? undefined : modalOverlayVariants}
+              initial="hidden" 
+              animate="visible" 
+              exit="exit" 
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => !followLoading && setShowUnfollowConfirm(false)}
             />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }} 
-              animate={{ opacity: 1, scale: 1 }} 
-              exit={{ opacity: 0, scale: 0.95 }} 
+              variants={shouldReduceMotion ? undefined : modalContainerVariants}
+              initial="hidden" 
+              animate="visible" 
+              exit="exit" 
               className="bg-[var(--bg-primary)] p-6 rounded-2xl shadow-xl w-full max-w-sm relative z-10 border border-[var(--border-color)]"
             >
               <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Unfollow {company.name}?</h3>

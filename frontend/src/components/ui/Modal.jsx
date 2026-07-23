@@ -2,6 +2,7 @@ import { memo, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import { X } from 'lucide-react'
+import { modalOverlayVariants, modalContainerVariants } from '../../lib/motion'
 
 const focusableSelector = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
@@ -63,19 +64,15 @@ const Modal = memo(function Modal({ open, onClose, title, children, className, s
     full: 'max-w-full',
   }
 
-  const motionConfig = prefersReducedMotion
-    ? { initial: {}, animate: {}, exit: {}, transition: {} }
-    : {}
-
   return (
     <AnimatePresence>
       {open && (
         <motion.div
           ref={overlayRef}
-          initial={prefersReducedMotion ? {} : { opacity: 0 }}
-          animate={prefersReducedMotion ? {} : { opacity: 1 }}
-          exit={prefersReducedMotion ? {} : { opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          variants={prefersReducedMotion ? undefined : modalOverlayVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={(e) => { if (e.target === overlayRef.current) onClose?.() }}
           role="dialog"
@@ -84,16 +81,15 @@ const Modal = memo(function Modal({ open, onClose, title, children, className, s
         >
           <motion.div
             ref={contentRef}
-            initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.95, y: 10 }}
-            animate={prefersReducedMotion ? {} : { opacity: 1, scale: 1, y: 0 }}
-            exit={prefersReducedMotion ? {} : { opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            variants={prefersReducedMotion ? undefined : modalContainerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className={cn(
               'w-full rounded-2xl border bg-[var(--bg-primary)] border-[var(--border-color)] shadow-elevated',
               sizes[size],
               className
             )}
-            {...motionConfig}
           >
             {title && (
               <div className="flex items-center justify-between border-b border-[var(--border-color)] px-5 py-4 sm:px-6">

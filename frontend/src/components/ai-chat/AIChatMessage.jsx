@@ -1,4 +1,5 @@
 import { useState, memo, useCallback } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import { Copy, Check, RefreshCw, User, Bot } from 'lucide-react'
 
@@ -131,6 +132,7 @@ function AIChatMessageInner({ message, isStreaming, onRegenerate }) {
   const [copied, setCopied] = useState(false)
   const isUser = message.role === 'user'
   const isSystem = message.role === 'system'
+  const shouldReduceMotion = useReducedMotion()
 
   const handleCopy = useCallback(async () => {
     try {
@@ -145,10 +147,15 @@ function AIChatMessageInner({ message, isStreaming, onRegenerate }) {
   if (isSystem) return null
 
   return (
-    <div className={cn(
-      'flex gap-3 py-1',
-      isUser ? 'flex-row-reverse' : 'flex-row'
-    )}>
+    <motion.div
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 8, scale: 0.98 }}
+      animate={shouldReduceMotion ? false : { opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className={cn(
+        'flex gap-3 py-1',
+        isUser ? 'flex-row-reverse' : 'flex-row'
+      )}
+    >
       <div className={cn(
         'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
         isUser
@@ -203,7 +210,7 @@ function AIChatMessageInner({ message, isStreaming, onRegenerate }) {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }
 

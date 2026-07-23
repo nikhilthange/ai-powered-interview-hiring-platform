@@ -1,6 +1,7 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import { TrendingUp, TrendingDown } from 'lucide-react'
+import { cardHoverMotion, TRANSITIONS } from '../../lib/motion'
 
 const colorMap = {
   indigo: { bg: 'bg-indigo-50 dark:bg-indigo-950', icon: 'text-indigo-600 dark:text-indigo-400' },
@@ -26,20 +27,30 @@ export default function StatCard({
   const colors = colorMap[color] || colorMap.primary
   const TrendIcon = trend > 0 ? TrendingUp : TrendingDown
   const trendColor = trend > 0 ? 'text-emerald-600' : trend < 0 ? 'text-red-600' : 'text-[var(--text-tertiary)]'
+  const shouldReduceMotion = useReducedMotion()
 
-  const content = (
-    <div className={cn(
-      'rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-5 sm:p-6 transition-all duration-200',
-      onClick && 'cursor-pointer hover:shadow-md hover:-translate-y-0.5',
-      className
-    )}>
+  const cardContent = (
+    <div
+      className={cn(
+        'rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-5 sm:p-6 transition-colors duration-200',
+        onClick && 'cursor-pointer hover:shadow-md',
+        className
+      )}
+    >
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">{label}</span>
-        <div className={cn('rounded-xl p-2', colors.bg)}>
+        <div className={cn('rounded-xl p-2 transition-transform duration-200', colors.bg)}>
           {Icon && <Icon className={cn('h-4 w-4', colors.icon)} />}
         </div>
       </div>
-      <p className="text-2xl font-bold text-[var(--text-primary)]">{value}</p>
+      <motion.p
+        initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.95 }}
+        animate={shouldReduceMotion ? false : { opacity: 1, scale: 1 }}
+        transition={TRANSITIONS.springSoft}
+        className="text-2xl font-bold text-[var(--text-primary)]"
+      >
+        {value}
+      </motion.p>
       {subtitle && <p className="text-xs text-[var(--text-tertiary)] mt-1">{subtitle}</p>}
       {trend !== undefined && (
         <div className={cn('flex items-center gap-1 mt-2 text-xs font-medium', trendColor)}>
@@ -51,9 +62,16 @@ export default function StatCard({
     </div>
   )
 
-  if (onClick) {
-    return <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} onClick={onClick}>{content}</motion.div>
-  }
-
-  return content
+  return (
+    <motion.div
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+      animate={shouldReduceMotion ? false : { opacity: 1, y: 0 }}
+      transition={TRANSITIONS.easeOut}
+      whileHover={onClick && !shouldReduceMotion ? cardHoverMotion.whileHover : undefined}
+      whileTap={onClick && !shouldReduceMotion ? cardHoverMotion.whileTap : undefined}
+      onClick={onClick}
+    >
+      {cardContent}
+    </motion.div>
+  )
 }

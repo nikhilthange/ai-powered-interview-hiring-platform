@@ -4,25 +4,17 @@ import { Search, Building2, MapPin, Users, ChevronRight, Star, BadgeCheck, Filte
 import companyService from '../../services/companyService';
 import { toast } from 'react-hot-toast';
 import { getMediaUrl } from '../../lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { staggerContainer, staggerItem } from '../../lib/motion';
 
 const INDUSTRIES = ['Technology', 'FinTech', 'HealthTech', 'E-commerce', 'SaaS', 'AI', 'EdTech', 'Cybersecurity'];
 const SIZES = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } },
-}
 
 const CompaniesList = () => {
   const [companies, setCompanies] = useState([]);
   const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
+  const shouldReduceMotion = useReducedMotion();
   
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,7 +78,7 @@ const CompaniesList = () => {
   };
 
   const CompanyCard = ({ company }) => (
-    <motion.div variants={itemVariants} className="h-full">
+    <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="h-full">
       <Link
         to={`/companies/${company.id}`}
         className="group flex flex-col h-full bg-white dark:bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] overflow-hidden hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1 transition-all duration-300"
@@ -308,7 +300,7 @@ const CompaniesList = () => {
             </div>
           </div>
           
-          {/* Recommendations Block (only show on page 1 without filters for cleaner UX) */}
+          {/* Recommendations Block */}
           {recommended.length > 0 && !searchTerm && filters.industry.length === 0 && (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
@@ -317,7 +309,7 @@ const CompaniesList = () => {
                   Recommended for you
                 </h2>
               </div>
-              <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <motion.div variants={shouldReduceMotion ? undefined : staggerContainer(0.06)} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recommended.map(company => (
                   <CompanyCard key={`rec-${company.id}`} company={company} />
                 ))}
@@ -329,7 +321,7 @@ const CompaniesList = () => {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="animate-pulse bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl h-80">
+                <div key={i} className="skeleton-shimmer bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl h-80">
                   <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-t-2xl"></div>
                   <div className="p-5">
                     <div className="h-20 w-20 bg-gray-300 dark:bg-gray-700 rounded-xl -mt-10 mb-4 border-4 border-white dark:border-gray-900"></div>
@@ -408,7 +400,7 @@ const CompaniesList = () => {
                   </div>
                 )}
               </div>
-              <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <motion.div variants={shouldReduceMotion ? undefined : staggerContainer(0.06)} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {companies.map((company) => (
                   <CompanyCard key={company.id} company={company} />
                 ))}

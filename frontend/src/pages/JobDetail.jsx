@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { jobApi } from '../services/jobApi'
@@ -11,21 +11,12 @@ import { useToast } from '../components/ui/Toast'
 import { SkeletonPage } from '../components/ui/Skeleton'
 import { cn } from '../lib/utils'
 import { useAuth } from '../hooks/useAuth'
+import { stateToggleMotion, staggerContainer, staggerItem } from '../lib/motion'
 import {
   MapPin, Briefcase, DollarSign,
   Share2, Bookmark, ArrowLeft,
   GraduationCap, Bot, MessageCircle
 } from 'lucide-react'
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-}
 
 export default function JobDetail() {
   const { id } = useParams()
@@ -33,6 +24,7 @@ export default function JobDetail() {
   const { isAuthenticated, user } = useAuth()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const shouldReduceMotion = useReducedMotion()
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['job', id],
@@ -85,18 +77,18 @@ export default function JobDetail() {
 
   return (
     <motion.div
-      variants={containerVariants}
+      variants={shouldReduceMotion ? undefined : staggerContainer(0.08)}
       initial="hidden"
       animate="visible"
       className="max-w-4xl mx-auto space-y-6"
     >
-      <motion.div variants={itemVariants}>
+      <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
         <Link to="/jobs" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
           <ArrowLeft className="h-4 w-4" /> Back to jobs
         </Link>
       </motion.div>
 
-      <motion.div variants={itemVariants}>
+      <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
         <Card>
           <CardContent className="p-5 sm:p-8">
             <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
@@ -153,8 +145,19 @@ export default function JobDetail() {
                     onClick={() => saveMutation.mutate()}
                     disabled={saveMutation.isPending}
                   >
-                    <Bookmark className={cn('h-4 w-4', isSaved && 'fill-current')} />
-                    {saveMutation.isPending ? '...' : isSaved ? 'Saved' : 'Save'}
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={isSaved ? 'saved' : 'unsaved'}
+                        variants={shouldReduceMotion ? undefined : stateToggleMotion}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        className="inline-flex items-center gap-1.5"
+                      >
+                        <Bookmark className={cn('h-4 w-4', isSaved && 'fill-current')} />
+                        {saveMutation.isPending ? '...' : isSaved ? 'Saved' : 'Save'}
+                      </motion.span>
+                    </AnimatePresence>
                   </Button>
                   <Button variant="ghost" size="md" className="sm:px-5 sm:py-2.5">
                     <Share2 className="h-4 w-4" />
@@ -193,7 +196,7 @@ export default function JobDetail() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           {job.description && (
-            <motion.div variants={itemVariants}>
+            <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
               <Card>
                 <CardContent className="p-6">
                   <h2 className="font-semibold text-[var(--text-primary)] mb-3">Description</h2>
@@ -206,7 +209,7 @@ export default function JobDetail() {
           )}
 
           {job.requirements?.length > 0 && (
-            <motion.div variants={itemVariants}>
+            <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
               <Card>
                 <CardContent className="p-6">
                   <h2 className="font-semibold text-[var(--text-primary)] mb-3">Requirements</h2>
@@ -225,7 +228,7 @@ export default function JobDetail() {
         </div>
 
         <div className="space-y-6">
-          <motion.div variants={itemVariants}>
+          <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
             <Card>
               <CardContent className="p-6">
                 <h2 className="font-semibold text-[var(--text-primary)] mb-4">Job Details</h2>

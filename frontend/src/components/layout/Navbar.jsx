@@ -1,6 +1,6 @@
-import { memo } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext'
 import { useLayout } from '../../context/LayoutContext'
@@ -10,8 +10,8 @@ import { useClickOutside } from '../../hooks/useClickOutside'
 import { useApi } from '../../hooks/useApi'
 import { profileApi } from '../../services/profileApi'
 import { getMediaUrl, cn } from '../../lib/utils'
+import { dropdownVariants, buttonMotion } from '../../lib/motion'
 import { Menu, LogOut, User, Shield, Moon, Sun, Search, Sparkles } from 'lucide-react'
-import { useState, useEffect } from 'react'
 
 const Navbar = memo(function Navbar() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -20,6 +20,7 @@ const Navbar = memo(function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const shouldReduceMotion = useReducedMotion()
   const ref = useClickOutside(() => setProfileOpen(false))
 
   useEffect(() => {
@@ -56,8 +57,7 @@ const Navbar = memo(function Navbar() {
     }
     if (profileOpen) document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileOpen])
+  }, [profileOpen, ref])
 
   const initial = (user?.name || user?.email || 'U').charAt(0).toUpperCase()
   const { data: profileData } = useApi(['profile'], () =>
@@ -115,7 +115,8 @@ const Navbar = memo(function Navbar() {
 
         {isAuthenticated && (
           <motion.button
-            whileTap={{ scale: 0.9 }}
+            whileHover={shouldReduceMotion ? undefined : buttonMotion.whileHover}
+            whileTap={shouldReduceMotion ? undefined : buttonMotion.whileTap}
             onClick={toggleTheme}
             className="rounded-xl p-2 text-slate-300 hover:bg-white/10 hover:text-white transition-colors hidden md:block"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -123,9 +124,9 @@ const Navbar = memo(function Navbar() {
           >
             <motion.div
               key={theme}
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              transition={{ duration: 0.3 }}
+              initial={shouldReduceMotion ? false : { rotate: -90, opacity: 0 }}
+              animate={shouldReduceMotion ? false : { rotate: 0, opacity: 1 }}
+              transition={{ duration: 0.2 }}
             >
               {theme === 'dark' ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
             </motion.div>
@@ -137,7 +138,8 @@ const Navbar = memo(function Navbar() {
         {isAuthenticated && user && (
           <div ref={ref} className="relative ml-1">
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileHover={shouldReduceMotion ? undefined : buttonMotion.whileHover}
+              whileTap={shouldReduceMotion ? undefined : buttonMotion.whileTap}
               onClick={() => setProfileOpen(!profileOpen)}
               className="flex items-center gap-2.5 rounded-xl p-1 md:pr-3 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
               aria-label="Profile menu"
@@ -161,10 +163,10 @@ const Navbar = memo(function Navbar() {
             <AnimatePresence>
               {profileOpen && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  variants={shouldReduceMotion ? undefined : dropdownVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
                   className="absolute right-0 top-[calc(100%+8px)] w-56 rounded-2xl border bg-[var(--bg-primary)]/95 backdrop-blur-xl border-[var(--border-color)] shadow-lg shadow-black/5 py-2 z-[9999] origin-top-right"
                   role="menu"
                 >
@@ -244,9 +246,10 @@ const Navbar = memo(function Navbar() {
       <AnimatePresence>
         {mobileSearchOpen && (
           <motion.div 
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -10, opacity: 0 }}
+            variants={shouldReduceMotion ? undefined : dropdownVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="absolute top-[100%] left-0 right-0 p-4 bg-[#0f172a]/95 backdrop-blur-xl border-b border-white/10 z-[8900] flex items-center gap-2 shadow-lg"
           >
             <div className="flex-1">

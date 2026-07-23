@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
 import { useQueries } from '@tanstack/react-query'
 import { applicationApi } from '../../services/applicationApi'
@@ -10,27 +10,17 @@ import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import { SkeletonMetrics, SkeletonChart } from '../../components/ui/Skeleton'
 import { Link } from 'react-router-dom'
-import { cn, calculateProfileCompletion } from '../../lib/utils'
+import { cn, calculateProfileCompletion, getMediaUrl } from '../../lib/utils'
+import { staggerContainer, staggerItem, TRANSITIONS } from '../../lib/motion'
 import {
   FileText, Bookmark, Briefcase, CalendarCheck, Bot,
   TrendingUp, BarChart3, Sparkles, Activity, Target,
   ChevronRight, ArrowUpRight, Building2, ExternalLink
 } from 'lucide-react'
-import { getMediaUrl } from '../../lib/utils'
 import {
   AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts'
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
-}
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -56,6 +46,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function CandidateDashboard() {
   const { user } = useAuth()
+  const shouldReduceMotion = useReducedMotion()
 
   const results = useQueries({
     queries: [
@@ -96,14 +87,11 @@ export default function CandidateDashboard() {
     ? Math.round(completedSessions.reduce((sum, s) => sum + (s.overallScore || 0), 0) / completedSessions.length)
     : null
 
-  // Find the most recent application with an ATS score
   const appsWithScores = apps
     .filter(a => a.atsScore && a.atsScore > 0)
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Descending
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
   
   const latestAtsScore = appsWithScores.length > 0 ? appsWithScores[0].atsScore : null
-
-  // Prioritize the latest ATS score, then profile score, then avg interview score
   const resumeScore = latestAtsScore ?? profile.resumeScore ?? avgScore ?? null
   const aiUsageCount = sessions.length + (profile.aiChatCount || 0) + (profile.resumeAnalyses || 0)
 
@@ -116,7 +104,6 @@ export default function CandidateDashboard() {
     { label: 'AI Usage', value: aiUsageCount, icon: Bot, color: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-50 dark:bg-cyan-900/20' },
   ]
 
-  // --- CHART 1: Applications (Area Chart) ---
   const last6Months = []
   const currentMonth = new Date().getMonth()
   for (let i = 5; i >= 0; i--) {
@@ -137,40 +124,30 @@ export default function CandidateDashboard() {
   })
   const appTrendData = last6Months
 
-  // --- CHART 2: Resume Score Trend (Smooth Area) ---
   let scoreTrendData;
   const baseScore = profile.resumeScore || 0
-  
-  // Filter out applications that don't have an ATS score, sort chronologically
-  // Note: appsWithScores is already declared above and is sorted in descending order.
-  // For the chart, we need it in ascending (chronological) order.
   const chartAppsWithScores = [...appsWithScores].reverse()
     
   if (chartAppsWithScores.length === 0) {
     scoreTrendData = last6Months.map(m => ({ session: m.month, Score: baseScore }))
   } else if (chartAppsWithScores.length === 1) {
-    // If only 1 scored application, pad it with the base resume score so there's a trend line
     scoreTrendData = [
       { session: 'Previous', Score: baseScore },
       { session: 'Latest App', Score: chartAppsWithScores[0].atsScore }
     ]
   } else {
-    // Show the history of their last 6 ATS scores
     scoreTrendData = chartAppsWithScores.slice(-6).map((app, i) => {
-      // Create a short label like "App #1" or use job title if populated
       const label = app.jobId && app.jobId.title ? app.jobId.title.split(' ')[0] : `App #${i + 1}`
       return { session: label, Score: app.atsScore }
     })
   }
 
-  // --- CHART 3: Skill Growth (Animated Progress Bars) ---
   let skillNames = profile.skills?.slice(0, 5)
   if (!skillNames || skillNames.length < 3) {
     skillNames = ['React', 'Node.js', 'System Design', 'TypeScript', 'MongoDB']
   }
   
   const skillGrowthData = skillNames.map((skill) => {
-    // Use hash of string to generate consistent random-looking score between 70-98
     let hash = 0;
     for (let i = 0; i < skill.length; i++) hash = skill.charCodeAt(i) + ((hash << 5) - hash)
     const score = 70 + (Math.abs(hash) % 28)
@@ -180,9 +157,14 @@ export default function CandidateDashboard() {
   const latestApps = apps.slice(0, 5)
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6 lg:space-y-8 pb-32 lg:pb-8 max-w-full overflow-x-clip">
+    <motion.div
+      variants={shouldReduceMotion ? undefined : staggerContainer(0.08)}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6 lg:space-y-8 pb-32 lg:pb-8 max-w-full overflow-x-clip"
+    >
       {/* Header Profile Card */}
-      <motion.div variants={itemVariants}>
+      <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
         <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-950 p-6 sm:p-10 shadow-xl shadow-indigo-900/20 border border-indigo-700/30 h-auto">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute -top-32 -right-32 h-[32rem] w-[32rem] rounded-full bg-indigo-500/10 blur-3xl" />
@@ -220,13 +202,15 @@ export default function CandidateDashboard() {
         </div>
       </motion.div>
 
-      {/* Metrics Row inline for custom SaaS styling */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-6 w-full">
+      {/* Metrics Row */}
+      <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-6 w-full">
         {metrics.map((metric) => (
           <motion.div 
             key={metric.label}
-            whileHover={{ y: -4, scale: 1.02 }}
-            className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 sm:p-5 shadow-sm hover:shadow-md transition-all cursor-pointer min-w-0 w-full overflow-hidden"
+            whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.02 }}
+            whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+            transition={TRANSITIONS.easeOut}
+            className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer min-w-0 w-full overflow-hidden"
           >
             <div className={cn("inline-flex rounded-2xl p-2.5 sm:p-3 mb-3 sm:mb-4", metric.bg)}>
               <metric.icon className={cn("h-5 w-5 sm:h-6 sm:w-6", metric.color)} />
@@ -240,7 +224,7 @@ export default function CandidateDashboard() {
       {/* Main Charts Row */}
       <div className="grid gap-6 lg:gap-8 lg:grid-cols-2">
         {/* Applications Area Chart */}
-        <motion.div variants={itemVariants} className="h-full">
+        <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="h-full">
           <Card className="h-full rounded-3xl shadow-sm border-[var(--border-color)] overflow-hidden transition-all hover:shadow-md">
             <CardContent className="p-6 sm:p-8 flex flex-col h-full">
               <div className="flex items-center justify-between mb-8">
@@ -286,7 +270,7 @@ export default function CandidateDashboard() {
         </motion.div>
 
         {/* Resume Score Line Chart */}
-        <motion.div variants={itemVariants} className="h-full">
+        <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="h-full">
           <Card className="h-full rounded-3xl shadow-sm border-[var(--border-color)] overflow-hidden transition-all hover:shadow-md">
             <CardContent className="p-6 sm:p-8 flex flex-col h-full">
               <div className="flex items-center justify-between mb-8">
@@ -331,8 +315,8 @@ export default function CandidateDashboard() {
       </div>
 
       <div className="grid gap-6 lg:gap-8 lg:grid-cols-2">
-        {/* Skill Growth Animated Bars */}
-        <motion.div variants={itemVariants} className="h-full">
+        {/* Skill Growth GPU Animated Progress Bars */}
+        <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="h-full">
           <Card className="h-full rounded-3xl shadow-sm border-[var(--border-color)] overflow-hidden transition-all hover:shadow-md">
             <CardContent className="p-6 sm:p-8 flex flex-col h-full">
               <div className="flex items-center gap-4 mb-8">
@@ -357,11 +341,12 @@ export default function CandidateDashboard() {
                     </div>
                     <div className="h-3.5 w-full bg-[var(--bg-tertiary)] rounded-full overflow-hidden shadow-inner border border-[var(--border-color)]">
                       <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${item.score}%` }}
+                        initial={shouldReduceMotion ? { scaleX: item.score / 100 } : { scaleX: 0 }}
+                        whileInView={{ scaleX: item.score / 100 }}
                         viewport={{ once: true, margin: "-50px" }}
-                        transition={{ duration: 1, delay: index * 0.1, ease: "easeOut" }}
-                        className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 relative"
+                        transition={{ duration: 0.8, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                        style={{ transformOrigin: 'left' }}
+                        className="h-full w-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 relative"
                       >
                         <div className="absolute top-0 right-0 bottom-0 left-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%,transparent_100%)] bg-[length:1rem_1rem] animate-[shimmer_2s_linear_infinite]" />
                       </motion.div>
@@ -374,7 +359,7 @@ export default function CandidateDashboard() {
         </motion.div>
 
         {/* Latest Applications / Upcoming Interviews */}
-        <motion.div variants={itemVariants} className="h-full flex flex-col gap-6 lg:gap-8">
+        <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="h-full flex flex-col gap-6 lg:gap-8">
           
           {latestApps.length > 0 && (
             <Card className="rounded-3xl shadow-sm border-[var(--border-color)] overflow-hidden transition-all hover:shadow-md flex-1">
@@ -396,7 +381,11 @@ export default function CandidateDashboard() {
                 <div className="space-y-3">
                   {latestApps.map((app) => (
                     <Link key={app._id} to="/my-applications" className="block w-full min-w-0">
-                      <motion.div whileHover={{ scale: 1.01 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 sm:p-5 transition-all hover:border-sky-300 dark:hover:border-sky-500/30 hover:shadow-sm overflow-hidden">
+                      <motion.div
+                        whileHover={shouldReduceMotion ? undefined : { scale: 1.01, y: -2 }}
+                        transition={TRANSITIONS.easeOut}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 sm:p-5 transition-colors hover:border-sky-300 dark:hover:border-sky-500/30 hover:shadow-sm overflow-hidden"
+                      >
                         <div className="min-w-0 w-full flex-1">
                           <p className="text-base font-extrabold text-[var(--text-primary)] truncate">{app.jobId?.title || 'Application'}</p>
                           <p className="text-sm font-semibold text-[var(--text-secondary)] mt-1">{new Date(app.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
@@ -439,7 +428,12 @@ export default function CandidateDashboard() {
                 </div>
                 <div className="space-y-3">
                   {upcomingInterviews.slice(0, 3).map((interview) => (
-                    <div key={interview._id} className="group flex items-center justify-between rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 sm:p-5 transition-all hover:border-amber-300 dark:hover:border-amber-500/30 hover:shadow-sm cursor-pointer">
+                    <motion.div
+                      key={interview._id}
+                      whileHover={shouldReduceMotion ? undefined : { scale: 1.01, y: -2 }}
+                      transition={TRANSITIONS.easeOut}
+                      className="group flex items-center justify-between rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 sm:p-5 transition-colors hover:border-amber-300 dark:hover:border-amber-500/30 hover:shadow-sm cursor-pointer"
+                    >
                       <div>
                         <p className="text-base font-extrabold text-[var(--text-primary)] group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{interview.jobId?.title || 'Interview'}</p>
                         <p className="text-sm font-semibold text-[var(--text-secondary)] mt-1">{new Date(interview.date || interview.scheduledAt).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
@@ -447,7 +441,7 @@ export default function CandidateDashboard() {
                       <div className="h-10 w-10 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center group-hover:bg-amber-50 dark:group-hover:bg-amber-900/20 transition-colors">
                         <ArrowUpRight className="h-5 w-5 text-[var(--text-tertiary)] group-hover:text-amber-600 dark:group-hover:text-amber-400" />
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </CardContent>
@@ -458,7 +452,7 @@ export default function CandidateDashboard() {
 
       {/* Following Companies Section */}
       {followedCompanies.length > 0 && (
-        <motion.div variants={itemVariants} className="mt-6 lg:mt-8">
+        <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="mt-6 lg:mt-8">
           <Card className="rounded-3xl shadow-sm border-[var(--border-color)] overflow-hidden transition-all hover:shadow-md">
             <CardContent className="p-6 sm:p-8">
               <div className="flex items-center gap-4 mb-6">
@@ -473,7 +467,11 @@ export default function CandidateDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {followedCompanies.map(company => (
                   <Link key={company._id} to={`/companies/${company._id}`} className="group block">
-                    <div className="flex items-center gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 transition-all hover:border-fuchsia-300 dark:hover:border-fuchsia-500/30 hover:shadow-sm h-full">
+                    <motion.div
+                      whileHover={shouldReduceMotion ? undefined : { y: -3, scale: 1.01 }}
+                      transition={TRANSITIONS.easeOut}
+                      className="flex items-center gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 transition-colors hover:border-fuchsia-300 dark:hover:border-fuchsia-500/30 hover:shadow-sm h-full"
+                    >
                       <div className="h-12 w-12 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-2 shrink-0">
                         {company.logo && company.logo !== 'default-company-logo.png' ? (
                           <img src={getMediaUrl(company.logo)} alt={company.name} className="w-full h-full object-contain" />
@@ -488,7 +486,7 @@ export default function CandidateDashboard() {
                       <div className="shrink-0 text-fuchsia-600 bg-fuchsia-50 dark:bg-fuchsia-900/20 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
                         <ExternalLink className="h-4 w-4" />
                       </div>
-                    </div>
+                    </motion.div>
                   </Link>
                 ))}
               </div>

@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Briefcase, FileText, Bookmark, MessageCircle,
   GraduationCap, Search, Target, BarChart3,
   Users, X, Calendar, ChevronLeft, Bell, ChevronDown,
-  User, LogOut, Settings, Sparkles,
+  User, LogOut, Settings, Sparkles, Code2,
   ScrollText, Megaphone, Cpu, Building2
 } from 'lucide-react'
 
@@ -20,6 +20,9 @@ const candidateLinks = [
   { to: '/my-applications', label: 'Applications', icon: FileText },
   { to: '/my-interviews', label: 'Interviews', icon: Calendar },
   { to: '/saved-jobs', label: 'Saved Jobs', icon: Bookmark },
+  { to: '/resume-tailor', label: 'AI Resume Tailor', icon: Sparkles },
+  { to: '/cover-letter-generator', label: 'Cover Letter AI', icon: FileText },
+  { to: '/github-analyzer', label: 'GitHub Analyzer', icon: Code2 },
   { to: '/resume-builder', label: 'Resume Builder', icon: FileText },
   { to: '/resume-analyzer', label: 'Resume AI', icon: Search },
   { to: '/skill-gap-analysis', label: 'Skill Gap', icon: Target },

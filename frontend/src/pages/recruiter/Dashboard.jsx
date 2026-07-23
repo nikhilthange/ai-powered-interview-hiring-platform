@@ -172,6 +172,30 @@ export default function RecruiterDashboard() {
         ))}
       </motion.div>
 
+      {/* Conversion & Efficiency Metrics */}
+      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 shadow-sm">
+          <p className="text-xs text-[var(--text-tertiary)] uppercase font-extrabold tracking-wider">Interview Conversion</p>
+          <p className="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">32.4%</p>
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">+4.2% from last month</span>
+        </div>
+        <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 shadow-sm">
+          <p className="text-xs text-[var(--text-tertiary)] uppercase font-extrabold tracking-wider">Offer Acceptance</p>
+          <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">88.5%</p>
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">+2.1% higher than avg</span>
+        </div>
+        <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 shadow-sm">
+          <p className="text-xs text-[var(--text-tertiary)] uppercase font-extrabold tracking-wider">Time to Hire</p>
+          <p className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 mt-1">14 Days</p>
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">-3 days faster</span>
+        </div>
+        <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 shadow-sm">
+          <p className="text-xs text-[var(--text-tertiary)] uppercase font-extrabold tracking-wider">Avg Candidate ATS</p>
+          <p className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">86.2%</p>
+          <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold">High quality talent</span>
+        </div>
+      </motion.div>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <motion.div variants={itemVariants}>
           <Card>

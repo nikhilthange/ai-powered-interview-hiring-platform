@@ -7,6 +7,7 @@ import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import FileDropzone from '../../components/FileUpload/FileDropzone'
 import AIStepLoader from '../../components/ui/AIStepLoader'
+import InterviewFeedbackReport from '../../components/interview/InterviewFeedbackReport'
 import { cn } from '../../lib/utils'
 import { TARGET_ROLES, EXPERIENCE_LEVELS } from '../../lib/constants'
 import {
@@ -277,182 +278,17 @@ export default function MockInterview() {
 
   if (sessionEnded) {
     const fbRaw = endMutation.data?.data || endMutation.data || feedback
-    const fb = feedback && typeof feedback === 'object' && !Array.isArray(feedback)
-      ? feedback
-      : { overallScore: fbRaw?.overallScore, score: fbRaw?.percentage, grade: fbRaw?.grade, strengths: fbRaw?.topStrengths || [], areasForImprovement: fbRaw?.areasToImprove || [], detailedFeedback: fbRaw?.overallFeedback ? [fbRaw.overallFeedback] : [] }
     return (
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="max-w-3xl mx-auto space-y-6"
-      >
-        <motion.div variants={itemVariants} className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900">
-            <Award className="h-8 w-8 text-emerald-500" />
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">Interview Complete</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Great effort! Here's your performance summary.</p>
-          {fb?.grade && (
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-1.5 text-sm font-semibold text-indigo-700 dark:from-indigo-950 dark:to-purple-950 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-              <Award className="h-4 w-4" />
-              Grade: {fb.grade}
-            </div>
-          )}
-        </motion.div>
-
-        <motion.div variants={itemVariants} className="grid gap-4 sm:grid-cols-3">
-          <Card>
-            <CardContent className="p-5 text-center">
-              <BarChart3 className="mx-auto h-6 w-6 text-indigo-500 mb-2" />
-              <p className="text-2xl font-bold text-[var(--text-primary)]">{fb?.overallScore || fb?.score || 0}%</p>
-              <p className="text-xs text-[var(--text-tertiary)]">Overall Score</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5 text-center">
-              <MessageCircle className="mx-auto h-6 w-6 text-purple-500 mb-2" />
-              <p className="text-2xl font-bold text-[var(--text-primary)]">{answers.length}</p>
-              <p className="text-xs text-[var(--text-tertiary)]">Questions Answered</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5 text-center">
-              <Star className="mx-auto h-6 w-6 text-amber-500 mb-2" />
-              <p className="text-2xl font-bold text-[var(--text-primary)]">{fb?.strengths?.length || 0}</p>
-              <p className="text-xs text-[var(--text-tertiary)]">Strengths Found</p>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {fb?.strengths?.length > 0 && (
-          <motion.div variants={itemVariants}>
-            <Card>
-              <CardContent className="p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle className="h-5 w-5 text-emerald-500" />
-                  <h3 className="font-semibold text-[var(--text-primary)]">Strengths</h3>
-                </div>
-                <ul className="space-y-2">
-                  {fb.strengths.map((s, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {fb?.areasForImprovement?.length > 0 && (
-          <motion.div variants={itemVariants}>
-            <Card>
-              <CardContent className="p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <Target className="h-5 w-5 text-amber-500" />
-                  <h3 className="font-semibold text-[var(--text-primary)]">Areas for Improvement</h3>
-                </div>
-                <ul className="space-y-2">
-                  {fb.areasForImprovement.map((a, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
-                      {a}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {fb?.detailedFeedback?.length > 0 && (
-          <motion.div variants={itemVariants}>
-            <Card>
-              <CardContent className="p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <MessageCircle className="h-5 w-5 text-indigo-500" />
-                  <h3 className="font-semibold text-[var(--text-primary)]">Interview Summary</h3>
-                </div>
-                <div className="space-y-3">
-                  {fb.detailedFeedback.map((f, i) => (
-                    <div key={i} className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
-                      <p className="text-sm font-medium text-[var(--text-primary)]">Q{i + 1}</p>
-                      <p className="text-xs text-[var(--text-secondary)] mt-1">{f}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {questions?.length > 0 && questions.some((q) => q.score !== undefined) && (
-          <motion.div variants={itemVariants}>
-            <Card>
-              <CardContent className="p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <BarChart3 className="h-5 w-5 text-indigo-500" />
-                  <h3 className="font-semibold text-[var(--text-primary)]">Question-wise Evaluation</h3>
-                </div>
-                <div className="space-y-4">
-                  {questions.map((q, i) => (
-                    <div key={q._id || i} className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <div className="flex-1">
-                          <p className="text-xs font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">
-                            Q{i + 1} - {q.category || 'General'}
-                          </p>
-                          <p className="text-sm font-medium text-[var(--text-primary)]">{q.question || q.text}</p>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <div className={cn(
-                            'flex items-center justify-center h-8 w-8 rounded-lg text-xs font-bold',
-                            q.score >= 8 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' :
-                            q.score >= 5 ? 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' :
-                            'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400'
-                          )}>
-                            {q.score}/{q.maxScore || 10}
-                          </div>
-                        </div>
-                      </div>
-                      {q.feedback && (
-                        <p className="text-xs text-[var(--text-secondary)] mt-2">{q.feedback}</p>
-                      )}
-                      {q.strengths?.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {q.strengths.map((s, si) => (
-                            <span key={si} className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                              <CheckCircle className="h-3 w-3" />{s}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      {q.improvements?.length > 0 && (
-                        <div className="mt-1.5 flex flex-wrap gap-1">
-                          {q.improvements.map((imp, ii) => (
-                            <span key={ii} className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700 dark:bg-amber-950 dark:text-amber-400">
-                              <Target className="h-3 w-3" />{imp}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        <motion.div variants={itemVariants} className="flex justify-center gap-3 pb-4">
-          <Link to="/my-interviews">
-            <Button variant="outline">View All Sessions</Button>
-          </Link>
-          <Button onClick={() => window.location.reload()}>Start New Interview</Button>
-        </motion.div>
-      </motion.div>
+      <InterviewFeedbackReport
+        sessionData={fbRaw}
+        onRetake={() => {
+          setSessionEnded(false)
+          setSessionId(null)
+          setQuestions([])
+          setCurrentQ(0)
+          setAnswers([])
+        }}
+      />
     )
   }
 

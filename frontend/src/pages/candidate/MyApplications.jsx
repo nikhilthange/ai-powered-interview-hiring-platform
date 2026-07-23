@@ -1,5 +1,5 @@
 import { memo, useState, useCallback, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { applicationApi } from '../../services/applicationApi'
 import { Card, CardContent } from '../../components/ui/Card'
@@ -7,30 +7,22 @@ import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import { SkeletonList } from '../../components/ui/Skeleton'
 import EmptyState from '../../components/ui/EmptyState'
+import KanbanBoard from '../../components/applications/KanbanBoard'
 import { cn } from '../../lib/utils'
 import {
   MapPin, Clock, Eye,
   Building2, Star,
-  Calendar, AlertCircle, Search,
+  Calendar, AlertCircle, Search, LayoutGrid, List
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { APPLICATION_STATUSES, STATUS_COLORS } from '../../lib/constants'
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0 },
-}
+import { staggerContainer, staggerItem } from '../../lib/motion'
 
 const ApplicationItem = memo(function ApplicationItem({ app }) {
   return (
-    <motion.div variants={itemVariants}>
+    <motion.div variants={staggerItem}>
       <Link to="/my-applications" className="block">
-        <Card className="hover:shadow-md transition-all">
+        <Card hover>
           <CardContent className="p-5">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 text-indigo-600 dark:text-indigo-400 font-bold text-lg">
@@ -58,25 +50,18 @@ const ApplicationItem = memo(function ApplicationItem({ app }) {
                   )}
                   <div className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
                     <Clock className="h-3 w-3" aria-hidden="true" />
-                    {new Date(app.createdAt).toLocaleDateString()}
+                    Applied {new Date(app.createdAt).toLocaleDateString()}
                   </div>
-                  {app.atsScore > 0 && (
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <Star className={cn('h-3 w-3', app.atsScore >= 80 ? 'text-emerald-500' : app.atsScore >= 60 ? 'text-amber-500' : 'text-red-500')} aria-hidden="true" />
-                      <span className="font-medium">ATS {app.atsScore}</span>
-                    </div>
-                  )}
                 </div>
-                <div className="flex items-center gap-2 mt-4">
-                  {app.status === 'Interview Scheduled' && (
-                    <Button size="xs" variant="primary">
-                      <Calendar className="h-3 w-3" aria-hidden="true" />
-                      View Interview
-                    </Button>
-                  )}
-                  <Button size="xs" variant="ghost">
-                    <Eye className="h-3 w-3" aria-hidden="true" />
-                    View Details
+
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-[var(--border-color)]">
+                  {app.atsScore > 0 ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                      <Star className="h-3.5 w-3.5" /> ATS Match {app.atsScore}%
+                    </span>
+                  ) : <span />}
+                  <Button variant="ghost" size="xs">
+                    View <Eye className="h-3 w-3 ml-1" />
                   </Button>
                 </div>
               </div>
@@ -90,7 +75,9 @@ const ApplicationItem = memo(function ApplicationItem({ app }) {
 
 export default function MyApplications() {
   const [activeTab, setActiveTab] = useState('All')
+  const [viewMode, setViewMode] = useState('kanban')
   const [page, setPage] = useState(1)
+  const shouldReduceMotion = useReducedMotion()
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['my-applications-page', activeTab, page],
@@ -123,78 +110,82 @@ export default function MyApplications() {
   }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
-    >
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="w-full space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">My Applications</h1>
+          <h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">My Applications</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
-            {pagination.totalItems || 0} application{(pagination.totalItems || 0) !== 1 ? 's' : ''} total
+            Track and manage your job applications pipeline in real time.
           </p>
         </div>
-      </motion.div>
 
-      <motion.div variants={itemVariants} className="flex overflow-x-auto gap-1 pb-2 -mx-3 sm:-mx-4 px-3 sm:px-4 lg:mx-0 lg:px-0 scrollbar-none">
-        {APPLICATION_STATUSES.map((status) => (
+        {/* View Switcher Toggle */}
+        <div className="flex items-center gap-1 bg-[var(--bg-tertiary)] p-1 rounded-xl border border-[var(--border-color)] self-start sm:self-auto">
           <button
-            key={status}
-            onClick={() => handleTabChange(status)}
+            onClick={() => setViewMode('kanban')}
             className={cn(
-              'whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition-all shrink-0',
-              activeTab === status
-                ? 'bg-[var(--color-primary-500)] text-white shadow-sm'
-                : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+              'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
+              viewMode === 'kanban'
+                ? 'bg-[var(--bg-primary)] text-indigo-600 dark:text-indigo-400 shadow-sm'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             )}
           >
-            {status}
+            <LayoutGrid className="h-3.5 w-3.5" /> Kanban Board
           </button>
-        ))}
-      </motion.div>
+          <button
+            onClick={() => setViewMode('list')}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
+              viewMode === 'list'
+                ? 'bg-[var(--bg-primary)] text-indigo-600 dark:text-indigo-400 shadow-sm'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            )}
+          >
+            <List className="h-3.5 w-3.5" /> List View
+          </button>
+        </div>
+      </div>
 
-      {applications.length === 0 ? (
-        <motion.div variants={itemVariants}>
-          <EmptyState
-            icon={Search}
-            title="No applications found"
-            description={activeTab === 'All' ? "You haven't applied to any jobs yet." : `No applications with status "${activeTab}".`}
-            action={activeTab === 'All' ? { label: 'Browse Jobs', props: { as: Link, to: '/jobs' } } : undefined}
-          />
-        </motion.div>
+      {/* Render View Mode */}
+      {viewMode === 'kanban' ? (
+        <KanbanBoard applications={applications} />
       ) : (
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-3">
-          {applications.map((app) => (
-            <ApplicationItem key={app._id} app={app} />
-          ))}
-        </motion.div>
-      )}
+        <div className="space-y-6">
+          {/* Status Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {['All', ...APPLICATION_STATUSES].map((status) => (
+              <button
+                key={status}
+                onClick={() => handleTabChange(status)}
+                className={cn(
+                  'rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap transition-all border',
+                  activeTab === status
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                    : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] border-[var(--border-color)] hover:border-indigo-300'
+                )}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
 
-      {pagination.totalPages > 1 && (
-        <motion.div variants={itemVariants} className="flex items-center justify-center gap-3 pt-2 pb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!pagination.hasPrevPage}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-[var(--text-secondary)]">
-            Page {pagination.page} of {pagination.totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!pagination.hasNextPage}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Next
-          </Button>
-        </motion.div>
+          {applications.length === 0 ? (
+            <EmptyState preset="NoApplications" />
+          ) : (
+            <motion.div
+              variants={shouldReduceMotion ? undefined : staggerContainer(0.06)}
+              initial="hidden"
+              animate="visible"
+              className="space-y-3"
+            >
+              {applications.map((app) => (
+                <ApplicationItem key={app._id} app={app} />
+              ))}
+            </motion.div>
+          )}
+        </div>
       )}
-    </motion.div>
+    </div>
   )
 }

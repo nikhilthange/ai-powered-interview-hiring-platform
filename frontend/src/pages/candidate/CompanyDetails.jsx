@@ -8,6 +8,7 @@ import { chatApi } from '../../services/chatApi';
 import { getMediaUrl, cn } from '../../lib/utils';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import companyService from '../../services/companyService';
+import CompanyReviews from '../../components/company/CompanyReviews';
 import { stateToggleMotion, buttonMotion, modalContainerVariants, modalOverlayVariants } from '../../lib/motion';
 
 const CompanyDetails = () => {
@@ -221,7 +222,7 @@ const CompanyDetails = () => {
             {/* Tabs */}
             <div className="border-t border-[var(--border-color)] relative">
               <nav className="flex space-x-8 overflow-x-auto scrollbar-none" aria-label="Tabs">
-                {['about', 'jobs', 'life'].map((tab) => (
+                {['about', 'jobs', 'life', 'reviews'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -351,6 +352,18 @@ const CompanyDetails = () => {
                      <p className="text-[var(--text-secondary)] mt-1 max-w-sm mx-auto">This company hasn't shared details about their culture or office environment.</p>
                    </div>
                 )}
+              </motion.div>
+            )}
+
+            {activeTab === 'reviews' && (
+              <motion.div
+                key="reviews"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <CompanyReviews companyName={company.name} />
               </motion.div>
             )}
             </AnimatePresence>

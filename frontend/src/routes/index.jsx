@@ -35,6 +35,9 @@ const ApplicationAnalysis = () => lazyLoad(() => import('../pages/candidate/Appl
 const JobDetail = () => lazyLoad(() => import('../pages/JobDetail'))
 const SavedJobs = () => lazyLoad(() => import('../pages/SavedJobs'))
 const ResumeAnalyzer = () => lazyLoad(() => import('../pages/candidate/ResumeAnalyzer'))
+const ResumeTailor = () => lazyLoad(() => import('../pages/candidate/ResumeTailor'))
+const CoverLetterGenerator = () => lazyLoad(() => import('../pages/candidate/CoverLetterGenerator'))
+const GithubAnalyzer = () => lazyLoad(() => import('../pages/candidate/GithubAnalyzer'))
 const SkillGapAnalysis = () => lazyLoad(() => import('../pages/candidate/SkillGapAnalysis'))
 const MockInterview = () => lazyLoad(() => import('../pages/candidate/MockInterview'))
 const CareerRoadmap = () => lazyLoad(() => import('../pages/candidate/CareerRoadmap'))
@@ -89,6 +92,9 @@ export const router = createBrowserRouter([
         { path: 'applications/:id/analysis', element: <ApplicationAnalysis /> },
         { path: 'saved-jobs', element: <SavedJobs /> },
         { path: 'resume-analyzer', element: <ResumeAnalyzer /> },
+        { path: 'resume-tailor', element: <ResumeTailor /> },
+        { path: 'cover-letter-generator', element: <CoverLetterGenerator /> },
+        { path: 'github-analyzer', element: <GithubAnalyzer /> },
         { path: 'resume-builder', element: <ResumeBuilderPage /> },
         { path: 'resume-builder/:id', element: <ResumeEditor /> },
         { path: 'skill-gap-analysis', element: <SkillGapAnalysis /> },

@@ -7,6 +7,7 @@ import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import FileDropzone from '../../components/FileUpload/FileDropzone'
 import EmptyState from '../../components/ui/EmptyState'
+import AIStepLoader from '../../components/ui/AIStepLoader'
 import { cn } from '../../lib/utils'
 import { TARGET_ROLES } from '../../lib/constants'
 import {
@@ -73,27 +74,12 @@ export default function CareerRoadmap() {
   const rawData = mutationData || existingData
   const result = rawData?.data?.data?.roadmap || rawData?.data?.roadmap || rawData?.roadmap || rawData?.data || null
 
-  if (isFetchingRoadmap) {
+  if (isFetchingRoadmap || isPending) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-600 mb-4"></div>
-        <p className="text-sm font-medium text-[var(--text-secondary)]">Loading your career roadmap...</p>
-      </div>
-    )
-  }
-
-  if (isPending) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          className="mb-6"
-        >
-          <Sparkles className="h-12 w-12 text-indigo-500" />
-        </motion.div>
-        <p className="text-lg font-medium text-[var(--text-primary)]">Generating your career roadmap...</p>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">AI is analyzing your resume and creating a personalized plan</p>
+        <Card className="w-full max-w-xl">
+          <AIStepLoader title="HireMate AI is generating your personalized career roadmap" />
+        </Card>
       </div>
     )
   }

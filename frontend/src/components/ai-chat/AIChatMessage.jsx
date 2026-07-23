@@ -189,26 +189,33 @@ function AIChatMessageInner({ message, isStreaming, onRegenerate }) {
           )}
         </div>
 
-        {!isUser && !isStreaming && message.content && (
-          <div className="flex items-center gap-1 mt-1 px-1">
-            <button
-              onClick={handleCopy}
-              className="p-1 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-              title="Copy response"
-            >
-              {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
-            </button>
-            {onRegenerate && (
+        <div className="flex items-center gap-2 mt-1 px-1 text-[10px] text-[var(--text-tertiary)]">
+          {message.createdAt && (
+            <span className="opacity-70 font-mono">
+              {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+          {!isUser && !isStreaming && message.content && (
+            <>
               <button
-                onClick={() => onRegenerate(message)}
+                onClick={handleCopy}
                 className="p-1 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-                title="Regenerate response"
+                title="Copy response"
               >
-                <RefreshCw className="h-3.5 w-3.5" />
+                {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
-            )}
-          </div>
-        )}
+              {onRegenerate && (
+                <button
+                  onClick={() => onRegenerate(message)}
+                  className="p-1 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                  title="Regenerate response"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </motion.div>
   )

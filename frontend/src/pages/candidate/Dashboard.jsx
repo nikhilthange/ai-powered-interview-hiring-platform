@@ -22,6 +22,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts'
 
+import CountUp from '../../components/ui/CountUp'
+
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -216,7 +218,9 @@ export default function CandidateDashboard() {
               <metric.icon className={cn("h-5 w-5 sm:h-6 sm:w-6", metric.color)} />
             </div>
             <h3 className="text-[clamp(0.7rem,2vw,0.875rem)] font-semibold text-[var(--text-secondary)] leading-tight truncate">{metric.label}</h3>
-            <p className="text-[clamp(1.25rem,4vw,1.5rem)] font-extrabold text-[var(--text-primary)] mt-1 tracking-tight truncate">{metric.value}</p>
+            <p className="text-[clamp(1.25rem,4vw,1.5rem)] font-extrabold text-[var(--text-primary)] mt-1 tracking-tight truncate">
+              <CountUp value={metric.value} />
+            </p>
           </motion.div>
         ))}
       </motion.div>

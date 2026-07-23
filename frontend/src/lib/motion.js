@@ -23,14 +23,14 @@ export const buttonMotion = {
   transition: TRANSITIONS.fast,
 }
 
-// Card Hover Lift
+// Card Hover Lift (-6px)
 export const cardHoverMotion = {
-  whileHover: { y: -3, transition: TRANSITIONS.easeOut },
+  whileHover: { y: -6, transition: TRANSITIONS.easeOut },
   whileTap: { scale: 0.99 },
 }
 
 export const cardHighlightMotion = {
-  whileHover: { y: -4, transition: TRANSITIONS.easeOut },
+  whileHover: { y: -6, transition: TRANSITIONS.easeOut },
   whileTap: { scale: 0.99 },
 }
 

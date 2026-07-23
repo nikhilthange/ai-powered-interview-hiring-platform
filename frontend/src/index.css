@@ -109,11 +109,15 @@ body {
   font-family: var(--font-sans);
   background-color: var(--bg-secondary);
   color: var(--text-primary);
-  transition: background-color 200ms ease, color 200ms ease;
+  transition: background-color 250ms ease, color 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
   line-height: 1.6;
   overflow-x: clip;
   width: 100%;
   -webkit-overflow-scrolling: touch;
+}
+
+body, header, aside, main, .surface-card, button, input, select, textarea {
+  transition: background-color 250ms ease, color 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
 }
 
 *, *::before, *::after { box-sizing: border-box; }

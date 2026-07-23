@@ -10,6 +10,7 @@ import ScoreCard from '../../components/Analysis/ScoreCard'
 import SectionCard from '../../components/Analysis/SectionCard'
 import StatCard from '../../components/Analysis/StatCard'
 import Badge from '../../components/ui/Badge'
+import AIStepLoader from '../../components/ui/AIStepLoader'
 import { AlertCircle, Sparkles, Target, Award, Star, Zap, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -90,15 +91,9 @@ export default function ResumeAnalyzer() {
           </Card>
 
           {isPending && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center gap-4 py-10">
-              <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
-                <Sparkles className="h-8 w-8 text-indigo-500" />
-              </motion.div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-[var(--text-primary)]">Analyzing your resume with AI</p>
-                <p className="text-xs text-[var(--text-tertiary)] mt-1">Checking ATS compatibility, skills, and more...</p>
-              </div>
-            </motion.div>
+            <Card>
+              <AIStepLoader title="HireMate AI is analyzing your resume" />
+            </Card>
           )}
 
           <div className="flex items-center gap-3">

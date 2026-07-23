@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Check } from 'lucide-react'
 import { buttonMotion } from '../../lib/motion'
 
 const variants = {
@@ -11,6 +11,7 @@ const variants = {
   ghost: 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]',
   outline: 'border border-[var(--border-color)] bg-transparent text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] hover:border-[var(--color-primary-300)]',
   gradient: 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-sm shadow-indigo-500/20 hover:shadow-md hover:shadow-indigo-500/30',
+  success: 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shadow-emerald-600/20',
 }
 
 const sizes = {
@@ -22,10 +23,11 @@ const sizes = {
 }
 
 const Button = forwardRef(function Button(
-  { className, variant = 'primary', size = 'md', loading, disabled, children, icon: Icon, ...props },
+  { className, variant = 'primary', size = 'md', loading, success, disabled, children, icon: Icon, ...props },
   ref
 ) {
   const shouldReduceMotion = useReducedMotion()
+  const activeVariant = success ? 'success' : variant
 
   return (
     <motion.button
@@ -37,24 +39,53 @@ const Button = forwardRef(function Button(
       transition={buttonMotion.transition}
       className={cn(
         'inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]/30 disabled:opacity-50 disabled:cursor-not-allowed select-none relative overflow-hidden',
-        variants[variant],
+        variants[activeVariant],
         sizes[size],
         className
       )}
       {...props}
     >
-      {loading ? (
-        <motion.div
-          animate={shouldReduceMotion ? {} : { rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-          className="flex items-center justify-center"
-        >
-          <Loader2 className="h-4 w-4" aria-hidden="true" />
-        </motion.div>
-      ) : Icon ? (
-        <Icon className="h-4 w-4" aria-hidden="true" />
-      ) : null}
-      {children}
+      <AnimatePresence mode="wait" initial={false}>
+        {success ? (
+          <motion.span
+            key="success"
+            initial={shouldReduceMotion ? false : { scale: 0, opacity: 0 }}
+            animate={shouldReduceMotion ? false : { scale: 1, opacity: 1 }}
+            exit={shouldReduceMotion ? false : { scale: 0, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+            className="flex items-center gap-1.5"
+          >
+            <Check className="h-4 w-4 stroke-[3]" aria-hidden="true" />
+            <span>Success</span>
+          </motion.span>
+        ) : loading ? (
+          <motion.div
+            key="loading"
+            initial={shouldReduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center justify-center"
+          >
+            <motion.div
+              animate={shouldReduceMotion ? false : { rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+            >
+              <Loader2 className="h-4 w-4" aria-hidden="true" />
+            </motion.div>
+          </motion.div>
+        ) : (
+          <motion.span
+            key="default"
+            initial={shouldReduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="inline-flex items-center gap-2"
+          >
+            {Icon && <Icon className="h-4 w-4" aria-hidden="true" />}
+            {children}
+          </motion.span>
+        )}
+      </AnimatePresence>
     </motion.button>
   )
 })

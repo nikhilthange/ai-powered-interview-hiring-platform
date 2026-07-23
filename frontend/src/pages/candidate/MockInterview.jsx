@@ -6,6 +6,7 @@ import { Card, CardContent } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import FileDropzone from '../../components/FileUpload/FileDropzone'
+import AIStepLoader from '../../components/ui/AIStepLoader'
 import { cn } from '../../lib/utils'
 import { TARGET_ROLES, EXPERIENCE_LEVELS } from '../../lib/constants'
 import {
@@ -266,16 +267,10 @@ export default function MockInterview() {
 
   if (startMutation.isPending) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          className="mb-6"
-        >
-          <Brain className="h-12 w-12 text-indigo-500" />
-        </motion.div>
-        <p className="text-lg font-medium text-[var(--text-primary)]">Preparing your interview...</p>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">Generating AI-powered questions</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
+        <Card className="w-full max-w-xl">
+          <AIStepLoader title="HireMate AI is preparing your mock interview" />
+        </Card>
       </div>
     )
   }

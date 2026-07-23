@@ -5,6 +5,7 @@ import {
   BrainCircuit, Target, CheckCircle2, Clock, Check, MoreVertical
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import AIStepLoader from '../../components/ui/AIStepLoader';
 
 const topActionCards = [
   { id: 'questions', title: 'Generate Questions', desc: 'Behavioral & Technical', icon: FileText, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
@@ -189,19 +190,8 @@ export default function AIInterviewAssistant() {
         <div className="lg:col-span-8 min-w-0">
           
           {isGenerating ? (
-            <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-[24px] p-6 sm:p-8 shadow-sm">
-              <div className="animate-pulse space-y-8">
-                <div className="flex gap-4 border-b border-[var(--border-color)] pb-4">
-                  {[1, 2, 3, 4].map(i => <div key={i} className="h-8 w-24 bg-[var(--bg-tertiary)] rounded-lg" />)}
-                </div>
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="space-y-3">
-                    <div className="h-5 bg-[var(--bg-tertiary)] rounded w-3/4" />
-                    <div className="h-4 bg-[var(--bg-tertiary)] rounded w-full" />
-                    <div className="h-4 bg-[var(--bg-tertiary)] rounded w-5/6" />
-                  </div>
-                ))}
-              </div>
+            <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-[24px] shadow-sm">
+              <AIStepLoader title="HireMate AI is crafting your interview kit" />
             </div>
           ) : hasGenerated ? (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">

@@ -7,6 +7,7 @@ import { useToast } from '../../components/ui/Toast'
 import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
+import AIStepLoader from '../../components/ui/AIStepLoader'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Save, AlertCircle, Sparkles, Copy, Check, RefreshCw, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -173,6 +174,12 @@ export default function CreateJob() {
             </div>
           </CardContent>
         </Card>
+
+        {aiMutation.isPending && (
+          <Card className="border-indigo-100 dark:border-indigo-900/30 overflow-hidden shadow-sm">
+            <AIStepLoader title="HireMate AI is generating job description" />
+          </Card>
+        )}
 
         <AnimatePresence>
           {aiData && !aiMutation.isPending && (

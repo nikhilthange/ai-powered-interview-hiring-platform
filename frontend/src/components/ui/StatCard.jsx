@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { cardHoverMotion, TRANSITIONS } from '../../lib/motion'
+import CountUp from './CountUp'
 
 const colorMap = {
   indigo: { bg: 'bg-indigo-50 dark:bg-indigo-950', icon: 'text-indigo-600 dark:text-indigo-400' },
@@ -43,14 +44,13 @@ export default function StatCard({
           {Icon && <Icon className={cn('h-4 w-4', colors.icon)} />}
         </div>
       </div>
-      <motion.p
-        initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.95 }}
-        animate={shouldReduceMotion ? false : { opacity: 1, scale: 1 }}
-        transition={TRANSITIONS.springSoft}
-        className="text-2xl font-bold text-[var(--text-primary)]"
-      >
-        {value}
-      </motion.p>
+      <p className="text-2xl font-bold text-[var(--text-primary)]">
+        {typeof value === 'number' || (typeof value === 'string' && /^\d/.test(value)) ? (
+          <CountUp value={value} />
+        ) : (
+          value
+        )}
+      </p>
       {subtitle && <p className="text-xs text-[var(--text-tertiary)] mt-1">{subtitle}</p>}
       {trend !== undefined && (
         <div className={cn('flex items-center gap-1 mt-2 text-xs font-medium', trendColor)}>

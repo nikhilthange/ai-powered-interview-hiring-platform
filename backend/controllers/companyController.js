@@ -71,6 +71,10 @@ exports.createOrUpdateCompany = catchAsync(async (req, res, next) => {
     company = await Company.create(companyData);
   }
 
+  if (company) {
+    await cacheService.del(`company:${company._id}`);
+  }
+
   res.status(200).json({
     status: 'success',
     data: { company }
@@ -151,12 +155,15 @@ exports.getAllCompanies = catchAsync(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Get single company profile
- * @route   GET /api/v1/companies/:id
- * @access  Public
- */
+const cacheService = require('../services/cacheService');
+
 exports.getCompanyById = catchAsync(async (req, res, next) => {
+  const cacheKey = `company:${req.params.id}`;
+  const cachedData = await cacheService.get(cacheKey);
+  if (cachedData) {
+    return res.status(200).json({ status: 'success', data: { company: cachedData } });
+  }
+
   const company = await Company.findById(req.params.id).populate({
     path: 'jobs',
     match: { status: 'Active' },
@@ -166,6 +173,8 @@ exports.getCompanyById = catchAsync(async (req, res, next) => {
   if (!company) {
     return next(new AppError('No company found with that ID', 404));
   }
+
+  await cacheService.set(cacheKey, company, 600); // 10 min TTL
 
   res.status(200).json({
     status: 'success',

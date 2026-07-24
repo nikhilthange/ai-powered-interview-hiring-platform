@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Textarea from '../../components/ui/Textarea'
+import { coverLetterApi } from '../../services/coverLetterApi'
 import FileDropzone from '../../components/FileUpload/FileDropzone'
 import AIStepLoader from '../../components/ui/AIStepLoader'
 import { useToast } from '../../components/ui/Toast'
@@ -12,6 +13,8 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { staggerContainer, staggerItem } from '../../lib/motion'
+import { exportToPdf } from '../../utils/pdfExport'
+import { Document, Packer, Paragraph, TextRun } from 'docx'
 
 const TONES = [
   { id: 'Professional', label: 'Professional', desc: 'Balanced, confident, industry-standard tone' },
@@ -32,7 +35,7 @@ export default function CoverLetterGenerator() {
 
   const handleFileChange = useCallback((f) => setFile(f), [])
 
-  const handleGenerate = (e) => {
+  const handleGenerate = async (e) => {
     e.preventDefault()
     if (!file || !jobDescription.trim()) {
       toast.error('Please upload a resume and provide a job description.')
@@ -41,26 +44,20 @@ export default function CoverLetterGenerator() {
 
     setIsGenerating(true)
 
-    // Simulate AI Cover Letter Generation
-    setTimeout(() => {
-      setIsGenerating(false)
-      const letter = `Dear Hiring Manager,
-
-I am writing to express my enthusiastic interest in the Software Engineer position. With a strong foundation in modern frontend architecture, state optimization, and cloud-native integration, I am confident in my ability to make an immediate, high-value contribution to your engineering team.
-
-In my recent experience, I architected reusable React component libraries and integrated resilient RESTful endpoints, achieving a 35% reduction in client-side latency. Your team’s focus on building scalable web solutions strongly aligns with my technical expertise in JavaScript, TypeScript, and automated testing suites.
-
-I am particularly excited about your company’s mission and would welcome the opportunity to discuss how my technical background and problem-solving skills align with your hiring goals.
-
-Thank you for your time and consideration.
-
-Sincerely,
-[Your Name]
-      `.trim()
-
-      setCoverLetter(letter)
+    try {
+      const formData = new FormData()
+      if (file) formData.append('resume', file)
+      formData.append('jobDescription', jobDescription.trim())
+      formData.append('tone', tone)
+      const res = await coverLetterApi.generateCoverLetter(formData)
+      const data = res.data?.data || res.data
+      setCoverLetter(data.content || data)
       toast.success(`Cover letter generated in ${tone} tone!`)
-    }, 2500)
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to generate cover letter.')
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   const handleCopy = () => {
@@ -71,12 +68,35 @@ Sincerely,
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleDownloadDocx = () => {
-    toast.success('Downloading DOCX file...')
+  const handleDownloadDocx = async () => {
+    if (!coverLetter) return
+    try {
+      const paragraphs = coverLetter.split('\n\n').map(p => new Paragraph({
+        children: [new TextRun(p)]
+      }))
+      const doc = new Document({ sections: [{ children: paragraphs }] })
+      const blob = await Packer.toBlob(doc)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'Cover_Letter.docx'
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('Downloaded DOCX Cover Letter')
+    } catch {
+      toast.error('Failed to export DOCX file')
+    }
   }
 
   const handleDownloadPdf = () => {
-    toast.success('Downloading PDF file...')
+    if (!coverLetter) return
+    const formattedHtml = coverLetter.split('\n\n').map(p => `<p style="margin-bottom: 16px;">${p}</p>`).join('')
+    exportToPdf({
+      title: 'Cover Letter',
+      content: `<div style="font-family: Georgia, serif; line-height: 1.8; color: #1e293b;">${formattedHtml}</div>`,
+      filename: 'Cover_Letter.pdf'
+    })
+    toast.success('Generating Cover Letter PDF...')
   }
 
   return (

@@ -1,6 +1,9 @@
 import api from './axios'
 
 export const recruiterAiApi = {
+  getDashboardStats: () =>
+    api.get('/recruiter-ai/dashboard-stats').then((r) => r.data),
+
   generateJobDescription: (data) =>
     api.post('/recruiter-ai/generate-job-description', data).then((r) => r.data),
 
@@ -24,6 +27,9 @@ export const recruiterAiApi = {
 
   generateRejectionEmail: (data) =>
     api.post('/recruiter-ai/generate-rejection-email', data).then((r) => r.data),
+
+  sendEmail: (data) =>
+    api.post('/recruiter-ai/send-email', data).then((r) => r.data),
 
   generateTechnicalAssignment: (jobId) =>
     api.get(`/recruiter-ai/jobs/${jobId}/generate-assignment`).then((r) => r.data),

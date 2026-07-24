@@ -10,6 +10,8 @@ process.on('uncaughtException', (err) => {
 
 // Load dotenv environment variables
 require('dotenv').config();
+const validateEnv = require('./utils/validateEnv');
+validateEnv();
 
 const { execSync } = require('child_process');
 const fs = require('fs');

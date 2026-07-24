@@ -187,3 +187,74 @@ exports.generateTechnicalAssignment = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({ status: 'success', data: result });
 });
+
+exports.getDashboardStats = asyncHandler(async (req, res, next) => {
+  const recruiterId = req.user._id;
+  const Interview = require('../models/Interview');
+
+  const jobs = await Job.find({ recruiterId }).sort('-createdAt');
+  const jobIds = jobs.map(j => j._id);
+
+  const applications = await Application.find({ jobId: { $in: jobIds } })
+    .populate('candidateId', 'name email')
+    .populate('jobId', 'title location')
+    .sort('-createdAt');
+
+  const interviews = await Interview.find({ recruiterId }).sort('-createdAt');
+
+  const activeJobs = jobs.filter(j => j.status === 'Active').length;
+  const hiredApps = applications.filter(a => a.status === 'Hired').length;
+  const shortlistedApps = applications.filter(a => a.status === 'Shortlisted' || a.status === 'Reviewing').length;
+
+  const totalApps = applications.length;
+  const hiringRate = totalApps > 0 ? Math.round((hiredApps / totalApps) * 100) : 0;
+  const interviewConversion = totalApps > 0 ? Math.round((interviews.length / totalApps) * 100) : 0;
+
+  let totalAtsSum = 0;
+  let atsCount = 0;
+  applications.forEach(a => {
+    if (typeof a.atsScore === 'number' && a.atsScore > 0) {
+      totalAtsSum += a.atsScore;
+      atsCount++;
+    }
+  });
+  const avgAtsScore = atsCount > 0 ? Math.round(totalAtsSum / atsCount) : 0;
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      jobs,
+      activeJobs,
+      totalJobs: jobs.length,
+      applications,
+      totalApplications: totalApps,
+      interviews,
+      totalInterviews: interviews.length,
+      hiredCount: hiredApps,
+      shortlistedCount: shortlistedApps,
+      hiringRate,
+      interviewConversion,
+      avgAtsScore
+    }
+  });
+});
+
+exports.sendEmail = asyncHandler(async (req, res, next) => {
+  const { candidateEmail, subject, body } = req.body;
+  if (!candidateEmail || !subject || !body) {
+    return next(new AppError('Recipient email, subject, and body are required.', 400));
+  }
+
+  const emailService = require('../services/emailService');
+  await emailService.sendEmail({
+    to: candidateEmail,
+    subject,
+    text: body,
+    html: `<div style="font-family: sans-serif; line-height: 1.6;">${body.replace(/\n/g, '<br>')}</div>`
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: `Email sent to ${candidateEmail} successfully.`
+  });
+});

@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Card, CardContent } from '../ui/Card'
 import Button from '../ui/Button'
@@ -13,6 +14,21 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Tooltip
 } from 'recharts'
 import { staggerContainer, staggerItem } from '../../lib/motion'
+import { exportInterviewReportPdf } from '../../utils/pdfExport'
+
+const RadarChartWrapper = memo(function RadarChartWrapper({ data }) {
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <RadarChart data={data}>
+        <PolarGrid stroke="var(--border-color)" />
+        <PolarAngleAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
+        <PolarRadiusAxis domain={[0, 100]} stroke="var(--border-color)" />
+        <Radar name="Score" dataKey="value" stroke="#6366f1" fill="#6366f1" fillOpacity={0.35} />
+        <Tooltip />
+      </RadarChart>
+    </ResponsiveContainer>
+  )
+})
 
 export default function InterviewFeedbackReport({ sessionData, onRetake }) {
   const { toast } = useToast()
@@ -57,7 +73,8 @@ export default function InterviewFeedbackReport({ sessionData, onRetake }) {
   ]
 
   const handleDownloadPdf = () => {
-    toast.success('Downloading AI Interview Report PDF...')
+    exportInterviewReportPdf({ overallScore, metrics, strengths, weaknesses, suggestions })
+    toast.success('Generating AI Interview Report PDF...')
   }
 
   return (
@@ -113,15 +130,7 @@ export default function InterviewFeedbackReport({ sessionData, onRetake }) {
                 <Brain className="h-5 w-5 text-indigo-500" /> Skill Competency Radar
               </h3>
               <div className="flex-1 w-full min-h-[300px] flex items-center justify-center">
-                <ResponsiveContainer width="100%" height={300}>
-                  <RadarChart data={metrics}>
-                    <PolarGrid stroke="var(--border-color)" />
-                    <PolarAngleAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
-                    <PolarRadiusAxis domain={[0, 100]} stroke="var(--border-color)" />
-                    <Radar name="Score" dataKey="value" stroke="#6366f1" fill="#6366f1" fillOpacity={0.35} />
-                    <Tooltip />
-                  </RadarChart>
-                </ResponsiveContainer>
+                <RadarChartWrapper data={metrics} />
               </div>
             </CardContent>
           </Card>

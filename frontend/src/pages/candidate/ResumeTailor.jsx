@@ -4,6 +4,7 @@ import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Textarea from '../../components/ui/Textarea'
 import FileDropzone from '../../components/FileUpload/FileDropzone'
+import { aiTailorApi } from '../../services/aiTailorApi'
 import AIStepLoader from '../../components/ui/AIStepLoader'
 import CountUp from '../../components/ui/CountUp'
 import Badge from '../../components/ui/Badge'
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { staggerContainer, staggerItem } from '../../lib/motion'
+import { exportTailoredResumePdf } from '../../utils/pdfExport'
 
 export default function ResumeTailor() {
   const { toast } = useToast()
@@ -28,7 +30,7 @@ export default function ResumeTailor() {
 
   const handleFileChange = useCallback((f) => setFile(f), [])
 
-  const handleTailor = (e) => {
+  const handleTailor = async (e) => {
     e.preventDefault()
     if (!file || !jobDescription.trim()) {
       toast.error('Please upload a resume and provide a job description.')
@@ -38,38 +40,18 @@ export default function ResumeTailor() {
     setIsAnalyzing(true)
     setResult(null)
 
-    // Simulate AI Tailoring Process
-    setTimeout(() => {
+    try {
+      const formData = new FormData()
+      if (file) formData.append('resume', file)
+      formData.append('jobDescription', jobDescription.trim())
+      const res = await aiTailorApi.tailorResume(formData)
+      setResult(res.data?.data || res.data)
+      toast.success('Resume tailored successfully with AI!')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'AI Resume tailoring failed. Please try again.')
+    } finally {
       setIsAnalyzing(false)
-      setResult({
-        atsScoreBefore: 64,
-        atsScoreAfter: 94,
-        summaryBefore: 'Experienced software developer proficient in React, JavaScript, and Web Development seeking a frontend engineering role.',
-        summaryAfter: 'Results-driven Senior Frontend Engineer with 5+ years of expertise in architecting high-performance React application suites, optimizing client-side state, and streamlining CI/CD pipelines to deliver scalable enterprise web applications.',
-        addedKeywords: ['TypeScript', 'State Management (Redux/Zustand)', 'Micro-frontends', 'RESTful APIs', 'Jest/RTL', 'Performance Optimization'],
-        missingKeywords: ['Docker', 'AWS S3', 'GraphQL'],
-        bulletImprovements: [
-          {
-            before: 'Built React components for the main web application and fixed bugs.',
-            after: 'Architected reusable, high-performance React component primitives, reducing web bundle size by 28% and boosting Lighthouse performance scores to 98+.'
-          },
-          {
-            before: 'Worked with backend developers to fetch API data and show on screen.',
-            after: 'Integrated resilient REST APIs and WebSocket streams with optimistic UI updates, decreasing client network latency by 35%.'
-          },
-          {
-            before: 'Helped team with testing and deploying new website features.',
-            after: 'Pioneered automated End-to-End Cypress test suites and GitHub Action workflows, elevating test coverage from 60% to 92% across core release cycles.'
-          }
-        ],
-        suggestions: [
-          'Incorporate quantitative metrics (e.g. % improvements, latency reductions) into your experience section.',
-          'Add TypeScript and State Management explicitly to the top 3 bullet points.',
-          'Align your project headline directly with the target job title.'
-        ]
-      })
-      toast.success('Resume tailored successfully!')
-    }, 2800)
+    }
   }
 
   const handleCopy = () => {
@@ -92,7 +74,9 @@ ${result.bulletImprovements.map(b => `• ${b.after}`).join('\n')}
   }
 
   const handleDownloadPdf = () => {
-    toast.success('Downloading Tailored PDF Resume...')
+    if (!result) return
+    exportTailoredResumePdf(result)
+    toast.success('Generating Tailored PDF Resume...')
   }
 
   const handleSaveResume = () => {

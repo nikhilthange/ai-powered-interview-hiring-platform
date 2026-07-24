@@ -1,0 +1,18 @@
+{
+  "name": "ai-powered-interview-platform",
+  "version": "1.0.0",
+  "description": "Enterprise AI-Powered Interview SaaS Platform",
+  "private": true,
+  "scripts": {
+    "verify:production": "node scripts/verify_production.js",
+    "test": "node backend/scripts/production.test.js",
+    "test:backup": "node backend/scripts/backupRestore.test.js",
+    "test:monitoring": "node monitoring/test_monitoring.js",
+    "k8s:validate": "node k8s/validate_k8s.js",
+    "backup": "node backend/scripts/backup.js",
+    "restore": "node backend/scripts/restore.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

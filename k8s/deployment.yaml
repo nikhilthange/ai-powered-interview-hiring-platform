@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hiremate-backend
+  namespace: hiremate-prod
+  labels:
+    app: hiremate-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hiremate-backend
+  template:
+    metadata:
+      labels:
+        app: hiremate-backend
+    spec:
+      containers:
+      - name: backend
+        image: hiremate/backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: hiremate-config
+        - secretRef:
+            name: hiremate-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health/live
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health/ready
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5

@@ -29,12 +29,23 @@ const companyRouter = require('./routes/companyRoutes');
 const resumeBuilderRouter = require('./routes/resumeBuilderRoutes');
 const userRouter = require('./routes/userRoutes');
 const searchRouter = require('./routes/searchRoutes');
+const resumeTailorRouter = require('./routes/resumeTailorRoutes');
+const coverLetterRouter = require('./routes/coverLetterRoutes');
+const githubAnalyzerRouter = require('./routes/githubAnalyzerRoutes');
+const companyReviewRouter = require('./routes/companyReviewRoutes');
+const interviewSchedulerRouter = require('./routes/interviewSchedulerRoutes');
 const path = require('path');
+
+const healthRouter = require('./routes/healthRoutes');
+const requestTracing = require('./middleware/requestTracing');
 
 const app = express();
 
-// Trust proxy for correct client IP behind Nginx (required by rate limiter)
 app.set('trust proxy', 1);
+
+app.use(requestTracing);
+app.use('/api/v1/health', healthRouter);
+app.use('/api/v1', healthRouter);
 
 // 1. Configure Global Security Middlewares
 app.use(helmet({
@@ -132,7 +143,15 @@ app.use('/api/v1/companies', companyRouter);
 app.use('/api/v1/resume-builder', resumeBuilderRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/search', searchRouter);
-app.use('/api/debug', debugRouter);
+app.use('/api/v1/resume-tailor', resumeTailorRouter);
+app.use('/api/v1/cover-letters', coverLetterRouter);
+app.use('/api/v1/github-analyzer', githubAnalyzerRouter);
+app.use('/api/v1/company-reviews', companyReviewRouter);
+app.use('/api/v1/interview-scheduler', interviewSchedulerRouter);
+
+if (process.env.NODE_ENV === 'development') {
+  app.use('/api/debug', debugRouter);
+}
 
 // 5. Unhandled Routes Catchall (404)
 app.all('*', (req, res, next) => {

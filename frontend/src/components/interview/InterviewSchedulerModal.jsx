@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { scheduleApi } from '../../services/scheduleApi'
+import { generateIcsFile } from '../../utils/icsExport'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
@@ -19,20 +21,33 @@ export default function InterviewSchedulerModal({ open, onClose, candidateName =
   const [meetingUrl, setMeetingUrl] = useState('')
   const [isScheduled, setIsScheduled] = useState(false)
 
-  const handleSchedule = (e) => {
+  const handleSchedule = async (e) => {
     e.preventDefault()
     if (!date || !time) {
       toast.error('Please specify both date and time.')
       return
     }
 
-    const generatedUrl = `https://meet.google.com/abc-defg-hij`
-    setMeetingUrl(generatedUrl)
-    setIsScheduled(true)
-    toast.success(`Interview scheduled with ${candidateName}! Notification sent.`)
+    try {
+      const res = await scheduleApi.scheduleInterview({ candidateName, date, time, platform })
+      const data = res.data?.data || res.data
+      setMeetingUrl(data.meetingUrl || `https://meet.google.com/abc-defg-hij`)
+      setIsScheduled(true)
+      toast.success(`Interview scheduled with ${candidateName}! Saved to MongoDB & notifications sent.`)
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to schedule interview.')
+    }
   }
 
   const handleDownloadIcs = () => {
+    generateIcsFile({
+      title: 'AI Technical Interview',
+      date,
+      time,
+      candidateName,
+      platform,
+      meetingUrl
+    })
     toast.success('Downloaded calendar invite (.ics)')
   }
 

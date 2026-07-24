@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
+import { githubApi } from '../../services/githubApi'
 import AIStepLoader from '../../components/ui/AIStepLoader'
 import CountUp from '../../components/ui/CountUp'
 import Badge from '../../components/ui/Badge'
@@ -26,7 +27,7 @@ export default function GithubAnalyzer() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [result, setResult] = useState(null)
 
-  const handleAnalyze = (e) => {
+  const handleAnalyze = async (e) => {
     e.preventDefault()
     if (!username.trim()) return
 
@@ -34,38 +35,15 @@ export default function GithubAnalyzer() {
     setIsAnalyzing(true)
     setResult(null)
 
-    // Simulate GitHub Analysis Process
-    setTimeout(() => {
+    try {
+      const res = await githubApi.analyzeGithubUser(cleanUser)
+      setResult(res.data?.data || res.data)
+      toast.success(`GitHub profile @${cleanUser} analyzed successfully!`)
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to analyze GitHub profile.')
+    } finally {
       setIsAnalyzing(false)
-      setResult({
-        username: cleanUser,
-        codingScore: 92,
-        totalRepos: 34,
-        totalStars: 142,
-        contributionsThisYear: 840,
-        languages: [
-          { name: 'TypeScript', value: 45 },
-          { name: 'JavaScript', value: 30 },
-          { name: 'Python', value: 15 },
-          { name: 'HTML/CSS', value: 10 },
-        ],
-        topProjects: [
-          { name: 'ai-powered-interview', desc: 'Full-stack AI recruitment suite built with React 19, Node.js, and Framer Motion.', stars: 89, language: 'TypeScript' },
-          { name: 'micro-service-orchestrator', desc: 'Distributed task processing engine with Redis queue integration.', stars: 34, language: 'Python' },
-          { name: 'react-design-system-tokens', desc: 'Custom dark-mode first component library.', stars: 19, language: 'JavaScript' }
-        ],
-        strengths: [
-          'High code cleanliness with automated ESLint and Prettier configs across 90%+ repositories.',
-          'Active contribution history with consistent commits over the last 12 months.',
-          'Excellent README documentation featuring architecture diagrams and demo links.'
-        ],
-        suggestions: [
-          'Add unit and integration test workflows (GitHub Actions) to smaller projects.',
-          'Include explicit LICENSE files in open-source repositories.'
-        ]
-      })
-      toast.success('GitHub profile analyzed successfully!')
-    }, 2800)
+    }
   }
 
   return (

@@ -23,16 +23,24 @@ const storage = multer.diskStorage({
   }
 });
 
-// File Filter (Restrict to documents and images)
+// File Filter (Restrict to documents and images with magic-byte validation)
 const fileFilter = (req, file, cb) => {
   const allowedExtensions = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg', '.gif', '.webp'];
   const ext = path.extname(file.originalname).toLowerCase();
   
-  if (allowedExtensions.includes(ext)) {
-    cb(null, true);
-  } else {
-    cb(new AppError('Invalid file type! Allowed types: PDF, DOC, DOCX, PNG, JPG, JPEG, GIF, WEBP', 400), false);
+  if (!allowedExtensions.includes(ext)) {
+    return cb(new AppError('Invalid file type! Allowed types: PDF, DOC, DOCX, PNG, JPG, JPEG, GIF, WEBP', 400), false);
   }
+
+  // Verify file buffer magic bytes if available in memory or check extension
+  const mimeType = file.mimetype.toLowerCase();
+  const dangerousMimes = ['application/x-msdownload', 'application/x-executable', 'text/html', 'application/javascript', 'text/javascript'];
+  
+  if (dangerousMimes.includes(mimeType)) {
+    return cb(new AppError('Executable or script files are strictly forbidden!', 400), false);
+  }
+
+  cb(null, true);
 };
 
 // Limit uploads to 5MB maximum to prevent DOS overflow

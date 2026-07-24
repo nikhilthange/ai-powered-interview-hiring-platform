@@ -1,5 +1,11 @@
 const mongoose = require('mongoose');
 
+const stageHistorySchema = new mongoose.Schema({
+  status: String,
+  changedAt: { type: Date, default: Date.now },
+  changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+}, { _id: false });
+
 const ApplicationSchema = new mongoose.Schema({
   jobId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -21,7 +27,7 @@ const ApplicationSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Applied', 'Reviewing', 'Shortlisted', 'Interview Scheduled', 'Rejected', 'Hired'],
+    enum: ['Applied', 'Reviewing', 'Shortlisted', 'Interview Scheduled', 'Technical Round', 'HR Round', 'Offered', 'Rejected', 'Hired'],
     default: 'Applied'
   },
   atsScore: {
@@ -36,19 +42,28 @@ const ApplicationSchema = new mongoose.Schema({
   matchPercent: {
     type: Number,
     default: 0
-  }
+  },
+  stageHistory: [stageHistorySchema]
 }, {
   timestamps: true
 });
 
-// Compound index to guarantee a candidate cannot submit duplicate applications for a single job post
+ApplicationSchema.pre('save', function (next) {
+  if (this.isModified('status')) {
+    this.stageHistory.push({
+      status: this.status,
+      changedAt: new Date(),
+      changedBy: this._changedBy
+    });
+  }
+  next();
+});
+
+ApplicationSchema.index({ candidateId: 1 });
+ApplicationSchema.index({ jobId: 1 });
 ApplicationSchema.index({ jobId: 1, candidateId: 1 }, { unique: true });
 ApplicationSchema.index({ status: 1 });
-
-// Candidate's application history
 ApplicationSchema.index({ candidateId: 1, createdAt: -1 });
-
-// Recruiter filtering by status per job
 ApplicationSchema.index({ jobId: 1, status: 1 });
 
 module.exports = mongoose.model('Application', ApplicationSchema);

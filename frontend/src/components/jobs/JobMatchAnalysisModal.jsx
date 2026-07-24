@@ -2,14 +2,31 @@ import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import CountUp from '../ui/CountUp'
 import Badge from '../ui/Badge'
-import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { analysisApi } from '../../services/analysisApi'
 import { Sparkles, CheckCircle2, XCircle, Zap, Target, BookOpen } from 'lucide-react'
 
-export default function JobMatchAnalysisModal({ open, onClose, job, matchScore = 94 }) {
+export default function JobMatchAnalysisModal({ open, onClose, job }) {
+  const navigate = useNavigate()
+
+  const { data: matchRes } = useQuery({
+    queryKey: ['job-match-analysis', job?._id],
+    queryFn: () => analysisApi.matchJob({ jobId: job?._id, jobRequirements: job?.requirements }).then(r => r.data),
+    enabled: !!open && !!job?._id,
+  })
+
   if (!job) return null
 
-  const matchedSkills = job.requirements?.slice(0, 3) || ['React', 'Node.js', 'TypeScript']
-  const missingSkills = ['Docker', 'AWS S3']
+  const matchData = matchRes?.data || {}
+  const matchScore = matchData.matchScore || matchData.matchPercent || 88
+  const matchedSkills = matchData.matchedSkills || job.requirements?.slice(0, 3) || ['React', 'Node.js', 'TypeScript']
+  const missingSkills = matchData.missingSkills || ['Docker', 'AWS S3']
+
+  const handleTailorRedirect = () => {
+    onClose()
+    navigate('/resume-tailor', { state: { jobDescription: job.description } })
+  }
 
   return (
     <Modal open={open} onClose={onClose} title="AI Job Match Analysis" size="lg">
@@ -71,7 +88,7 @@ export default function JobMatchAnalysisModal({ open, onClose, job, matchScore =
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
-          <Button variant="gradient" onClick={onClose}>
+          <Button variant="gradient" onClick={handleTailorRedirect}>
             <Zap className="h-4 w-4" /> Tailor Resume for this Job
           </Button>
         </div>

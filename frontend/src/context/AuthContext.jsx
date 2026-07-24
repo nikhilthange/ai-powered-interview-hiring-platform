@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useCallback, useRef } from 'react'
 import { authApi } from '../services/authApi'
+import { setAccessToken, getAccessToken } from '../services/axios'
 
 export const AuthContext = createContext(null)
 
@@ -14,10 +15,11 @@ export function AuthProvider({ children }) {
     refreshLock.current = true
     try {
       const { data } = await authApi.refreshToken()
-      localStorage.setItem('accessToken', data.accessToken)
+      const token = data.accessToken || data.data?.accessToken
+      setAccessToken(token)
       return true
     } catch {
-      localStorage.removeItem('accessToken')
+      setAccessToken(null)
       return false
     } finally {
       refreshLock.current = false
@@ -25,7 +27,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   const loadUser = useCallback(async () => {
-    const token = localStorage.getItem('accessToken')
+    const token = getAccessToken()
 
     if (!token) {
       const refreshed = await tryRefresh()
@@ -65,7 +67,8 @@ export function AuthProvider({ children }) {
 
   const login = async (credentials) => {
     const { data } = await authApi.login(credentials)
-    localStorage.setItem('accessToken', data.accessToken)
+    const token = data.accessToken || data.data?.accessToken
+    setAccessToken(token)
     setUser(data.data.user)
     setIsAuthenticated(true)
     return data
@@ -82,7 +85,7 @@ export function AuthProvider({ children }) {
     } catch {
       // proceed with local logout even if API fails
     }
-    localStorage.removeItem('accessToken')
+    setAccessToken(null)
     setUser(null)
     setIsAuthenticated(false)
   }

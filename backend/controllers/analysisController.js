@@ -1,4 +1,5 @@
 const { analyzeResumeInteractive, analyzeSkillGap, analyzeResumeFromFile, analyzeSkillGapFromFile } = require('../services/aiService');
+const aiProvider = require('../services/aiProvider');
 const { extractText, cleanup } = require('../services/resumeService');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/appError');
@@ -115,5 +116,36 @@ exports.skillGap = asyncHandler(async (req, res) => {
   res.status(200).json({
     status: 'success',
     data: result
+  });
+});
+
+exports.matchJob = asyncHandler(async (req, res) => {
+  const Profile = require('../models/Profile');
+  const Job = require('../models/Job');
+  const { jobId, jobRequirements = [], resumeText: inputResumeText } = req.body;
+
+  const job = jobId ? await Job.findById(jobId) : null;
+  const jobDescription = job?.description || '';
+  const jobTitle = job?.title || '';
+
+  const profile = await Profile.findOne({ userId: req.user._id });
+  const resumeText = inputResumeText || profile?.resumeUrl || '';
+
+  const result = await aiProvider.matchJob({
+    resumeText,
+    jobDescription,
+    jobTitle,
+    candidateProfile: profile || {}
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      matchScore: result.matchPercent || 0,
+      matchedSkills: result.matchedSkills || [],
+      missingSkills: result.missingSkills || [],
+      matchPercent: result.matchPercent || 0,
+      preparationSuggestions: result.preparationSuggestions || []
+    }
   });
 });

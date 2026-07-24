@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { recruiterAiApi } from '../../services/recruiterAiApi'
+import { useAuth } from '../../hooks/useAuth'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Textarea from '../ui/Textarea'
@@ -13,10 +15,12 @@ const EMAIL_TEMPLATES = [
   { id: 'reminder', label: 'Interview Reminder', subject: 'Reminder: Upcoming Interview Session' },
 ]
 
-export default function AIEmailGeneratorModal({ open, onClose, candidateName = 'Candidate', jobTitle = 'Software Engineer' }) {
+export default function AIEmailGeneratorModal({ open, onClose, candidateName = 'Candidate', candidateEmail = 'candidate@example.com', jobTitle = 'Software Engineer', companyName }) {
+  const { user } = useAuth()
   const { toast } = useToast()
   const [template, setTemplate] = useState('invite')
   const [copied, setCopied] = useState(false)
+  const [isSending, setIsSending] = useState(false)
   const [emailSubject, setEmailSubject] = useState(EMAIL_TEMPLATES[0].subject)
   const [emailBody, setEmailBody] = useState(`Hi ${candidateName},
 
@@ -27,26 +31,26 @@ Please let us know your availability for this week.
 Best regards,
 Hiring Team`)
 
-  const handleTemplateChange = (tmplId) => {
+  const effectiveCompanyName = companyName || user?.companyName || user?.company || 'HireMate Tech'
+
+  const handleTemplateChange = async (tmplId) => {
     setTemplate(tmplId)
     const tmpl = EMAIL_TEMPLATES.find(t => t.id === tmplId)
     if (!tmpl) return
     setEmailSubject(tmpl.subject)
 
-    let body = ''
-    if (tmplId === 'invite') {
-      body = `Hi ${candidateName},\n\nWe reviewed your application for the ${jobTitle} role and were impressed with your technical background. We would love to schedule a 30-minute interview.\n\nBest regards,\nHiring Team`
-    } else if (tmplId === 'selection') {
-      body = `Hi ${candidateName},\n\nCongratulations! Based on your recent interview feedback, we are excited to advance you to the next round for ${jobTitle}.\n\nBest regards,\nHiring Team`
-    } else if (tmplId === 'rejection') {
-      body = `Hi ${candidateName},\n\nThank you for applying for ${jobTitle}. While your qualifications are impressive, we have decided to move forward with other candidates whose experience more closely aligns with our current needs.\n\nBest regards,\nHiring Team`
-    } else if (tmplId === 'offer') {
-      body = `Dear ${candidateName},\n\nWe are thrilled to formally extend an offer of employment for the ${jobTitle} position! Attached is your official offer package.\n\nBest regards,\nHiring Manager`
-    } else {
-      body = `Hi ${candidateName},\n\nThis is a quick reminder regarding your upcoming interview scheduled for tomorrow. We look forward to speaking with you!\n\nBest regards,\nHiring Team`
+    try {
+      let res
+      if (tmplId === 'rejection') {
+        res = await recruiterAiApi.generateRejectionEmail({ candidateName, jobTitle, companyName: effectiveCompanyName })
+      } else {
+        res = await recruiterAiApi.generateEmailInvitation({ candidateName, jobTitle, companyName: effectiveCompanyName, type: tmplId })
+      }
+      setEmailBody(res.data?.email || res.email || res.data?.invitation || res.data?.content || res.data || `Hi ${candidateName},\n\nWe would love to invite you to an interview for ${jobTitle}.\n\nBest regards,\nHiring Team`)
+      toast.success('AI Email generated with NVIDIA AI!')
+    } catch (err) {
+      toast.error('Failed to generate AI email.')
     }
-
-    setEmailBody(body)
   }
 
   const handleCopy = () => {
@@ -56,9 +60,21 @@ Hiring Team`)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleSend = () => {
-    toast.success(`Email sent to ${candidateName}!`)
-    onClose()
+  const handleSend = async () => {
+    setIsSending(true)
+    try {
+      await recruiterAiApi.sendEmail({
+        candidateEmail,
+        subject: emailSubject,
+        body: emailBody
+      })
+      toast.success(`Email sent successfully to ${candidateName}!`)
+      onClose()
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to send email.')
+    } finally {
+      setIsSending(false)
+    }
   }
 
   return (
@@ -112,8 +128,9 @@ Hiring Team`)
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-            <Button variant="gradient" size="sm" onClick={handleSend}>
-              <Send className="h-3.5 w-3.5" /> Send Email Now
+            <Button variant="gradient" size="sm" onClick={handleSend} disabled={isSending}>
+              {isSending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+              {isSending ? 'Sending...' : 'Send Email Now'}
             </Button>
           </div>
         </div>

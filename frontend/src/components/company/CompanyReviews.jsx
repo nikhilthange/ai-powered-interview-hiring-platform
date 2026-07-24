@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { companyReviewApi } from '../../services/companyReviewApi'
 import { Card, CardContent } from '../ui/Card'
 import Button from '../ui/Button'
 import Badge from '../ui/Badge'
@@ -8,54 +10,73 @@ import Textarea from '../ui/Textarea'
 import { useToast } from '../ui/Toast'
 import { Star, MessageSquare, Plus, CheckCircle2, User, ShieldCheck } from 'lucide-react'
 
-export default function CompanyReviews({ companyName = 'Company' }) {
+export default function CompanyReviews({ companyName = 'Company', companyId }) {
   const { toast } = useToast()
+  const queryClient = useQueryClient()
   const [openModal, setOpenModal] = useState(false)
   const [isAnonymous, setIsAnonymous] = useState(true)
   const [rating, setRating] = useState(5)
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
 
-  const [reviews, setReviews] = useState([
+  const targetId = companyId || companyName
+
+  const { data: reviewsRes, isLoading } = useQuery({
+    queryKey: ['company-reviews', targetId],
+    queryFn: () => companyReviewApi.getCompanyReviews(targetId).then((r) => r.data),
+    enabled: !!targetId,
+  })
+
+  const fetchedReviews = reviewsRes?.data || []
+  const avgRating = reviewsRes?.avgRating || (fetchedReviews.length > 0 ? (fetchedReviews.reduce((acc, r) => acc + r.rating, 0) / fetchedReviews.length).toFixed(1) : 4.7)
+
+  const defaultReviews = [
     {
-      id: 1,
+      _id: '1',
       title: 'Outstanding Work Culture & Fast Growth',
       rating: 4.8,
       author: 'Senior Frontend Engineer (Current Employee)',
-      date: '2 weeks ago',
-      metrics: { culture: 5, salary: 4.5, growth: 5, management: 4.8, workLife: 4.5 },
+      createdAt: new Date().toISOString(),
       comment: 'Great team, strong engineering autonomy, and modern tech stack. Leadership genuinely values employee growth.'
     },
     {
-      id: 2,
+      _id: '2',
       title: 'Fair Interview Process with Great Feedback',
       rating: 4.5,
       author: 'Anonymous Candidate',
-      date: '1 month ago',
-      metrics: { culture: 4.5, salary: 4.5, growth: 4.5, management: 4.5, workLife: 4.5 },
+      createdAt: new Date().toISOString(),
       comment: 'The AI mock interview and recruiter follow-ups were extremely fast and transparent.'
     }
-  ])
+  ]
 
-  const handleAddReview = (e) => {
+  const reviewsList = fetchedReviews.length > 0 ? fetchedReviews : defaultReviews
+
+  const createMutation = useMutation({
+    mutationFn: (newReviewData) => companyReviewApi.createReview(newReviewData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['company-reviews', targetId] })
+      setTitle('')
+      setComment('')
+      setOpenModal(false)
+      toast.success('Review submitted successfully to MongoDB!')
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to submit review.')
+    }
+  })
+
+  const handleAddReview = async (e) => {
     e.preventDefault()
     if (!title || !comment) return
 
-    const newRev = {
-      id: Date.now(),
+    createMutation.mutate({
+      companyId: targetId,
+      companyName,
       title,
+      comment,
       rating,
-      author: isAnonymous ? 'Anonymous Reviewer' : 'Verified Employee',
-      date: 'Just now',
-      metrics: { culture: rating, salary: rating, growth: rating, management: rating, workLife: rating },
-      comment
-    }
-
-    setReviews([newRev, ...reviews])
-    setTitle('')
-    setComment('')
-    setOpenModal(false)
-    toast.success('Review submitted successfully!')
+      isAnonymous
+    })
   }
 
   return (
@@ -66,7 +87,7 @@ export default function CompanyReviews({ companyName = 'Company' }) {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className="flex flex-col items-center justify-center h-20 w-20 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400">
-                <span className="text-2xl font-extrabold">4.7</span>
+                <span className="text-2xl font-extrabold">{avgRating}</span>
                 <div className="flex text-amber-500 text-[10px]">★★★★★</div>
               </div>
               <div>
@@ -107,13 +128,13 @@ export default function CompanyReviews({ companyName = 'Company' }) {
 
       {/* Review List */}
       <div className="space-y-4">
-        {reviews.map((rev) => (
-          <Card key={rev.id} className="border-[var(--border-color)]">
+        {reviewsList.map((rev) => (
+          <Card key={rev._id || rev.id} className="border-[var(--border-color)]">
             <CardContent className="p-5 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h4 className="font-bold text-sm text-[var(--text-primary)]">{rev.title}</h4>
-                  <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{rev.author} • {rev.date}</p>
+                  <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{rev.author || (rev.isAnonymous ? 'Anonymous' : 'Verified Employee')} • {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : rev.date}</p>
                 </div>
                 <Badge variant="warning" size="sm">
                   ★ {rev.rating}

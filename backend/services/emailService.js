@@ -230,6 +230,7 @@ const retryFailedEmails = async () => {
 };
 
 module.exports = {
+  sendEmail,
   sendVerificationEmail,
   sendWelcomeEmail,
   sendPasswordResetEmail,

@@ -182,6 +182,7 @@ exports.updateApplicationStatus = asyncHandler(async (req, res, next) => {
   }
 
   application.status = status;
+  application._changedBy = req.user._id;
   await application.save();
 
   // Notify candidate of status change

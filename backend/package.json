@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "backup": "node scripts/backup.js",
+    "restore": "node scripts/restore.js",
+    "verify:production": "node ../scripts/verify_production.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

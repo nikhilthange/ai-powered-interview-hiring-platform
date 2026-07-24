@@ -11,5 +11,6 @@ router.post('/analyze-resume', analysisController.analyzeResume);
 router.post('/analyze-resume-upload', upload.single('resume'), analysisController.analyzeResumeUpload);
 router.post('/skill-gap', analysisController.skillGap);
 router.post('/skill-gap-upload', upload.single('resume'), analysisController.skillGapUpload);
+router.post('/match', analysisController.matchJob);
 
 module.exports = router;

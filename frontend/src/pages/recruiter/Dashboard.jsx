@@ -1,9 +1,7 @@
 import { motion } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
-import { useQueries } from '@tanstack/react-query'
-import { jobApi } from '../../services/jobApi'
-import { applicationApi } from '../../services/applicationApi'
-import { interviewApi } from '../../services/interviewApi'
+import { useQuery } from '@tanstack/react-query'
+import { recruiterAiApi } from '../../services/recruiterAiApi'
 import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import StatCard from '../../components/ui/StatCard'
@@ -43,25 +41,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function RecruiterDashboard() {
   const { user } = useAuth()
 
-  const results = useQueries({
-    queries: [
-      { queryKey: ['recruiter-jobs'], queryFn: () => jobApi.getMyJobs().then((r) => r.data) },
-      { queryKey: ['recruiter-interviews'], queryFn: () => interviewApi.getMyInterviews() },
-    ],
-  })
-
-  const [jobsQuery, interviewsQuery] = results
-  const isLoading = results.some((q) => q.isPending && !q.data)
-
-  const jobs = jobsQuery.data?.data?.jobs || []
-  const jobIds = jobs.map(j => j._id)
-
-  const appsQuery = useQueries({
-    queries: jobIds.length > 0 ? jobIds.map(id => ({
-      queryKey: ['job-apps', id],
-      queryFn: () => applicationApi.getJobApplications(id).then(r => r.data?.data?.applications || []),
-      enabled: !isLoading,
-    })) : [],
+  const { data: statsRes, isLoading } = useQuery({
+    queryKey: ['recruiter-dashboard-stats'],
+    queryFn: () => recruiterAiApi.getDashboardStats(),
   })
 
   if (isLoading) {
@@ -74,11 +56,12 @@ export default function RecruiterDashboard() {
     )
   }
 
-  const allApps = appsQuery.map(q => q.data || []).flat()
-  const activeJobs = jobs.filter((j) => j.status === 'Active').length
-  const interviewsList = interviewsQuery.data?.data?.interviews || []
-  const hiredApps = allApps.filter((a) => a.status === 'Hired').length
-  const hiringRate = allApps.length > 0 ? Math.round((hiredApps / allApps.length) * 100) : 0
+  const stats = statsRes?.data || {}
+  const jobs = stats.jobs || []
+  const allApps = stats.applications || []
+  const activeJobs = stats.activeJobs || 0
+  const interviewsList = stats.interviews || []
+  const hiringRate = stats.hiringRate || 0
 
   const metrics = [
     { label: 'Jobs Posted', value: jobs.length, icon: Briefcase, color: 'primary' },

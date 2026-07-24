@@ -16,4 +16,6 @@ export const analysisApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: onProgress,
     }),
+
+  matchJob: (data) => api.post('/analysis/match', data),
 }

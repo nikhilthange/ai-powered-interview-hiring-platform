@@ -21,7 +21,7 @@ import { staggerContainer, staggerItem } from '../../lib/motion'
 const ApplicationItem = memo(function ApplicationItem({ app }) {
   return (
     <motion.div variants={staggerItem}>
-      <Link to="/my-applications" className="block">
+      <Link to={`/applications/${app._id}/analysis`} className="block">
         <Card hover>
           <CardContent className="p-5">
             <div className="flex items-start gap-4">

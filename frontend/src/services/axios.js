@@ -10,8 +10,20 @@ const api = axios.create({
   },
 })
 
+let inMemoryAccessToken = null
 let isRefreshing = false
 let failedQueue = []
+
+export const setAccessToken = (token) => {
+  inMemoryAccessToken = token
+  if (token) {
+    api.defaults.headers.common.Authorization = `Bearer ${token}`
+  } else {
+    delete api.defaults.headers.common.Authorization
+  }
+}
+
+export const getAccessToken = () => inMemoryAccessToken
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
@@ -25,9 +37,8 @@ const processQueue = (error, token = null) => {
 }
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  if (inMemoryAccessToken) {
+    config.headers.Authorization = `Bearer ${inMemoryAccessToken}`
   }
   return config
 })
@@ -37,14 +48,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    // Never intercept the refresh endpoint itself — avoids infinite loops
     if (originalRequest?.url?.includes('/auth/refresh')) {
       return Promise.reject(error)
     }
 
     if (
       error.response?.status === 401 &&
-      error.response?.data?.code === 'TOKEN_EXPIRED' &&
       !originalRequest._retry
     ) {
       if (isRefreshing) {
@@ -68,16 +77,18 @@ api.interceptors.response.use(
           { withCredentials: true }
         )
 
-        const newToken = data.accessToken
-        localStorage.setItem('accessToken', newToken)
-        api.defaults.headers.common.Authorization = `Bearer ${newToken}`
+        const newToken = data.accessToken || data.data?.accessToken
+        setAccessToken(newToken)
         processQueue(null, newToken)
 
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError, null)
-        localStorage.removeItem('accessToken')
-        window.location.href = '/login'
+        setAccessToken(null)
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false

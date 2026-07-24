@@ -20,8 +20,24 @@ const Navbar = memo(function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [particles, setParticles] = useState([])
   const shouldReduceMotion = useReducedMotion()
   const ref = useClickOutside(() => setProfileOpen(false))
+
+  const handleThemeToggle = (e) => {
+    if (!shouldReduceMotion) {
+      const newParticles = Array.from({ length: 10 }).map((_, i) => ({
+        id: Date.now() + i,
+        angle: (i * 36) + (Math.random() * 12 - 6),
+        distance: 22 + Math.random() * 18,
+        size: 3 + Math.random() * 3,
+        color: theme === 'dark' ? '#f59e0b' : '#818cf8',
+      }))
+      setParticles(newParticles)
+      setTimeout(() => setParticles([]), 550)
+    }
+    toggleTheme(e)
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -115,21 +131,55 @@ const Navbar = memo(function Navbar() {
 
         {isAuthenticated && (
           <motion.button
-            whileHover={shouldReduceMotion ? undefined : buttonMotion.whileHover}
-            whileTap={shouldReduceMotion ? undefined : buttonMotion.whileTap}
-            onClick={toggleTheme}
-            className="rounded-xl p-2 text-slate-300 hover:bg-white/10 hover:text-white transition-colors hidden md:block"
+            whileHover={shouldReduceMotion ? undefined : { scale: 1.08 }}
+            whileTap={shouldReduceMotion ? undefined : { scale: 0.9 }}
+            onClick={handleThemeToggle}
+            className="rounded-xl p-2 text-slate-300 hover:bg-white/10 hover:text-white transition-colors relative flex items-center justify-center overflow-visible focus-visible:ring-2 focus-visible:ring-indigo-500 shadow-sm"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           >
-            <motion.div
-              key={theme}
-              initial={shouldReduceMotion ? false : { rotate: -90, opacity: 0 }}
-              animate={shouldReduceMotion ? false : { rotate: 0, opacity: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              {theme === 'dark' ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
-            </motion.div>
+            {/* Particle Burst Layer */}
+            <AnimatePresence>
+              {particles.map((p) => {
+                const rad = (p.angle * Math.PI) / 180
+                const x = Math.cos(rad) * p.distance
+                const y = Math.sin(rad) * p.distance
+                return (
+                  <motion.span
+                    key={p.id}
+                    initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                    animate={{ x, y, opacity: 0, scale: 0.2 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="absolute rounded-full pointer-events-none z-20"
+                    style={{
+                      width: p.size,
+                      height: p.size,
+                      backgroundColor: p.color,
+                      boxShadow: `0 0 6px ${p.color}`,
+                    }}
+                  />
+                )
+              })}
+            </AnimatePresence>
+
+            {/* Icon Morph Layer */}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={theme}
+                initial={shouldReduceMotion ? false : { rotate: -180, scale: 0.7, opacity: 0 }}
+                animate={shouldReduceMotion ? false : { rotate: 0, scale: 1, opacity: 1 }}
+                exit={shouldReduceMotion ? false : { rotate: 180, scale: 0.7, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="flex items-center justify-center"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="h-5 w-5 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]" aria-hidden="true" />
+                ) : (
+                  <Moon className="h-5 w-5 text-indigo-400 drop-shadow-[0_0_10px_rgba(129,140,248,0.6)]" aria-hidden="true" />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </motion.button>
         )}
 

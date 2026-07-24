@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /notifications/
+
+Sitemap: https://hiremate.vercel.app/sitemap.xml

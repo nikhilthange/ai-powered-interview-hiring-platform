@@ -1,9 +1,7 @@
-import { io } from 'socket.io-client'
-
-// Ensure we never fallback to window.location.origin (which causes the Vercel wss:// error)
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? new URL(import.meta.env.VITE_API_URL).origin : '');
 
 let socket = null
+let ioModule = null
 
 export function getSocket() {
   return socket
@@ -23,8 +21,13 @@ async function refreshTokenAndReconnect() {
   }
 }
 
-export function connectSocket() {
+export async function connectSocket() {
   if (socket?.connected) return socket
+
+  if (!ioModule) {
+    const { io } = await import('socket.io-client')
+    ioModule = io
+  }
 
   if (socket) {
     socket.removeAllListeners()
@@ -32,7 +35,7 @@ export function connectSocket() {
     socket = null
   }
 
-  socket = io(SOCKET_URL, {
+  socket = ioModule(SOCKET_URL, {
     auth: { token: localStorage.getItem('accessToken') },
     transports: ['websocket', 'polling'],
     withCredentials: true,

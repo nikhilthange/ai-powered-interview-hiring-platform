@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { connectSocket, disconnectSocket, getSocket } from '../services/socket'
 import { useAuth } from '../hooks/useAuth'
 
@@ -13,24 +13,35 @@ export function SocketProvider({ children }) {
   useEffect(() => {
     if (!isAuthenticated) return
 
-    const socket = connectSocket()
+    let mounted = true
+    let currentSocket = null
 
-    const onOnline = (users) => setOnlineUsers(users)
-    const onTyping = ({ userId, isTyping }) => {
-      setTypingUsers((prev) => {
-        if (isTyping) return { ...prev, [userId]: true }
-        const rest = { ...prev }
-        delete rest[userId]
-        return rest
-      })
+    const initSocket = async () => {
+      currentSocket = await connectSocket()
+      if (!mounted || !currentSocket) return
+
+      const onOnline = (users) => setOnlineUsers(users)
+      const onTyping = ({ userId, isTyping }) => {
+        setTypingUsers((prev) => {
+          if (isTyping) return { ...prev, [userId]: true }
+          const rest = { ...prev }
+          delete rest[userId]
+          return rest
+        })
+      }
+
+      currentSocket.on('online_users', onOnline)
+      currentSocket.on('typing_status', onTyping)
     }
 
-    socket.on('online_users', onOnline)
-    socket.on('typing_status', onTyping)
+    initSocket()
 
     return () => {
-      socket.off('online_users', onOnline)
-      socket.off('typing_status', onTyping)
+      mounted = false
+      if (currentSocket) {
+        currentSocket.off('online_users')
+        currentSocket.off('typing_status')
+      }
       disconnectSocket()
     }
   }, [isAuthenticated])
@@ -63,12 +74,22 @@ export function SocketProvider({ children }) {
     return () => getSocket()?.off('messages_read', handler)
   }, [])
 
+  const isUserOnline = useCallback((userId) => onlineUsers.includes(userId), [onlineUsers])
+
+  const value = useMemo(() => ({
+    onlineUsers,
+    typingUsers,
+    isUserOnline,
+    joinRoom,
+    sendMessage,
+    emitTyping,
+    markRead,
+    onMessage,
+    onMessagesRead,
+  }), [onlineUsers, typingUsers, isUserOnline, joinRoom, sendMessage, emitTyping, markRead, onMessage, onMessagesRead])
+
   return (
-    <SocketContext.Provider value={{
-      onlineUsers, typingUsers,
-      isUserOnline: (userId) => onlineUsers.includes(userId),
-      joinRoom, sendMessage, emitTyping, markRead, onMessage, onMessagesRead,
-    }}>
+    <SocketContext.Provider value={value}>
       {children}
     </SocketContext.Provider>
   )

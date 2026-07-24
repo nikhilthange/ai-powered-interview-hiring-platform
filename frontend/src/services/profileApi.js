@@ -8,9 +8,6 @@ export const profileApi = {
   getProfileByUserId: (userId) => api.get(`/profiles/${userId}`),
 
   updateProfile: (data, avatarFile) => {
-    console.log('=== updateProfile ===');
-    console.log('avatarFile:', avatarFile ? { name: avatarFile.name, size: avatarFile.size, type: avatarFile.type } : 'none');
-    console.log('data:', JSON.stringify(data, null, 2));
     if (avatarFile) {
       const formData = new FormData()
       formData.append('fullName', data.fullName ?? '')
@@ -45,12 +42,10 @@ export const profileApi = {
         formData.append('company', JSON.stringify(data.company))
       }
       formData.append('avatar', avatarFile)
-      console.log('Sending multipart FormData');
       return api.put('/profiles', formData, {
         headers: { 'Content-Type': null },
       })
     }
-    console.log('Sending JSON');
     return api.put('/profiles', data)
   },
 

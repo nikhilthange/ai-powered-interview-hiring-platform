@@ -40,12 +40,12 @@ const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, sav
   }, [job._id, onSaveToggle])
 
   return (
-    <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
+    <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="content-visibility-auto">
       <div className="bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] p-5 group cursor-pointer h-full flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300">
         <div className="flex items-start gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] overflow-hidden font-bold text-lg">
             {job.companyId?.logo && job.companyId.logo !== 'default-company-logo.png' ? (
-              <img src={getMediaUrl(job.companyId.logo)} alt={job.companyId?.name || 'Company'} className="w-full h-full object-contain p-1" />
+              <img src={getMediaUrl(job.companyId.logo)} alt={job.companyId?.name || 'Company'} loading="lazy" decoding="async" className="w-full h-full object-contain p-1" />
             ) : (
               <Building2 className="h-6 w-6 text-[var(--text-tertiary)]" />
             )}

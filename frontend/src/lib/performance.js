@@ -30,21 +30,29 @@ export function measureRenderTime(label) {
 
 export function initPerformanceMonitoring() {
   if (import.meta.env.PROD) {
-    reportWebVitals((metric) => {
-      const body = {
-        name: metric.name,
-        value: metric.value,
-        rating: metric.rating,
-        delta: metric.delta,
-        id: metric.id,
-        url: window.location.pathname,
-        timestamp: Date.now(),
-      }
-      if (navigator.sendBeacon) {
-        const baseUrl = import.meta.env.VITE_API_URL || '';
-        navigator.sendBeacon(`${baseUrl}/analytics/vitals`, JSON.stringify(body))
-      }
-    })
+    const run = () => {
+      reportWebVitals((metric) => {
+        const body = {
+          name: metric.name,
+          value: metric.value,
+          rating: metric.rating,
+          delta: metric.delta,
+          id: metric.id,
+          url: window.location.pathname,
+          timestamp: Date.now(),
+        }
+        if (navigator.sendBeacon) {
+          const baseUrl = import.meta.env.VITE_API_URL || '';
+          navigator.sendBeacon(`${baseUrl}/analytics/vitals`, JSON.stringify(body))
+        }
+      })
+    }
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      window.requestIdleCallback(run, { timeout: 2000 })
+    } else {
+      setTimeout(run, 1000)
+    }
   }
 }
 

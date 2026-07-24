@@ -517,3 +517,8 @@ input[type="text"], input[type="email"], input[type="password"], input[type="sea
 [data-reduce-motion="true"] .motion-reduce-hidden {
   display: none;
 }
+
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 120px;
+}

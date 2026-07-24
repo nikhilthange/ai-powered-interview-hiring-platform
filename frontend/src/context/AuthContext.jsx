@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback, useRef } from 'react'
+import { createContext, useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { authApi } from '../services/authApi'
 import { setAccessToken, getAccessToken } from '../services/axios'
 
@@ -65,21 +65,21 @@ export function AuthProvider({ children }) {
     loadUser()
   }, [loadUser])
 
-  const login = async (credentials) => {
+  const login = useCallback(async (credentials) => {
     const { data } = await authApi.login(credentials)
     const token = data.accessToken || data.data?.accessToken
     setAccessToken(token)
     setUser(data.data.user)
     setIsAuthenticated(true)
     return data
-  }
+  }, [])
 
-  const register = async (userData) => {
+  const register = useCallback(async (userData) => {
     const { data } = await authApi.register(userData)
     return data
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await authApi.logout()
     } catch {
@@ -88,9 +88,9 @@ export function AuthProvider({ children }) {
     setAccessToken(null)
     setUser(null)
     setIsAuthenticated(false)
-  }
+  }, [])
 
-  const value = {
+  const contextValue = useMemo(() => ({
     user,
     loading,
     isAuthenticated,
@@ -98,7 +98,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     loadUser,
-  }
+  }), [user, loading, isAuthenticated, login, register, logout, loadUser])
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 }

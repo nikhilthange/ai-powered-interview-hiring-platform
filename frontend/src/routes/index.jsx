@@ -7,67 +7,67 @@ import ProtectedRoute from '../components/layout/ProtectedRoute'
 import ErrorBoundary from '../components/layout/ErrorBoundary'
 import { SkeletonPage } from '../components/ui/Skeleton'
 
-const lazyLoad = (importFn) => {
+const withLazy = (importFn) => {
   const Component = lazy(importFn)
-  return (
-    <ErrorBoundary>
-      <Suspense fallback={<SkeletonPage />}>
-        <Component />
-      </Suspense>
-    </ErrorBoundary>
-  )
+  return function LazyWrapper(props) {
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={<SkeletonPage />}>
+          <Component {...props} />
+        </Suspense>
+      </ErrorBoundary>
+    )
+  }
 }
 
-const Home = () => lazyLoad(() => import('../pages/Home'))
-const Jobs = () => lazyLoad(() => import('../pages/Jobs'))
-const NotFound = () => lazyLoad(() => import('../pages/NotFound'))
-const Login = () => lazyLoad(() => import('../pages/auth/Login'))
-const Register = () => lazyLoad(() => import('../pages/auth/Register'))
-const VerifyEmail = () => lazyLoad(() => import('../pages/auth/VerifyEmail'))
-const VerifyEmailPrompt = () => lazyLoad(() => import('../pages/auth/VerifyEmailPrompt'))
-const ForgotPassword = () => lazyLoad(() => import('../pages/auth/ForgotPassword'))
-const ResetPassword = () => lazyLoad(() => import('../pages/auth/ResetPassword'))
-const CandidateDashboard = () => lazyLoad(() => import('../pages/candidate/Dashboard'))
-const CandidateProfile = () => lazyLoad(() => import('../pages/candidate/Profile'))
-const ApplyJob = () => lazyLoad(() => import('../pages/candidate/ApplyJob'))
-const MyApplications = () => lazyLoad(() => import('../pages/candidate/MyApplications'))
-const ApplicationAnalysis = () => lazyLoad(() => import('../pages/candidate/ApplicationAnalysis'))
-const JobDetail = () => lazyLoad(() => import('../pages/JobDetail'))
-const SavedJobs = () => lazyLoad(() => import('../pages/SavedJobs'))
-const ResumeAnalyzer = () => lazyLoad(() => import('../pages/candidate/ResumeAnalyzer'))
-const ResumeTailor = () => lazyLoad(() => import('../pages/candidate/ResumeTailor'))
-const CoverLetterGenerator = () => lazyLoad(() => import('../pages/candidate/CoverLetterGenerator'))
-const GithubAnalyzer = () => lazyLoad(() => import('../pages/candidate/GithubAnalyzer'))
-const SkillGapAnalysis = () => lazyLoad(() => import('../pages/candidate/SkillGapAnalysis'))
-const MockInterview = () => lazyLoad(() => import('../pages/candidate/MockInterview'))
-const CareerRoadmap = () => lazyLoad(() => import('../pages/candidate/CareerRoadmap'))
-const MyInterviews = () => lazyLoad(() => import('../pages/MyInterviews'))
-const ChatPage = () => lazyLoad(() => import('../pages/ChatPage'))
-// Removed AIChatPage as it is now a globally mounted widget
-const RecruiterDashboard = () => lazyLoad(() => import('../pages/recruiter/Dashboard'))
-const RecruiterJobApplications = () => lazyLoad(() => import('../pages/recruiter/JobApplications'))
-const RecruiterProfile = () => lazyLoad(() => import('../pages/recruiter/Profile'))
-const CompanyProfileForm = () => lazyLoad(() => import('../pages/recruiter/CompanyProfileForm'))
-const AIInterviewAssistant = () => lazyLoad(() => import('../pages/recruiter/AIInterviewAssistant'))
-const CompaniesList = () => lazyLoad(() => import('../pages/candidate/CompaniesList'))
-const CompanyDetails = () => lazyLoad(() => import('../pages/candidate/CompanyDetails'))
-const CreateJob = () => lazyLoad(() => import('../pages/recruiter/CreateJob'))
-const MyJobs = () => lazyLoad(() => import('../pages/recruiter/MyJobs'))
-const EditJob = () => lazyLoad(() => import('../pages/recruiter/EditJob'))
-const AdminDashboard = () => lazyLoad(() => import('../pages/admin/Dashboard'))
-const AdminUsers = () => lazyLoad(() => import('../pages/admin/Users'))
-const AdminJobs = () => lazyLoad(() => import('../pages/admin/Jobs'))
-const AdminApplications = () => lazyLoad(() => import('../pages/admin/Applications'))
-const AdminRecruiters = () => lazyLoad(() => import('../pages/admin/Recruiters'))
-const AdminAIConfig = () => lazyLoad(() => import('../pages/admin/AIConfig'))
-const AdminSettings = () => lazyLoad(() => import('../pages/admin/Settings'))
-const AdminAuditLogs = () => lazyLoad(() => import('../pages/admin/AuditLogs'))
-const AdminNotifications = () => lazyLoad(() => import('../pages/admin/Notifications'))
-const NotificationsPage = () => lazyLoad(() => import('../pages/notifications/NotificationsPage'))
-
-const PublicPortfolio = () => lazyLoad(() => import('../pages/PublicPortfolio'))
-const ResumeBuilderPage = () => lazyLoad(() => import('../pages/resume-builder/ResumeBuilderPage'))
-const ResumeEditor = () => lazyLoad(() => import('../pages/resume-builder/ResumeEditor'))
+const Home = withLazy(() => import('../pages/Home'))
+const Jobs = withLazy(() => import('../pages/Jobs'))
+const NotFound = withLazy(() => import('../pages/NotFound'))
+const Login = withLazy(() => import('../pages/auth/Login'))
+const Register = withLazy(() => import('../pages/auth/Register'))
+const VerifyEmail = withLazy(() => import('../pages/auth/VerifyEmail'))
+const VerifyEmailPrompt = withLazy(() => import('../pages/auth/VerifyEmailPrompt'))
+const ForgotPassword = withLazy(() => import('../pages/auth/ForgotPassword'))
+const ResetPassword = withLazy(() => import('../pages/auth/ResetPassword'))
+const CandidateDashboard = withLazy(() => import('../pages/candidate/Dashboard'))
+const CandidateProfile = withLazy(() => import('../pages/candidate/Profile'))
+const ApplyJob = withLazy(() => import('../pages/candidate/ApplyJob'))
+const MyApplications = withLazy(() => import('../pages/candidate/MyApplications'))
+const ApplicationAnalysis = withLazy(() => import('../pages/candidate/ApplicationAnalysis'))
+const JobDetail = withLazy(() => import('../pages/JobDetail'))
+const SavedJobs = withLazy(() => import('../pages/SavedJobs'))
+const ResumeAnalyzer = withLazy(() => import('../pages/candidate/ResumeAnalyzer'))
+const ResumeTailor = withLazy(() => import('../pages/candidate/ResumeTailor'))
+const CoverLetterGenerator = withLazy(() => import('../pages/candidate/CoverLetterGenerator'))
+const GithubAnalyzer = withLazy(() => import('../pages/candidate/GithubAnalyzer'))
+const SkillGapAnalysis = withLazy(() => import('../pages/candidate/SkillGapAnalysis'))
+const MockInterview = withLazy(() => import('../pages/candidate/MockInterview'))
+const CareerRoadmap = withLazy(() => import('../pages/candidate/CareerRoadmap'))
+const MyInterviews = withLazy(() => import('../pages/MyInterviews'))
+const ChatPage = withLazy(() => import('../pages/ChatPage'))
+const RecruiterDashboard = withLazy(() => import('../pages/recruiter/Dashboard'))
+const RecruiterJobApplications = withLazy(() => import('../pages/recruiter/JobApplications'))
+const RecruiterProfile = withLazy(() => import('../pages/recruiter/Profile'))
+const CompanyProfileForm = withLazy(() => import('../pages/recruiter/CompanyProfileForm'))
+const AIInterviewAssistant = withLazy(() => import('../pages/recruiter/AIInterviewAssistant'))
+const CompaniesList = withLazy(() => import('../pages/candidate/CompaniesList'))
+const CompanyDetails = withLazy(() => import('../pages/candidate/CompanyDetails'))
+const CreateJob = withLazy(() => import('../pages/recruiter/CreateJob'))
+const MyJobs = withLazy(() => import('../pages/recruiter/MyJobs'))
+const EditJob = withLazy(() => import('../pages/recruiter/EditJob'))
+const AdminDashboard = withLazy(() => import('../pages/admin/Dashboard'))
+const AdminUsers = withLazy(() => import('../pages/admin/Users'))
+const AdminJobs = withLazy(() => import('../pages/admin/Jobs'))
+const AdminApplications = withLazy(() => import('../pages/admin/Applications'))
+const AdminRecruiters = withLazy(() => import('../pages/admin/Recruiters'))
+const AdminAIConfig = withLazy(() => import('../pages/admin/AIConfig'))
+const AdminSettings = withLazy(() => import('../pages/admin/Settings'))
+const AdminAuditLogs = withLazy(() => import('../pages/admin/AuditLogs'))
+const AdminNotifications = withLazy(() => import('../pages/admin/Notifications'))
+const NotificationsPage = withLazy(() => import('../pages/notifications/NotificationsPage'))
+const PublicPortfolio = withLazy(() => import('../pages/PublicPortfolio'))
+const ResumeBuilderPage = withLazy(() => import('../pages/resume-builder/ResumeBuilderPage'))
+const ResumeEditor = withLazy(() => import('../pages/resume-builder/ResumeEditor'))
 
 export const router = createBrowserRouter([
   {

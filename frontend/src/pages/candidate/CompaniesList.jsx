@@ -78,14 +78,14 @@ const CompaniesList = () => {
   };
 
   const CompanyCard = ({ company }) => (
-    <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="h-full">
+    <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="h-full content-visibility-auto">
       <Link
         to={`/companies/${company.id}`}
         className="group flex flex-col h-full bg-white dark:bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] overflow-hidden hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1 transition-all duration-300"
       >
         <div className="h-32 relative overflow-hidden bg-gray-100 dark:bg-gray-800">
         {company.coverImage && company.coverImage !== 'default-company-cover.png' ? (
-           <img src={getMediaUrl(company.coverImage)} alt="Cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+           <img src={getMediaUrl(company.coverImage)} alt="Cover" loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
         ) : (
            <div className="w-full h-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20"></div>
         )}
@@ -95,7 +95,7 @@ const CompaniesList = () => {
         <div className="flex justify-between items-start -mt-10 mb-3">
           <div className="h-20 w-20 rounded-xl shadow-md border-4 border-white dark:border-[var(--bg-primary)] bg-white overflow-hidden z-10">
             {company.logo && company.logo !== 'default-company-logo.png' ? (
-               <img src={getMediaUrl(company.logo)} alt="Logo" className="w-full h-full object-cover" />
+               <img src={getMediaUrl(company.logo)} alt="Logo" loading="lazy" decoding="async" className="w-full h-full object-cover" />
             ) : (
                <Building2 className="h-full w-full p-4 text-gray-400 bg-gray-50 dark:bg-gray-800" />
             )}

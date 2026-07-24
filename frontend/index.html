@@ -13,11 +13,25 @@
     <meta name="twitter:card" content="summary_large_image" />
     <title>HireMate - AI-Powered Interview Platform</title>
     
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Resource Hints & Font Preloading -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;600;700&display=swap">
 
+    <!-- Structured Data (JSON-LD) for SEO / AEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "HireMate",
+        "url": "https://hiremate.vercel.app",
+        "logo": "https://hiremate.vercel.app/logo.svg",
+        "description": "AI-powered interview preparation platform with resume analysis, skill gap detection, mock interviews, and career roadmaps."
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

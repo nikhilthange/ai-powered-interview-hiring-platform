@@ -1,10 +1,10 @@
-import { memo, useState, useCallback, useRef, useEffect } from 'react'
+import { memo, useState, useCallback, useRef, useEffect, lazy, Suspense } from 'react'
 import { useSocket } from '../../hooks/useSocket'
 import { chatApi } from '../../services/chatApi'
 import { Send, Paperclip, Smile, Loader2, X } from 'lucide-react'
-import data from '@emoji-mart/data'
-import Picker from '@emoji-mart/react'
 import { useTheme } from '../../context/ThemeContext'
+
+const LazyEmojiPicker = lazy(() => import('./EmojiPicker'))
 
 const ChatInput = memo(function ChatInput({ roomId }) {
   const [text, setText] = useState('')
@@ -27,42 +27,47 @@ const ChatInput = memo(function ChatInput({ roomId }) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setUploading(true)
+  const handleTyping = useCallback(() => {
+    socket?.emit('typing', { roomId })
+  }, [socket, roomId])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!text.trim() && !attachment) return
+
+    const messageData = {
+      roomId,
+      content: text.trim(),
+      attachmentUrl: attachment?.url,
+      attachmentName: attachment?.name,
+    }
+
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const res = await chatApi.uploadAttachment(formData)
-      setAttachment(res.data)
-    } catch (err) {
-      console.error('Upload failed', err)
-    } finally {
-      setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
+      socket?.emit('send-message', messageData)
+      setText('')
+      setAttachment(null)
+    } catch (error) {
+      console.error('Failed to send message:', error)
     }
   }
 
-  const handleSubmit = useCallback((e) => {
-    e.preventDefault()
-    if ((!text.trim() && !attachment) || !roomId) return
-    // We send attachments via REST right now, but Socket needs to know about it.
-    // In our backend socketManager, send_message only accepts messageText.
-    // Wait, we need to make sure backend socketManager handles attachments if we pass them.
-    // Actually, it's easier to just append the attachment URL to the messageText for now, 
-    // OR we should have updated the socketManager to accept attachments. 
-    // Let's pass attachments to socket.
-    
-    // Wait, earlier I updated `socketManager.js` to emit `message.attachments || []`, 
-    // but I didn't update the `ChatMessage.create` call to include `attachments` from the socket payload.
-    // I should probably just send it via socket.
-    
-    socket.sendMessage(roomId, text.trim(), attachment ? [attachment] : [])
-    
-    setText('')
-    setAttachment(null)
-  }, [text, roomId, socket, attachment])
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const res = await chatApi.uploadAttachment(file)
+      setAttachment({
+        url: res.data.url,
+        name: file.name,
+      })
+    } catch (error) {
+      console.error('Upload failed:', error)
+    } finally {
+      setUploading(false)
+    }
+  }
 
   return (
     <div className="relative">
@@ -77,7 +82,9 @@ const ChatInput = memo(function ChatInput({ roomId }) {
       
       {showEmoji && (
         <div ref={emojiRef} className="absolute bottom-full right-0 mb-2 z-50">
-          <Picker data={data} onEmojiSelect={(e) => setText(t => t + e.native)} theme={isDarkMode ? 'dark' : 'light'} />
+          <Suspense fallback={<div className="p-4 bg-[var(--bg-secondary)] rounded-xl border text-sm">Loading picker...</div>}>
+            <LazyEmojiPicker onSelect={(emoji) => setText(t => t + emoji)} isDarkMode={isDarkMode} />
+          </Suspense>
         </div>
       )}
 

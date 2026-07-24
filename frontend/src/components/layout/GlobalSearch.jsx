@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, startTransition } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Briefcase, Building2, User, Target, Loader2, X, Clock, TrendingUp } from 'lucide-react';
@@ -40,17 +40,21 @@ export default function GlobalSearch() {
 
   useClickOutside(() => setIsOpen(false), searchRef);
 
-  // Debounced Search
+  // Debounced Search with React 19 startTransition
   useEffect(() => {
     const fetchResults = async () => {
       if (!query.trim()) {
-        setResults({ jobs: [], companies: [], users: [], skills: [] });
+        startTransition(() => {
+          setResults({ jobs: [], companies: [], users: [], skills: [] });
+        });
         return;
       }
       setLoading(true);
       try {
         const res = await searchApi.globalSearch(query);
-        setResults(res.data.data);
+        startTransition(() => {
+          setResults(res.data.data);
+        });
       } catch (err) {
         console.error('Search failed', err);
       } finally {

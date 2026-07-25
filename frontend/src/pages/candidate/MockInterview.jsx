@@ -11,10 +11,9 @@ import InterviewFeedbackReport from '../../components/interview/InterviewFeedbac
 import { cn } from '../../lib/utils'
 import { TARGET_ROLES, EXPERIENCE_LEVELS } from '../../lib/constants'
 import {
-  Mic, MicOff, Send, CheckCircle,
+  Mic, MicOff, Send,
   ArrowLeft, Loader2, Sparkles, Brain,
-  BarChart3, Star, Target, MessageCircle, StopCircle,
-  Award, Briefcase, AlertTriangle,
+  StopCircle, Briefcase, AlertTriangle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -34,7 +33,7 @@ export default function MockInterview() {
   const [sessionId, setSessionId] = useState(null)
   const [questions, setQuestions] = useState([])
   const [currentQ, setCurrentQ] = useState(0)
-  const [answers, setAnswers] = useState([])
+  const [_answers, setAnswers] = useState([])
   const [input, setInput] = useState('')
   const [isRecording, setIsRecording] = useState(false)
   const [sessionEnded, setSessionEnded] = useState(false)

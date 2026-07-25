@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useRef, useEffect, lazy, Suspense } from 'react'
+import { memo, useState, useRef, useEffect, lazy, Suspense } from 'react'
 import { useSocket } from '../../hooks/useSocket'
 import { chatApi } from '../../services/chatApi'
 import { Send, Paperclip, Smile, Loader2, X } from 'lucide-react'
@@ -27,9 +27,6 @@ const ChatInput = memo(function ChatInput({ roomId }) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleTyping = useCallback(() => {
-    socket?.emit('typing', { roomId })
-  }, [socket, roomId])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

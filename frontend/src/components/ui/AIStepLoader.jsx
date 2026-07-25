@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { Sparkles, Brain, CheckCircle2, Loader2 } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { Sparkles, CheckCircle2, Loader2 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 const DEFAULT_STEPS = [

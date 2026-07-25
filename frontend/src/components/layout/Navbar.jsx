@@ -205,7 +205,7 @@ const Navbar = memo(function Navbar() {
                   </div>
                 )}
               </div>
-              <span className="hidden text-sm font-medium text-[var(--text-primary)] lg:block">
+              <span className="hidden text-sm font-medium text-slate-100 lg:block">
                 {user?.name || user?.email?.split('@')[0] || 'User'}
               </span>
             </motion.button>

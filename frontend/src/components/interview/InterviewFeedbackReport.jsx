@@ -1,14 +1,13 @@
-import { memo, useMemo } from 'react'
+import { memo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Card, CardContent } from '../ui/Card'
 import Button from '../ui/Button'
 import CountUp from '../ui/CountUp'
 import Badge from '../ui/Badge'
 import { useToast } from '../ui/Toast'
-import { cn } from '../../lib/utils'
 import {
-  Award, CheckCircle2, AlertTriangle, Lightbulb, BookOpen, Download,
-  TrendingUp, RefreshCw, Sparkles, Brain, MessageSquare, Eye, Cpu
+  Award, CheckCircle2, AlertTriangle, BookOpen, Download,
+  RefreshCw, Brain, MessageSquare
 } from 'lucide-react'
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Tooltip

@@ -12,7 +12,7 @@ import { cn } from '../../lib/utils'
 import {
   MapPin, Clock, Eye,
   Building2, Star,
-  Calendar, AlertCircle, Search, LayoutGrid, List
+  AlertCircle, LayoutGrid, List
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { APPLICATION_STATUSES, STATUS_COLORS } from '../../lib/constants'
@@ -85,7 +85,6 @@ export default function MyApplications() {
   })
 
   const applications = useMemo(() => data?.data?.applications || [], [data])
-  const pagination = useMemo(() => data?.data?.pagination || {}, [data])
 
   const handleTabChange = useCallback((status) => {
     setActiveTab(status)

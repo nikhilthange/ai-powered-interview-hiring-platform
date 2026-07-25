@@ -5,7 +5,7 @@ import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import { useToast } from '../ui/Toast'
-import { Calendar, Clock, Video, Link2, Download, Check, Sparkles, Send } from 'lucide-react'
+import { Video, Download, Check, Send } from 'lucide-react'
 
 const PLATFORMS = [
   { id: 'Google Meet', label: 'Google Meet', icon: Video, color: 'text-emerald-500' },

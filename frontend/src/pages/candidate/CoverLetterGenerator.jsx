@@ -9,7 +9,7 @@ import AIStepLoader from '../../components/ui/AIStepLoader'
 import { useToast } from '../../components/ui/Toast'
 import { cn } from '../../lib/utils'
 import {
-  Sparkles, FileText, Copy, Download, RefreshCw, Check, ArrowLeft, Layers, Send
+  Sparkles, FileText, Copy, Download, RefreshCw, Check, ArrowLeft, Layers
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { staggerContainer, staggerItem } from '../../lib/motion'

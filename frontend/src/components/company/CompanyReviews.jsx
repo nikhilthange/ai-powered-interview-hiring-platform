@@ -8,7 +8,7 @@ import Modal from '../ui/Modal'
 import Input from '../ui/Input'
 import Textarea from '../ui/Textarea'
 import { useToast } from '../ui/Toast'
-import { Star, MessageSquare, Plus, CheckCircle2, User, ShieldCheck } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 export default function CompanyReviews({ companyName = 'Company', companyId }) {
   const { toast } = useToast()
@@ -21,7 +21,7 @@ export default function CompanyReviews({ companyName = 'Company', companyId }) {
 
   const targetId = companyId || companyName
 
-  const { data: reviewsRes, isLoading } = useQuery({
+  const { data: reviewsRes } = useQuery({
     queryKey: ['company-reviews', targetId],
     queryFn: () => companyReviewApi.getCompanyReviews(targetId).then((r) => r.data),
     enabled: !!targetId,

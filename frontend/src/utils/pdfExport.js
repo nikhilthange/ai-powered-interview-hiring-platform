@@ -1,7 +1,7 @@
 /**
  * Utility for exporting HTML content / documents to printable PDF format.
  */
-export function exportToPdf({ title = 'Document', content, filename = 'document.pdf' }) {
+export function exportToPdf({ title = 'Document', content }) {
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
     alert('Please allow popups to export PDF documents.');

@@ -1,14 +1,6 @@
-import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Card, CardContent } from '../ui/Card'
-import Badge from '../ui/Badge'
-import Button from '../ui/Button'
 import { cn } from '../../lib/utils'
-import {
-  FileText, Calendar, Building2, MapPin, ChevronRight,
-  MoreVertical, CheckCircle2, XCircle, Clock, UserCheck
-} from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { MapPin } from 'lucide-react'
 
 const KANBAN_STAGES = [
   { id: 'Applied', name: 'Applied', color: 'border-blue-500/40 bg-blue-500/5 text-blue-600 dark:text-blue-400' },

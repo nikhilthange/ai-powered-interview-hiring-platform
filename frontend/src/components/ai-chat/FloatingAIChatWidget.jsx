@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { aiChatApi } from '../../services/aiChatApi'
 import { useAuth } from '../../hooks/useAuth'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { cn } from '../../lib/utils'
 import AIChatSidebar from './AIChatSidebar'
 import AIChatMessage from './AIChatMessage'
@@ -11,23 +12,26 @@ import AIChatInput from './AIChatInput'
 import SuggestedPrompts from './SuggestedPrompts'
 import { useToast } from '../ui/Toast'
 import { AnimatedDots } from '../ui/Spinner'
-import { modalContainerVariants, buttonMotion } from '../../lib/motion'
-import { Bot, AlertCircle, X, History, Maximize2, Minimize2, ChevronLeft } from 'lucide-react'
+import { modalContainerVariants, modalOverlayVariants, buttonMotion } from '../../lib/motion'
+import {
+  Bot, AlertCircle, X, History, Maximize2, Minimize2, ChevronLeft,
+  Sparkles, RefreshCw, MessageSquarePlus
+} from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 
 function ChatSkeleton() {
   return (
     <div className="space-y-4 px-4 py-4">
       <div className="flex gap-2 flex-row-reverse">
-        <div className="h-6 w-6 rounded-lg bg-indigo-200 dark:bg-indigo-800 skeleton-shimmer" />
-        <div className="flex-1 max-w-[85%]">
+        <div className="h-8 w-8 rounded-xl bg-indigo-200 dark:bg-indigo-800/50 skeleton-shimmer" />
+        <div className="flex-1 max-w-[80%]">
           <div className="h-12 rounded-2xl bg-[var(--bg-tertiary)] skeleton-shimmer" />
         </div>
       </div>
       <div className="flex gap-2">
-        <div className="h-6 w-6 rounded-lg bg-indigo-100 dark:bg-indigo-900 skeleton-shimmer" />
-        <div className="flex-1 max-w-[85%]">
-          <div className="h-20 rounded-2xl bg-[var(--bg-tertiary)] skeleton-shimmer" />
+        <div className="h-8 w-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 skeleton-shimmer" />
+        <div className="flex-1 max-w-[80%]">
+          <div className="h-24 rounded-2xl bg-[var(--bg-tertiary)] skeleton-shimmer" />
         </div>
       </div>
     </div>
@@ -41,10 +45,12 @@ export default function FloatingAIChatWidget() {
   const [searchParams, setSearchParams] = useSearchParams()
   const shouldReduceMotion = useReducedMotion()
 
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1023px)')
+
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
-  const [hasUnread] = useState(false)
 
   const messagesEndRef = useRef(null)
   const abortControllerRef = useRef(null)
@@ -71,12 +77,24 @@ export default function FloatingAIChatWidget() {
     }
   }, [searchParams, activeId])
 
+  // Lock background scroll on mobile fullscreen or tablet modal
+  useEffect(() => {
+    if (isOpen && (isMobile || isTablet || isExpanded)) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen, isMobile, isTablet, isExpanded])
+
   const { data: conversations = [], isLoading: convsLoading } = useQuery({
     queryKey: ['ai-conversations', searchQuery],
     queryFn: () => searchQuery
       ? aiChatApi.searchConversations(searchQuery)
       : aiChatApi.getConversations(),
-    enabled: isOpen || hasUnread
+    enabled: isOpen
   })
 
   const { data: existingMessages = [], isLoading: msgsLoadingInitial } = useQuery({
@@ -249,7 +267,7 @@ export default function FloatingAIChatWidget() {
 
   const handleFileSelect = useCallback(async (file) => {
     setUploadedFile(file)
-    toast.info('Resume uploaded! Start a new chat to use it as context.', { duration: 3000 })
+    toast.info('Resume attached! Send your message to analyze it.', { duration: 3000 })
   }, [toast])
 
   const handleRemoveFile = useCallback(() => {
@@ -269,9 +287,192 @@ export default function FloatingAIChatWidget() {
 
   if (!user) return null;
 
+  const chatUI = (
+    <div className="flex flex-col h-full w-full overflow-hidden bg-[var(--bg-primary)]">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-600 via-indigo-600 to-purple-600 text-white shadow-md shrink-0 h-14 pt-[calc(0.75rem+env(safe-area-inset-top))] sm:pt-3">
+        <div className="flex items-center gap-2.5">
+          {showHistory ? (
+            <button
+              onClick={() => setShowHistory(false)}
+              className="p-1.5 -ml-1 rounded-xl hover:bg-white/20 transition-colors"
+              aria-label="Back to chat"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/20 backdrop-blur-md">
+              <Bot className="h-5 w-5 text-white" />
+            </div>
+          )}
+          <div>
+            <div className="flex items-center gap-1.5">
+              <h2 className="font-bold text-sm sm:text-base leading-tight">
+                {showHistory ? 'History' : 'AI Assistant'}
+              </h2>
+              {!showHistory && (
+                <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" title="Online" />
+              )}
+            </div>
+            <p className="text-[10px] text-indigo-100 opacity-90">Career & Interview Copilot</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1">
+          {!showHistory && (
+            <button
+              onClick={handleNewChat}
+              className="p-1.5 rounded-xl hover:bg-white/20 transition-colors"
+              title="New Chat"
+              aria-label="New Chat"
+            >
+              <MessageSquarePlus className="h-4.5 w-4.5" />
+            </button>
+          )}
+          {!showHistory && (
+            <button
+              onClick={() => setShowHistory(true)}
+              className="p-1.5 rounded-xl hover:bg-white/20 transition-colors"
+              title="Conversation History"
+              aria-label="Conversation History"
+            >
+              <History className="h-4.5 w-4.5" />
+            </button>
+          )}
+          {!isMobile && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="p-1.5 rounded-xl hover:bg-white/20 transition-colors"
+              title={isExpanded ? "Collapse view" : "Expand view"}
+              aria-label={isExpanded ? "Collapse view" : "Expand view"}
+            >
+              {isExpanded ? <Minimize2 className="h-4.5 w-4.5" /> : <Maximize2 className="h-4.5 w-4.5" />}
+            </button>
+          )}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-1.5 rounded-xl hover:bg-white/20 transition-colors"
+            title="Close Assistant"
+            aria-label="Close Assistant"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col bg-[var(--bg-secondary)]">
+        {showHistory ? (
+          <div className="flex-1 min-h-0 overflow-y-auto w-full scrollbar-thin">
+            <AIChatSidebar
+              conversations={conversations}
+              activeId={activeId}
+              onSelect={handleSelectConversation}
+              onNew={handleNewChat}
+              onRename={handleRename}
+              onDelete={handleDelete}
+              onSearch={handleSearch}
+              isOpen={true}
+              onToggle={() => setShowHistory(false)}
+              isLoading={convsLoading || createMutation.isPending}
+              isWidgetMode={true}
+            />
+          </div>
+        ) : (
+          <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto bg-[var(--bg-primary)] p-4 space-y-4 scrollbar-thin">
+            {isLoadingMessages && <ChatSkeleton />}
+
+            {!isLoadingMessages && showPrompts && (
+              <div className="flex flex-col items-center justify-center min-h-full px-2 py-6">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-200 dark:border-indigo-800/40 mb-3 shadow-xs">
+                  <Sparkles className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h3 className="font-bold text-[var(--text-primary)] text-base mb-1">Hi, {user.name?.split(' ')[0] || 'there'}! 👋</h3>
+                <p className="text-xs text-[var(--text-secondary)] text-center mb-5 max-w-[260px] leading-relaxed">
+                  I can review your resume, generate mock interview questions, or tailor your career path.
+                </p>
+                <div className="w-full max-w-sm">
+                  <SuggestedPrompts onSelect={handlePromptSelect} isWidgetMode={true} />
+                </div>
+              </div>
+            )}
+
+            {!isLoadingMessages && !showPrompts && activeId && allMessages.length === 0 && (
+              <div className="flex flex-col items-center justify-center min-h-full px-4 text-center">
+                <Bot className="h-8 w-8 text-[var(--text-tertiary)] mb-2" />
+                <p className="text-sm font-medium text-[var(--text-secondary)]">New conversation started</p>
+                <p className="text-xs text-[var(--text-tertiary)] mt-1">Ask a question to get started.</p>
+              </div>
+            )}
+
+            {allMessages.length > 0 && (
+              <div className="space-y-4">
+                {allMessages.map((msg) => (
+                  <AIChatMessage
+                    key={msg._id}
+                    message={msg}
+                    isStreaming={msg.isStreaming}
+                    onRegenerate={!isStreaming ? handleRegenerate : undefined}
+                    isWidgetMode={true}
+                  />
+                ))}
+                {isStreaming && !streamingContent && (
+                  <div className="flex gap-2 py-1">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/50">
+                      <Bot className="h-4 w-4" />
+                    </div>
+                    <div className="rounded-2xl px-4 py-3 bg-[var(--bg-tertiary)] flex items-center shadow-xs">
+                      <AnimatedDots className="text-indigo-500" />
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+
+            {streamError && (
+              <div className="pb-2">
+                <div className="flex items-center gap-2 p-3 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 shadow-xs">
+                  <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
+                  <p className="text-xs text-red-600 dark:text-red-400 flex-1">{streamError}</p>
+                  <button
+                    onClick={() => {
+                      setStreamError(null)
+                      const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')
+                      if (lastUserMsg) handleSend(lastUserMsg.content)
+                    }}
+                    className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:underline shrink-0"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    Retry
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Footer Input */}
+      {!showHistory && (
+        <div className="p-3 bg-[var(--bg-secondary)] border-t border-[var(--border-color)] shrink-0 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <AIChatInput
+            onSend={handleSend}
+            onStop={handleStop}
+            isStreaming={isStreaming}
+            onFileSelect={handleFileSelect}
+            uploadedFile={uploadedFile}
+            onRemoveFile={handleRemoveFile}
+            isWidgetMode={true}
+          />
+        </div>
+      )}
+    </div>
+  )
+
   return createPortal(
     <>
-      {/* Floating Action Button */}
+      {/* 56px Floating Action Button */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -281,177 +482,79 @@ export default function FloatingAIChatWidget() {
             whileHover={shouldReduceMotion ? undefined : buttonMotion.whileHover}
             whileTap={shouldReduceMotion ? undefined : buttonMotion.whileTap}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-[99998] h-14 w-14 sm:h-16 sm:w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-2xl transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-6 z-[99998] h-14 w-14 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-2xl transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             aria-label="Open AI Career Assistant"
           >
-            <Bot className="h-6 w-6 sm:h-7 sm:w-7" />
-            {hasUnread && (
-              <span className="absolute top-0 right-0 h-3.5 w-3.5 rounded-full bg-red-500 border-2 border-white dark:border-slate-900" />
-            )}
+            <Bot className="h-7 w-7 text-white" />
+            <span className="absolute top-0 right-0 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white dark:border-slate-900 shadow-xs" />
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Chat Popover Window */}
+      {/* Responsive Container */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            variants={shouldReduceMotion ? undefined : modalContainerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className={cn(
-              'fixed z-[99999] flex flex-col overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-2xl border border-[var(--border-color)] transition-all duration-200',
-              isExpanded
-                ? 'inset-3 md:inset-6 rounded-2xl md:rounded-3xl'
-                : 'bottom-6 right-6 w-[calc(100vw-32px)] md:w-[360px] lg:w-[390px] 2xl:w-[420px] max-w-[calc(100vw-32px)] h-[min(700px,calc(100vh-100px))] max-h-[calc(100vh-100px)] rounded-2xl max-md:fixed max-md:inset-0 max-md:w-full max-md:h-[100dvh] max-md:max-h-[100dvh] max-md:rounded-none max-md:bottom-0 max-md:right-0'
+          <>
+            {/* MOBILE: Full-Viewport WhatsApp / ChatGPT style */}
+            {isMobile && (
+              <motion.div
+                initial={shouldReduceMotion ? false : { y: '100%', opacity: 0 }}
+                animate={shouldReduceMotion ? false : { y: 0, opacity: 1 }}
+                exit={shouldReduceMotion ? false : { y: '100%', opacity: 0 }}
+                transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+                className="fixed inset-0 z-[99999] h-[100dvh] w-full bg-[var(--bg-primary)] flex flex-col overflow-hidden"
+                role="dialog"
+                aria-label="AI Career Assistant Fullscreen"
+              >
+                {chatUI}
+              </motion.div>
             )}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-600 via-indigo-600 to-purple-600 text-white shadow-sm shrink-0 h-14">
-              <div className="flex items-center gap-2">
-                {showHistory ? (
-                  <button onClick={() => setShowHistory(false)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-white/20 transition-colors">
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                ) : (
-                  <Bot className="h-6 w-6 text-indigo-200" />
-                )}
-                <h2 className="font-semibold text-base">{showHistory ? 'Conversation History' : 'AI Assistant'}</h2>
-              </div>
-              <div className="flex items-center gap-1">
-                {!showHistory && (
-                  <button
-                    onClick={() => setShowHistory(true)}
-                    className="p-1.5 rounded-lg hover:bg-white/20 transition-colors"
-                    title="History"
-                  >
-                    <History className="h-4 w-4" />
-                  </button>
-                )}
-                <button
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="hidden sm:block p-1.5 rounded-lg hover:bg-white/20 transition-colors"
-                  title={isExpanded ? "Collapse" : "Expand"}
-                >
-                  {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                </button>
-                <button
+
+            {/* TABLET: Centered Modal */}
+            {isTablet && (
+              <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+                <motion.div
+                  variants={shouldReduceMotion ? undefined : modalOverlayVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
                   onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-white/20 transition-colors"
-                  title="Close"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Body */}
-            <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col bg-[var(--bg-secondary)]">
-              {showHistory ? (
-                <div className="flex-1 min-h-0 overflow-y-auto w-full [&_>_div]:w-full scrollbar-thin">
-                   <AIChatSidebar
-                    conversations={conversations}
-                    activeId={activeId}
-                    onSelect={handleSelectConversation}
-                    onNew={handleNewChat}
-                    onRename={handleRename}
-                    onDelete={handleDelete}
-                    onSearch={handleSearch}
-                    isOpen={true}
-                    onToggle={() => {}}
-                    isLoading={convsLoading || createMutation.isPending}
-                    isWidgetMode={true}
-                  />
-                </div>
-              ) : (
-                <div ref={chatContainerRef} className="flex-1 min-h-0 overflow-y-auto bg-[var(--bg-primary)] p-4 space-y-4 scrollbar-thin">
-                  {isLoadingMessages && <ChatSkeleton />}
-
-                  {!isLoadingMessages && showPrompts && (
-                    <div className="flex flex-col items-center justify-center min-h-full px-2 py-6">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/30 mb-3">
-                        <Bot className="h-6 w-6 text-indigo-500" />
-                      </div>
-                      <h3 className="font-semibold text-[var(--text-primary)] mb-1 text-base">How can I help?</h3>
-                      <p className="text-xs text-[var(--text-secondary)] text-center mb-5 max-w-[240px]">
-                        Get help with resumes, interviews, or career advice.
-                      </p>
-                      <div className="w-full">
-                        <SuggestedPrompts onSelect={handlePromptSelect} isWidgetMode={true} />
-                      </div>
-                    </div>
-                  )}
-
-                  {!isLoadingMessages && !showPrompts && activeId && allMessages.length === 0 && (
-                    <div className="flex flex-col items-center justify-center min-h-full px-4">
-                      <Bot className="h-8 w-8 text-[var(--text-tertiary)] mb-2" />
-                      <p className="text-sm text-[var(--text-secondary)]">Say hello!</p>
-                    </div>
-                  )}
-
-                  {allMessages.length > 0 && (
-                    <div className="space-y-4">
-                      {allMessages.map((msg) => (
-                        <AIChatMessage
-                          key={msg._id}
-                          message={msg}
-                          isStreaming={msg.isStreaming}
-                          onRegenerate={!isStreaming ? handleRegenerate : undefined}
-                          isWidgetMode={true}
-                        />
-                      ))}
-                      {isStreaming && !streamingContent && (
-                        <div className="flex gap-2">
-                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800">
-                            <Bot className="h-3.5 w-3.5" />
-                          </div>
-                          <div className="rounded-xl px-3 py-2 bg-[var(--bg-tertiary)] flex items-center">
-                            <AnimatedDots className="text-indigo-500" />
-                          </div>
-                        </div>
-                      )}
-                      <div ref={messagesEndRef} />
-                    </div>
-                  )}
-
-                  {streamError && (
-                    <div className="pb-2">
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/30">
-                        <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
-                        <p className="text-xs text-red-600 dark:text-red-400 flex-1">{streamError}</p>
-                        <button
-                          onClick={() => {
-                            setStreamError(null)
-                            const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')
-                            if (lastUserMsg) handleSend(lastUserMsg.content)
-                          }}
-                          className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline shrink-0"
-                        >
-                          Retry
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Footer Input */}
-            {!showHistory && (
-              <div className="p-3 bg-[var(--bg-secondary)] border-t border-[var(--border-color)] shrink-0 pb-[calc(12px+env(safe-area-inset-bottom))]">
-                <AIChatInput
-                  onSend={handleSend}
-                  onStop={handleStop}
-                  isStreaming={isStreaming}
-                  onFileSelect={handleFileSelect}
-                  uploadedFile={uploadedFile}
-                  onRemoveFile={handleRemoveFile}
-                  isWidgetMode={true}
+                  className="fixed inset-0 bg-black/50 backdrop-blur-md"
                 />
+                <motion.div
+                  variants={shouldReduceMotion ? undefined : modalContainerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="relative z-10 w-[540px] max-w-[90vw] h-[680px] max-h-[85vh] rounded-3xl bg-[var(--bg-primary)] shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col"
+                  role="dialog"
+                  aria-label="AI Career Assistant Modal"
+                >
+                  {chatUI}
+                </motion.div>
               </div>
             )}
-          </motion.div>
+
+            {/* DESKTOP: Floating Assistant */}
+            {!isMobile && !isTablet && (
+              <motion.div
+                variants={shouldReduceMotion ? undefined : modalContainerVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className={cn(
+                  'fixed z-[99999] flex flex-col overflow-hidden bg-[var(--bg-primary)]/95 backdrop-blur-2xl shadow-2xl border border-[var(--border-color)] transition-all duration-300',
+                  isExpanded
+                    ? 'inset-6 rounded-3xl'
+                    : 'bottom-6 right-6 w-[420px] h-[720px] max-h-[calc(100vh-100px)] rounded-3xl'
+                )}
+                role="dialog"
+                aria-label="AI Career Assistant"
+              >
+                {chatUI}
+              </motion.div>
+            )}
+          </>
         )}
       </AnimatePresence>
     </>,

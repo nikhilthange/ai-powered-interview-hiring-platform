@@ -5,7 +5,7 @@ import Badge from '../ui/Badge'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { analysisApi } from '../../services/analysisApi'
-import { Sparkles, CheckCircle2, XCircle, Zap, Target, BookOpen } from 'lucide-react'
+import { Sparkles, CheckCircle2, XCircle, Zap } from 'lucide-react'
 
 export default function JobMatchAnalysisModal({ open, onClose, job }) {
   const navigate = useNavigate()

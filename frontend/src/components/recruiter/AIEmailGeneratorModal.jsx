@@ -5,7 +5,7 @@ import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Textarea from '../ui/Textarea'
 import { useToast } from '../ui/Toast'
-import { Sparkles, Copy, Check, Send, Mail, RefreshCw } from 'lucide-react'
+import { Copy, Check, Send, RefreshCw } from 'lucide-react'
 
 const EMAIL_TEMPLATES = [
   { id: 'invite', label: 'Interview Invitation', subject: 'Interview Invitation — HireMate' },
@@ -48,7 +48,7 @@ Hiring Team`)
       }
       setEmailBody(res.data?.email || res.email || res.data?.invitation || res.data?.content || res.data || `Hi ${candidateName},\n\nWe would love to invite you to an interview for ${jobTitle}.\n\nBest regards,\nHiring Team`)
       toast.success('AI Email generated with NVIDIA AI!')
-    } catch (err) {
+    } catch {
       toast.error('Failed to generate AI email.')
     }
   }

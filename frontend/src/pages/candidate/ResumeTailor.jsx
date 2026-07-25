@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Textarea from '../../components/ui/Textarea'
@@ -9,9 +9,8 @@ import AIStepLoader from '../../components/ui/AIStepLoader'
 import CountUp from '../../components/ui/CountUp'
 import Badge from '../../components/ui/Badge'
 import { useToast } from '../../components/ui/Toast'
-import { cn } from '../../lib/utils'
 import {
-  Sparkles, FileText, CheckCircle2, ArrowRight, Copy, Download, Save,
+  Sparkles, FileText, CheckCircle2, Copy, Download, Save,
   Check, AlertTriangle, ArrowLeft, RefreshCw, Layers, ShieldCheck, Zap
 } from 'lucide-react'
 import { Link } from 'react-router-dom'

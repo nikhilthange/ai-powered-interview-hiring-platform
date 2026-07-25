@@ -1,7 +1,7 @@
 import { useState, memo, useCallback } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '../../lib/utils'
-import { Copy, Check, RefreshCw, User, Bot } from 'lucide-react'
+import { Copy, Check, RefreshCw, User, Bot, Sparkles } from 'lucide-react'
 
 function SimpleMarkdown({ content }) {
   if (!content) return null
@@ -9,7 +9,7 @@ function SimpleMarkdown({ content }) {
   const segments = content.split(/(```[\s\S]*?```|`[^`]+`)/g)
 
   return (
-    <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed">
+    <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-sm">
       {segments.map((segment, i) => {
         if (segment.startsWith('```') && segment.endsWith('```')) {
           const code = segment.slice(3, -3)
@@ -20,15 +20,15 @@ function SimpleMarkdown({ content }) {
           return (
             <div key={i} className="relative group my-3">
               {lang && (
-                <div className="absolute top-0 left-0 right-0 px-4 py-1.5 text-[10px] text-[var(--text-tertiary)] bg-black/20 rounded-t-xl font-mono">
+                <div className="px-3 py-1 text-[10px] font-mono text-slate-400 bg-slate-800 rounded-t-xl border-b border-slate-700/50">
                   {lang}
                 </div>
               )}
               <pre className={cn(
-                'overflow-x-auto rounded-xl bg-[#1e1e2e] dark:bg-[#1a1a2e] p-4 text-sm leading-relaxed',
-                lang && 'pt-8'
+                'overflow-x-auto rounded-xl bg-slate-900 text-slate-100 p-3.5 text-xs font-mono leading-relaxed border border-slate-800',
+                lang && 'rounded-t-none'
               )}>
-                <code className="text-[#cdd6f4] font-mono text-[13px]">{codeContent}</code>
+                <code>{codeContent}</code>
               </pre>
             </div>
           )
@@ -36,7 +36,7 @@ function SimpleMarkdown({ content }) {
 
         if (segment.startsWith('`') && segment.endsWith('`')) {
           return (
-            <code key={i} className="bg-[var(--bg-tertiary)] text-[var(--color-primary-600)] dark:text-[var(--color-primary-400)] px-1.5 py-0.5 rounded-md text-sm font-mono">
+            <code key={i} className="bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 px-1.5 py-0.5 rounded-md text-xs font-mono border border-indigo-200/50 dark:border-indigo-800/50">
               {segment.slice(1, -1)}
             </code>
           )
@@ -58,26 +58,26 @@ function InlineMarkdown({ text }) {
         let rendered = line
 
         if (rendered.startsWith('### ')) {
-          return <h3 key={i} className="text-base font-semibold mt-4 mb-2 text-[var(--text-primary)]">{rendered.slice(4)}</h3>
+          return <h3 key={i} className="text-sm font-bold mt-3 mb-1.5 text-[var(--text-primary)]">{rendered.slice(4)}</h3>
         }
         if (rendered.startsWith('## ')) {
-          return <h2 key={i} className="text-lg font-semibold mt-5 mb-2 text-[var(--text-primary)]">{rendered.slice(3)}</h2>
+          return <h2 key={i} className="text-base font-bold mt-4 mb-2 text-[var(--text-primary)]">{rendered.slice(3)}</h2>
         }
         if (rendered.startsWith('# ')) {
-          return <h1 key={i} className="text-xl font-bold mt-5 mb-3 text-[var(--text-primary)]">{rendered.slice(2)}</h1>
+          return <h1 key={i} className="text-lg font-bold mt-4 mb-2 text-[var(--text-primary)]">{rendered.slice(2)}</h1>
         }
 
         if (rendered.startsWith('- ') || rendered.startsWith('* ')) {
-          return <li key={i} className="ml-4 text-sm text-[var(--text-secondary)] list-disc">{renderInline(rendered.slice(2))}</li>
+          return <li key={i} className="ml-4 text-xs sm:text-sm text-[var(--text-secondary)] list-disc my-0.5">{renderInline(rendered.slice(2))}</li>
         }
 
         if (/^\d+\.\s/.test(rendered)) {
-          return <li key={i} className="ml-4 text-sm text-[var(--text-secondary)] list-decimal">{renderInline(rendered.replace(/^\d+\.\s/, ''))}</li>
+          return <li key={i} className="ml-4 text-xs sm:text-sm text-[var(--text-secondary)] list-decimal my-0.5">{renderInline(rendered.replace(/^\d+\.\s/, ''))}</li>
         }
 
         if (rendered.startsWith('> ')) {
           return (
-            <blockquote key={i} className="border-l-2 border-indigo-400 pl-3 py-1 my-2 text-sm text-[var(--text-secondary)] italic">
+            <blockquote key={i} className="border-l-2 border-indigo-500 pl-3 py-1 my-2 text-xs sm:text-sm text-[var(--text-secondary)] italic bg-indigo-50/30 dark:bg-indigo-950/20 rounded-r-lg">
               {renderInline(rendered.slice(2))}
             </blockquote>
           )
@@ -86,7 +86,7 @@ function InlineMarkdown({ text }) {
         rendered = renderInline(rendered)
 
         return (
-          <p key={i} className="text-sm text-[var(--text-secondary)] mb-1.5 leading-relaxed">
+          <p key={i} className="text-xs sm:text-sm text-[var(--text-primary)] mb-1.5 leading-relaxed">
             {rendered}
           </p>
         )
@@ -112,7 +112,7 @@ function renderInline(text) {
       parts.push(<em key={`i${match.index}`} className="italic">{match[0].slice(1, -1)}</em>)
     } else if (match[0].startsWith('[')) {
       parts.push(
-        <a key={`a${match.index}`} href={match[3]} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 underline">
+        <a key={`a${match.index}`} href={match[3]} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
           {match[2]}
         </a>
       )
@@ -152,43 +152,46 @@ function AIChatMessageInner({ message, isStreaming, onRegenerate }) {
       animate={shouldReduceMotion ? false : { opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className={cn(
-        'flex gap-3 py-1',
+        'flex gap-2.5 py-1.5',
         isUser ? 'flex-row-reverse' : 'flex-row'
       )}
     >
+      {/* Avatar */}
       <div className={cn(
-        'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+        'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-xs text-xs font-semibold',
         isUser
-          ? 'bg-indigo-500 text-white'
-          : 'bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/50 dark:to-purple-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700/50'
+          ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-indigo-500/20'
+          : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 shadow-sm'
       )}>
-        {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+        {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4.5 w-4.5" />}
       </div>
 
+      {/* Message Content Bubble */}
       <div className={cn(
-        'flex-1 min-w-0 max-w-[85%]',
+        'flex-1 min-w-0 max-w-[85%] sm:max-w-[80%]',
         isUser ? 'flex flex-col items-end' : ''
       )}>
         <div className={cn(
-          'rounded-2xl px-4 py-3 min-w-0 max-w-full break-words',
+          'rounded-2xl px-4 py-3 min-w-0 max-w-full break-words shadow-xs',
           isUser
-            ? 'bg-indigo-500 text-white'
-            : 'bg-[var(--bg-tertiary)]'
+            ? 'bg-indigo-600 text-white rounded-tr-none'
+            : 'bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-tl-none'
         )}>
           {isUser ? (
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+            <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
           ) : (
             <div className="relative">
               <SimpleMarkdown content={message.content} />
               {isStreaming && (
-                <span className="inline-flex ml-0.5">
-                  <span className="animate-pulse">|</span>
+                <span className="inline-flex items-center ml-1 text-indigo-500 animate-pulse">
+                  <Sparkles className="h-3.5 w-3.5 inline" />
                 </span>
               )}
             </div>
           )}
         </div>
 
+        {/* Footer info & actions */}
         <div className="flex items-center gap-2 mt-1 px-1 text-[10px] text-[var(--text-tertiary)]">
           {message.createdAt && (
             <span className="opacity-70 font-mono">
@@ -196,11 +199,12 @@ function AIChatMessageInner({ message, isStreaming, onRegenerate }) {
             </span>
           )}
           {!isUser && !isStreaming && message.content && (
-            <>
+            <div className="flex items-center gap-1">
               <button
                 onClick={handleCopy}
                 className="p-1 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
                 title="Copy response"
+                aria-label="Copy response text"
               >
                 {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
@@ -209,11 +213,12 @@ function AIChatMessageInner({ message, isStreaming, onRegenerate }) {
                   onClick={() => onRegenerate(message)}
                   className="p-1 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
                   title="Regenerate response"
+                  aria-label="Regenerate response"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                 </button>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>

@@ -79,6 +79,81 @@ export function useNotifications() {
     },
   })
 
+  const deleteNotification = useMutation({
+    mutationFn: async (id) => {
+      // Backend mark read or delete call
+      try {
+        await notificationApi.markAsRead(id)
+      } catch {
+        // ignore if already marked or failed
+      }
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: NOTIFICATIONS_KEY })
+      const previous = queryClient.getQueryData(NOTIFICATIONS_KEY)
+
+      queryClient.setQueryData(NOTIFICATIONS_KEY, (old) => {
+        if (!old?.data?.notifications) return old
+        const target = old.data.notifications.find((n) => n._id === id)
+        const isUnread = target && !target.isRead
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            notifications: old.data.notifications.filter((n) => n._id !== id),
+          },
+          unreadCount: isUnread ? Math.max(0, (old.unreadCount || 0) - 1) : (old.unreadCount || 0),
+        }
+      })
+
+      return { previous }
+    },
+    onError: (err, id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(NOTIFICATIONS_KEY, context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY })
+    },
+  })
+
+  const clearAllNotifications = useMutation({
+    mutationFn: async () => {
+      try {
+        await notificationApi.markAllAsRead()
+      } catch {
+        // ignore
+      }
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: NOTIFICATIONS_KEY })
+      const previous = queryClient.getQueryData(NOTIFICATIONS_KEY)
+
+      queryClient.setQueryData(NOTIFICATIONS_KEY, (old) => {
+        if (!old?.data?.notifications) return old
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            notifications: [],
+          },
+          unreadCount: 0,
+        }
+      })
+
+      return { previous }
+    },
+    onError: (err, vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(NOTIFICATIONS_KEY, context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY })
+    },
+  })
+
   const handleMarkAsRead = useCallback((id) => {
     markAsRead.mutate(id)
   }, [markAsRead])
@@ -87,6 +162,14 @@ export function useNotifications() {
     markAllAsRead.mutate()
   }, [markAllAsRead])
 
+  const handleDeleteNotification = useCallback((id) => {
+    deleteNotification.mutate(id)
+  }, [deleteNotification])
+
+  const handleClearAll = useCallback(() => {
+    clearAllNotifications.mutate()
+  }, [clearAllNotifications])
+
   return {
     notifications: data?.data?.notifications || [],
     unreadCount: data?.unreadCount || 0,
@@ -94,5 +177,8 @@ export function useNotifications() {
     isLoading,
     markAsRead: handleMarkAsRead,
     markAllAsRead: handleMarkAllAsRead,
+    deleteNotification: handleDeleteNotification,
+    clearAllNotifications: handleClearAll,
   }
 }
+

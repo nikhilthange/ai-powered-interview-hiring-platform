@@ -16,7 +16,6 @@ export default function CountUp({
     : parseFloat(String(value || '0').replace(/[^0-9.-]+/g, '')) || 0
 
   const [count, setCount] = useState(shouldReduceMotion ? numericTarget : 0)
-  const countRef = useRef(0)
   const startTimeRef = useRef(null)
 
   useEffect(() => {

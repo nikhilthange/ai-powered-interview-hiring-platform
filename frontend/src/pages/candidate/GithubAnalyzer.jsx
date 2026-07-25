@@ -8,9 +8,8 @@ import AIStepLoader from '../../components/ui/AIStepLoader'
 import CountUp from '../../components/ui/CountUp'
 import Badge from '../../components/ui/Badge'
 import { useToast } from '../../components/ui/Toast'
-import { cn } from '../../lib/utils'
 import {
-  Code, Code2, Star, GitFork, Award, CheckCircle2, AlertCircle,
+  Code2, Star, CheckCircle2,
   Sparkles, ExternalLink, RefreshCw, ArrowLeft, Terminal, ShieldCheck
 } from 'lucide-react'
 import { Link } from 'react-router-dom'

@@ -317,7 +317,7 @@ export default memo(function NotificationBell() {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="absolute top-1 right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-extrabold text-white leading-none shadow-md border-2 border-[#0f172a]"
+              className="absolute top-0.5 right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white leading-none shadow-xs border border-white dark:border-slate-800"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </motion.span>

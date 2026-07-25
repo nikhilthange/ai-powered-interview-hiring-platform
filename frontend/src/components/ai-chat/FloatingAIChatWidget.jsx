@@ -482,7 +482,7 @@ export default function FloatingAIChatWidget() {
             whileHover={shouldReduceMotion ? undefined : buttonMotion.whileHover}
             whileTap={shouldReduceMotion ? undefined : buttonMotion.whileTap}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-6 z-[99998] h-14 w-14 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-2xl transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            className="fixed bottom-[calc(88px+env(safe-area-inset-bottom))] lg:bottom-6 right-4 sm:right-6 z-[99998] h-14 w-14 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-2xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             aria-label="Open AI Career Assistant"
           >
             <Bot className="h-7 w-7 text-white" />

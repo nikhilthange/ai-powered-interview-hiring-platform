@@ -8,6 +8,7 @@ import AIAssistantModal from './AIAssistantModal';
 import ResumeToolbar from '../../components/resume/ResumeToolbar';
 import { SkeletonPage } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
+import SEO from '../../components/seo/SEO';
 
 export default function ResumeEditor() {
   const { id } = useParams();
@@ -74,8 +75,16 @@ export default function ResumeEditor() {
 
   if (isLoading || !resumeData) return <SkeletonPage />;
 
+  const resumeTitle = resumeData?.title || 'Resume'
+
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col -m-4 sm:-m-6 lg:-m-8">
+      <SEO
+        title={`Editing ${resumeTitle} | HireMate Resume Builder`}
+        description="Edit and customize your ATS resume template with live AI content assistance."
+        path={`/resume-builder/${id}`}
+        robots="noindex, nofollow"
+      />
       {/* Editor Header */}
       <ResumeToolbar 
         title={resumeData.title}

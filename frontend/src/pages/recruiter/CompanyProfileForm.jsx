@@ -5,6 +5,7 @@ import companyService from '../../services/companyService';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, getMediaUrl } from '../../lib/utils';
+import SEO from '../../components/seo/SEO';
 
 const steps = [
   { id: 1, name: 'Basic Details', icon: Building2 },
@@ -164,6 +165,12 @@ const CompanyProfileForm = () => {
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+      <SEO
+        title="Company Profile & Employer Branding Manager | HireMate"
+        description="Set up company information, tech stack overview, culture highlights, and hiring requirements on HireMate."
+        path="/recruiter/company-profile"
+        robots="noindex, follow"
+      />
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Company Profile</h1>
         <p className="mt-2 text-[var(--text-secondary)]">Create a compelling profile to attract top talent to your team.</p>

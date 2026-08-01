@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Building2, MapPin, Users, ChevronRight, Star, BadgeCheck, Filter, X } from 'lucide-react';
 import companyService from '../../services/companyService';
@@ -6,9 +6,23 @@ import { toast } from 'react-hot-toast';
 import { getMediaUrl } from '../../lib/utils';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { staggerContainer, staggerItem } from '../../lib/motion';
+import SEO from '../../components/seo/SEO';
+import SEOPageContent from '../../components/seo/SEOPageContent';
+import { buildWebPageSchema, buildBreadcrumbSchema, buildItemListSchema, buildFAQSchema } from '../../utils/schemaGenerator';
 
 const INDUSTRIES = ['Technology', 'FinTech', 'HealthTech', 'E-commerce', 'SaaS', 'AI', 'EdTech', 'Cybersecurity'];
 const SIZES = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'];
+
+const COMPANY_FAQS = [
+  {
+    question: 'How do I explore top hiring companies on HireMate?',
+    answer: 'Browse employer profiles on HireMate to view industry sectors, company size, headquarters location, verified status, active job openings, and interview prep guides.',
+  },
+  {
+    question: 'What is a Verified Employer on HireMate?',
+    answer: 'Verified Employers have had their corporate identity, tech stack, and recruitment credentials authenticated by the HireMate team.',
+  },
+];
 
 const CompaniesList = () => {
   const [companies, setCompanies] = useState([]);
@@ -146,8 +160,32 @@ const CompaniesList = () => {
     </motion.div>
   );
 
+  const companySchemas = useMemo(() => [
+    buildWebPageSchema({
+      title: 'Top Hiring Companies & Employer Directory | HireMate',
+      description: 'Explore top tech companies, hiring trends, company profiles, and interview expectations on HireMate.',
+      path: '/companies',
+    }),
+    buildBreadcrumbSchema([{ name: 'Companies', path: '/companies' }]),
+    buildFAQSchema(COMPANY_FAQS),
+    buildItemListSchema({
+      name: 'Tech Employers',
+      description: 'Directory of hiring companies on HireMate',
+      items: companies.slice(0, 10).map((c) => ({
+        title: c.name,
+        path: `/companies/${c.id || c._id}`,
+      })),
+    }),
+  ], [companies])
+
   return (
     <div className="w-full space-y-6">
+      <SEO
+        title="Top Hiring Companies & Employer Directory | HireMate"
+        description="Explore top tech companies, hiring trends, company profiles, and interview expectations on HireMate."
+        path="/companies"
+        schema={companySchemas}
+      />
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
@@ -409,6 +447,29 @@ const CompaniesList = () => {
           )}
         </main>
       </div>
+
+      <SEOPageContent
+        summary="Explore leading technology companies hiring engineers, software developers, and product managers on HireMate."
+        definition="The HireMate Employer Directory aggregates top technology firms, startups, and enterprise organizations actively recruiting technical talent."
+        questions={[
+          {
+            question: 'How can I research companies before interviewing?',
+            answer: 'HireMate provides company profiles detailing technological stack preferences, recruitment process overviews, company culture insights, and active job listings.',
+          },
+        ]}
+        steps={[
+          { title: 'Filter Directory', desc: 'Sort companies by industry domain (FinTech, SaaS, AI, HealthTech) and team size.' },
+          { title: 'View Tech Stack', desc: 'Inspect core programming languages, frameworks, and database architectures used.' },
+          { title: 'Check Open Jobs', desc: 'Browse live open positions with AI match evaluation.' },
+          { title: 'Prepare Interviews', desc: 'Launch targeted mock interview simulations tailored to company expectations.' },
+        ]}
+        takeaways={[
+          'Comprehensive employer profiles with verified recruitment credentials',
+          'Industry categorization and headcount filtering options',
+          'Direct access to open technical positions',
+        ]}
+        faqs={COMPANY_FAQS}
+      />
     </div>
   );
 };

@@ -7,6 +7,8 @@ import Input from '../../components/ui/Input'
 import { Card, CardContent } from '../../components/ui/Card'
 import { Eye, EyeOff, UserPlus, AlertCircle, Sparkles, Mail, Lock, User } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import SEO from '../../components/seo/SEO'
+import { buildWebPageSchema, buildBreadcrumbSchema } from '../../utils/schemaGenerator'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -54,8 +56,23 @@ export default function Register() {
     }
   }
 
+  const registerSchemas = [
+    buildWebPageSchema({
+      title: 'Create Free HireMate Account | AI Interview & Career Platform',
+      description: 'Sign up for a free HireMate account to access AI mock interviews, ATS resume scoring, skill gap detection, and career roadmaps.',
+      path: '/register',
+    }),
+    buildBreadcrumbSchema([{ name: 'Create Account', path: '/register' }]),
+  ]
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <SEO
+        title="Create Free HireMate Account | AI Interview & Career Platform"
+        description="Sign up for a free HireMate account to access AI mock interviews, ATS resume scoring, skill gap detection, and career roadmaps."
+        path="/register"
+        schema={registerSchemas}
+      />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-500/5 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-purple-500/5 blur-3xl" />

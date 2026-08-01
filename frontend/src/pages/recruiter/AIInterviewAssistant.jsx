@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import AIStepLoader from '../../components/ui/AIStepLoader';
+import SEO from '../../components/seo/SEO';
 
 const topActionCards = [
   { id: 'questions', title: 'Generate Questions', desc: 'Behavioral & Technical', icon: FileText, color: 'text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
@@ -66,7 +67,12 @@ export default function AIInterviewAssistant() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 min-h-screen pb-20">
-      
+      <SEO
+        title="AI Technical Interview Assistant for Recruiters | HireMate"
+        description="Generate custom technical question sets, coding rubrics, and candidate evaluation criteria using AI."
+        path="/recruiter/ai-interview-assistant"
+        robots="noindex, follow"
+      />
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>

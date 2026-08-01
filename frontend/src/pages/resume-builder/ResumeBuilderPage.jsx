@@ -7,6 +7,20 @@ import Button from '../../components/ui/Button';
 import { SkeletonPage } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
 import { FileText, Plus, Upload, Trash2, Edit3, Clock } from 'lucide-react';
+import SEO from '../../components/seo/SEO';
+import SEOPageContent from '../../components/seo/SEOPageContent';
+import { buildWebPageSchema, buildBreadcrumbSchema, buildHowToSchema, buildFAQSchema } from '../../utils/schemaGenerator';
+
+const RESUME_BUILDER_FAQS = [
+  {
+    question: 'How does the HireMate AI Resume Builder work?',
+    answer: 'Select a modern ATS-friendly template, fill in your experience sections or import an existing PDF/DOCX, and use integrated AI content generation to craft professional summaries.',
+  },
+  {
+    question: 'Are HireMate resume templates compatible with ATS software?',
+    answer: 'Yes! All HireMate resume templates follow clean single-column and dual-column layouts designed for maximum ATS parsing accuracy.',
+  },
+];
 
 export default function ResumeList() {
   const queryClient = useQueryClient();
@@ -68,8 +82,34 @@ export default function ResumeList() {
 
   if (isLoading) return <SkeletonPage />;
 
+  const resumeBuilderSchemas = [
+    buildWebPageSchema({
+      title: 'AI Resume Builder & Modern Template Creator | HireMate',
+      description: 'Build professional ATS-friendly resumes in minutes with AI content suggestions, modern templates, and export options on HireMate.',
+      path: '/resume-builder',
+    }),
+    buildBreadcrumbSchema([{ name: 'Resume Builder', path: '/resume-builder' }]),
+    buildFAQSchema(RESUME_BUILDER_FAQS),
+    buildHowToSchema({
+      name: 'How to Build an ATS-Friendly Engineering Resume with AI',
+      description: 'Step-by-step procedure to build and export resumes.',
+      steps: [
+        { name: 'Choose Template or Import PDF', text: 'Start with a clean layout or import existing CV.', url: '/resume-builder' },
+        { name: 'Fill Details', text: 'Add work experience, education, and technical projects.' },
+        { name: 'Use AI Assistance', text: 'Generate bullet point achievements with AI suggestions.' },
+        { name: 'Export Resume', text: 'Download print-ready PDF or Word file.' },
+      ],
+    }),
+  ]
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
+      <SEO
+        title="AI Resume Builder & Modern Template Creator | HireMate"
+        description="Build professional ATS-friendly resumes in minutes with AI content suggestions, modern templates, and export options on HireMate."
+        path="/resume-builder"
+        schema={resumeBuilderSchemas}
+      />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">AI Resume Builder</h1>
@@ -153,6 +193,29 @@ export default function ResumeList() {
           ))}
         </div>
       )}
+
+      <SEOPageContent
+        summary="Create clean, modern, ATS-friendly software engineering resumes with built-in AI section writing suggestions."
+        definition="The HireMate AI Resume Builder provides candidate CV templates engineered to pass applicant tracking systems."
+        questions={[
+          {
+            question: 'How do HireMate resume templates ensure high ATS parsing scores?',
+            answer: 'Templates use standard font hierarchies, clean semantic margins, zero complex text boxes, and explicit section titles for flawless ATS parsing.',
+          },
+        ]}
+        steps={[
+          { title: 'Create or Import', desc: 'Start fresh or upload your existing resume.' },
+          { title: 'Fill Sections', desc: 'Add work experience, projects, skills, and education.' },
+          { title: 'Enhance with AI', desc: 'Generate strong action-oriented achievement bullets.' },
+          { title: 'Download PDF', desc: 'Export high-resolution PDF for job applications.' },
+        ]}
+        takeaways={[
+          'Modern ATS-optimized resume templates',
+          'Integrated AI writing assistant for bullet point optimization',
+          'PDF and Word file import/export capabilities',
+        ]}
+        faqs={RESUME_BUILDER_FAQS}
+      />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { Briefcase, Users, CalendarCheck, TrendingUp, Plus, Activity, ChevronRig
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
 } from 'recharts'
+import SEO from '../../components/seo/SEO'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -124,6 +125,12 @@ export default function RecruiterDashboard() {
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
+      <SEO
+        title="Recruiter Dashboard & Candidate Analytics | HireMate"
+        description="Manage job postings, review AI applicant match scores, and streamline technical candidate screening on HireMate."
+        path="/recruiter/dashboard"
+        robots="noindex, follow"
+      />
       <motion.div variants={itemVariants}>
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-600 p-6 sm:p-8">
           <div className="absolute inset-0 overflow-hidden">

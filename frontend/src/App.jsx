@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { SocketProvider } from './context/SocketContext'
@@ -43,24 +44,26 @@ function SkipToContent() {
 
 export default function App() {
   return (
-    <ErrorBoundary>
-      <SkipToContent />
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <AuthProvider>
-            <SocketProvider>
-              <ToastProvider>
-                <RouterProvider router={router} />
-                {import.meta.env.DEV && (
-                  <Suspense fallback={null}>
-                    <ReactQueryDevtools buttonPosition="bottom-left" />
-                  </Suspense>
-                )}
-              </ToastProvider>
-            </SocketProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <HelmetProvider>
+      <ErrorBoundary>
+        <SkipToContent />
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <AuthProvider>
+              <SocketProvider>
+                <ToastProvider>
+                  <RouterProvider router={router} />
+                  {import.meta.env.DEV && (
+                    <Suspense fallback={null}>
+                      <ReactQueryDevtools buttonPosition="bottom-left" />
+                    </Suspense>
+                  )}
+                </ToastProvider>
+              </SocketProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </HelmetProvider>
   )
 }

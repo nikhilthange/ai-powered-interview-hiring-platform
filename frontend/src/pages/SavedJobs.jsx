@@ -12,6 +12,8 @@ import {
   GraduationCap, AlertCircle, X, Loader2,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import SEO from '../components/seo/SEO'
+import { buildWebPageSchema, buildBreadcrumbSchema } from '../utils/schemaGenerator'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -63,6 +65,15 @@ export default function SavedJobs() {
     )
   }
 
+  const savedJobsSchemas = [
+    buildWebPageSchema({
+      title: 'Saved Jobs & Bookmarked Tech Opportunities | HireMate',
+      description: 'Manage your bookmarked job listings, compare position requirements, and track application deadlines on HireMate.',
+      path: '/saved-jobs',
+    }),
+    buildBreadcrumbSchema([{ name: 'Saved Jobs', path: '/saved-jobs' }]),
+  ]
+
   return (
     <motion.div
       variants={containerVariants}
@@ -70,6 +81,13 @@ export default function SavedJobs() {
       animate="visible"
       className="space-y-6"
     >
+      <SEO
+        title="Saved Jobs & Bookmarked Tech Opportunities | HireMate"
+        description="Manage your bookmarked job listings, compare position requirements, and track application deadlines on HireMate."
+        path="/saved-jobs"
+        robots="noindex, follow"
+        schema={savedJobsSchemas}
+      />
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">

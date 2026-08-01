@@ -6,10 +6,10 @@ import { applicationApi } from '../../services/applicationApi'
 import { useToast } from '../../components/ui/Toast'
 import { Card, CardContent } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
-
 import { SkeletonPage } from '../../components/ui/Skeleton'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Send, AlertCircle, Upload } from 'lucide-react'
+import SEO from '../../components/seo/SEO'
 
 export default function ApplyJob() {
   const { id } = useParams()
@@ -53,12 +53,20 @@ export default function ApplyJob() {
 
   if (isLoading) return <SkeletonPage />
 
+  const jobTitle = job?.title || 'Job'
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="max-w-3xl mx-auto space-y-6"
     >
+      <SEO
+        title={`Apply for ${jobTitle} | HireMate`}
+        description={`Submit your application for ${jobTitle} position with AI match scoring and tailored resume documents on HireMate.`}
+        path={`/jobs/${id}/apply`}
+        robots="noindex, follow"
+      />
       <div>
         <Link to={`/jobs/${id}`} className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4">
           <ArrowLeft className="h-4 w-4" /> Back to job

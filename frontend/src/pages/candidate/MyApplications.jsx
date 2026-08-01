@@ -17,6 +17,8 @@ import {
 import { Link } from 'react-router-dom'
 import { APPLICATION_STATUSES, STATUS_COLORS } from '../../lib/constants'
 import { staggerContainer, staggerItem } from '../../lib/motion'
+import SEO from '../../components/seo/SEO'
+import { buildWebPageSchema, buildBreadcrumbSchema } from '../../utils/schemaGenerator'
 
 const ApplicationItem = memo(function ApplicationItem({ app }) {
   return (
@@ -108,8 +110,24 @@ export default function MyApplications() {
     )
   }
 
+  const myAppSchemas = [
+    buildWebPageSchema({
+      title: 'My Job Applications & Status Tracker | HireMate',
+      description: 'Track your submitted job applications, interview schedules, recruiter reviews, and AI match scores in one place.',
+      path: '/my-applications',
+    }),
+    buildBreadcrumbSchema([{ name: 'My Applications', path: '/my-applications' }]),
+  ]
+
   return (
     <div className="w-full space-y-6">
+      <SEO
+        title="My Job Applications & Status Tracker | HireMate"
+        description="Track your submitted job applications, interview schedules, recruiter reviews, and AI match scores in one place."
+        path="/my-applications"
+        robots="noindex, follow"
+        schema={myAppSchemas}
+      />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

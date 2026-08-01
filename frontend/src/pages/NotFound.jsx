@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import { ArrowLeft, Home, Search, MapPin } from 'lucide-react'
+import SEO from '../components/seo/SEO'
 
 export default function NotFound() {
   return (
@@ -10,6 +11,11 @@ export default function NotFound() {
       animate={{ opacity: 1 }}
       className="min-h-screen flex flex-col items-center justify-center p-4 text-center relative overflow-hidden"
     >
+      <SEO
+        title="404 Page Not Found | HireMate"
+        description="The requested page could not be found on HireMate."
+        robots="noindex, nofollow"
+      />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-indigo-500/5 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-purple-500/5 blur-3xl" />

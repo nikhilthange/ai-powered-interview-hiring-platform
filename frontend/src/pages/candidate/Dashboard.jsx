@@ -12,6 +12,8 @@ import { SkeletonMetrics, SkeletonChart } from '../../components/ui/Skeleton'
 import { Link } from 'react-router-dom'
 import { cn, calculateProfileCompletion, getMediaUrl } from '../../lib/utils'
 import { staggerContainer, staggerItem, TRANSITIONS } from '../../lib/motion'
+import SEO from '../../components/seo/SEO'
+import { buildWebPageSchema, buildBreadcrumbSchema } from '../../utils/schemaGenerator'
 import {
   FileText, Bookmark, Briefcase, CalendarCheck, Bot,
   TrendingUp, BarChart3, Sparkles, Activity, Target,
@@ -158,13 +160,29 @@ export default function CandidateDashboard() {
 
   const latestApps = apps.slice(0, 5)
 
+  const dashboardSchemas = [
+    buildWebPageSchema({
+      title: 'Career Dashboard & AI Interview Readiness | HireMate',
+      description: 'Track your AI mock interview scores, ATS resume evaluation, skill gap progress, and job application pipeline in real time.',
+      path: '/dashboard',
+    }),
+    buildBreadcrumbSchema([{ name: 'Dashboard', path: '/dashboard' }]),
+  ]
+
   return (
     <motion.div
-      variants={shouldReduceMotion ? undefined : staggerContainer(0.08)}
+      variants={shouldReduceMotion ? undefined : staggerContainer(0.06)}
       initial="hidden"
       animate="visible"
       className="space-y-6 lg:space-y-8 pb-32 lg:pb-8 max-w-full overflow-x-clip"
     >
+      <SEO
+        title="Career Dashboard & AI Interview Readiness | HireMate"
+        description="Track your AI mock interview scores, ATS resume evaluation, skill gap progress, and job application pipeline in real time."
+        path="/dashboard"
+        robots="noindex, follow"
+        schema={dashboardSchemas}
+      />
       {/* Header Profile Card */}
       <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
         <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-950 p-6 sm:p-10 shadow-xl shadow-indigo-900/20 border border-indigo-700/30 h-auto">

@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { profileApi } from '../services/profileApi'
@@ -10,6 +9,8 @@ import { getMediaUrl } from '../lib/utils'
 import { Card, CardContent } from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { SkeletonProfile } from '../components/ui/Skeleton'
+import SEO from '../components/seo/SEO'
+import { buildWebPageSchema, buildPersonSchema, buildBreadcrumbSchema } from '../utils/schemaGenerator'
 import {
   MapPin, Link as LinkIcon, Briefcase, 
   GraduationCap, FolderGit2, Award, FileText, CheckCircle2, AlertCircle, MessageCircle
@@ -31,27 +32,6 @@ export default function PublicPortfolio() {
     mutationFn: (userId) => chatApi.getOrCreateRoom(userId),
     onSuccess: () => navigate('/chat')
   })
-
-  // SEO Optimization
-  useEffect(() => {
-    if (data) {
-      document.title = `${data.fullName}'s Portfolio | HireMate`
-      const metaDescription = document.querySelector('meta[name="description"]')
-      if (metaDescription) {
-        metaDescription.setAttribute('content', data.headline || data.bio || `Check out ${data.fullName}'s professional portfolio.`)
-      } else {
-        const meta = document.createElement('meta')
-        meta.name = 'description'
-        meta.content = data.headline || data.bio || `Check out ${data.fullName}'s professional portfolio.`
-        document.head.appendChild(meta)
-      }
-    }
-    return () => {
-      document.title = 'HireMate'
-      const metaDescription = document.querySelector('meta[name="description"]')
-      if (metaDescription) metaDescription.setAttribute('content', 'AI-powered interview and hiring platform.')
-    }
-  }, [data])
 
   if (isLoading) {
     return (
@@ -86,8 +66,38 @@ export default function PublicPortfolio() {
   const avatarUrl = getMediaUrl(profile.avatarUrl)
   const resumeUrl = getMediaUrl(profile.resumeUrl)
 
+  const profileName = profile.fullName || username
+  const pageTitle = `${profileName}'s Developer Portfolio & Verified Skills | HireMate`
+  const pageDesc = profile.headline || profile.bio || `Explore ${profileName}'s verified technical skills, experience history, and interview readiness scores on HireMate.`
+
+  const portfolioSchemas = [
+    buildWebPageSchema({
+      title: pageTitle,
+      description: pageDesc,
+      path: `/u/${username}`,
+    }),
+    buildBreadcrumbSchema([
+      { name: 'Portfolios', path: `/u/${username}` },
+      { name: profileName, path: `/u/${username}` },
+    ]),
+    buildPersonSchema({
+      name: profileName,
+      username: username,
+      title: profile.headline,
+      company: profile.currentCompany,
+      github: profile.githubUrl,
+      linkedin: profile.linkedinUrl,
+    }),
+  ]
+
   return (
     <div className="min-h-screen bg-[var(--bg-secondary)] py-12 px-4 sm:px-6 lg:px-8">
+      <SEO
+        title={pageTitle}
+        description={pageDesc}
+        path={`/u/${username}`}
+        schema={portfolioSchemas}
+      />
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header Section */}

@@ -16,6 +16,24 @@ import {
   StopCircle, Briefcase, AlertTriangle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import SEO from '../../components/seo/SEO'
+import SEOPageContent from '../../components/seo/SEOPageContent'
+import { buildWebPageSchema, buildBreadcrumbSchema, buildHowToSchema, buildFAQSchema } from '../../utils/schemaGenerator'
+
+const MOCK_INTERVIEW_FAQS = [
+  {
+    question: 'How do AI Mock Interviews work on HireMate?',
+    answer: 'HireMate generates tailored technical and behavioral questions based on your resume and target role. You answer via audio or text input, and the AI evaluates your response clarity, technical accuracy, and structural presentation.',
+  },
+  {
+    question: 'What types of engineering roles can I practice for?',
+    answer: 'Practices are available for Frontend Engineers, Backend Engineers, Full-Stack Developers, DevOps/Cloud Engineers, Mobile Developers, Data Engineers, and AI/ML Specialists across Junior, Mid, and Senior difficulty levels.',
+  },
+  {
+    question: 'Can I review my past mock interview feedback?',
+    answer: 'Yes! All completed interview sessions, question-by-question scoring, audio transcripts, and AI suggestions are saved in your My Interviews dashboard.',
+  },
+]
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -147,7 +165,27 @@ export default function MockInterview() {
     startMutation.mutate(formData)
   }
 
-  if (!sessionId && !startMutation.isPending) {
+  const mockInterviewSchemas = [
+    buildWebPageSchema({
+      title: 'AI Mock Interview Simulator & Real-Time Feedback | HireMate',
+      description: 'Practice technical and behavioral interview questions with AI feedback, audio analysis, and instant scoring on HireMate.',
+      path: '/mock-interview',
+    }),
+    buildBreadcrumbSchema([{ name: 'Mock Interview', path: '/mock-interview' }]),
+    buildFAQSchema(MOCK_INTERVIEW_FAQS),
+    buildHowToSchema({
+      name: 'How to Practice AI Mock Interviews for Engineering Roles',
+      description: 'Step-by-step procedure to practice technical interviews and improve answer scoring.',
+      steps: [
+        { name: 'Upload Resume & Pick Role', text: 'Select target engineering role and experience level.', url: '/mock-interview' },
+        { name: 'Answer Questions', text: 'Respond using speech-to-text audio or text typing.' },
+        { name: 'Receive Instant Feedback', text: 'Review live AI analysis on technical clarity and response structure.' },
+        { name: 'Review Report', text: 'Inspect question-by-question scoring and areas of improvement.' },
+      ],
+    }),
+  ]
+
+  if (!sessionId) {
     return (
       <motion.div
         variants={containerVariants}
@@ -155,6 +193,12 @@ export default function MockInterview() {
         animate="visible"
         className="max-w-3xl mx-auto space-y-6"
       >
+        <SEO
+          title="AI Mock Interview Simulator & Real-Time Feedback | HireMate"
+          description="Practice technical and behavioral interview questions with AI feedback, audio analysis, and instant scoring on HireMate."
+          path="/mock-interview"
+          schema={mockInterviewSchemas}
+        />
         <motion.div variants={itemVariants}>
           <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-6">
             <Sparkles className="h-4 w-4" /> Back to dashboard
@@ -261,6 +305,33 @@ export default function MockInterview() {
             </motion.div>
           )}
         </motion.form>
+
+        <SEOPageContent
+          summary="Simulate real technical and behavioral engineering interviews with instant AI scoring, speech evaluation, and personalized feedback reports."
+          definition="The HireMate AI Mock Interview Simulator conducts interactive technical Q&A sessions using LLMs and speech processing to prepare software developers for hiring rounds."
+          questions={[
+            {
+              question: 'Why practice with AI mock interviews before company interviews?',
+              answer: 'AI mock interviews build articulation confidence, help structure answers using the STAR method (Situation, Task, Action, Result), and highlight technical gaps without high-stakes pressure.',
+            },
+            {
+              question: 'How are mock interview responses evaluated?',
+              answer: 'HireMate rates responses based on technical accuracy, clarity of speech, relevance to the question, problem-solving structure, and depth of domain knowledge.',
+            },
+          ]}
+          steps={[
+            { title: 'Upload Resume', desc: 'Provide your latest CV for question context customization.' },
+            { title: 'Select Target Role', desc: 'Choose from Frontend, Backend, Fullstack, DevOps, Data, or AI/ML.' },
+            { title: 'Answer Live Questions', desc: 'Respond via audio speech or text typing in real time.' },
+            { title: 'Get Feedback Report', desc: 'Receive question-by-question scoring and improvement tips.' },
+          ]}
+          takeaways={[
+            'Real-time audio speech-to-text interview processing',
+            'Tailored question generation matching target engineering stack',
+            'Detailed scoring breakdown across technical and communication dimensions',
+          ]}
+          faqs={MOCK_INTERVIEW_FAQS}
+        />
       </motion.div>
     )
   }

@@ -14,6 +14,8 @@ import ExperienceEditor from '../../components/profile/ExperienceEditor'
 import Button from '../../components/ui/Button'
 import { getMediaUrl } from '../../lib/utils'
 import { Upload, FileText, AlertCircle, Plus, Briefcase, Award, FileBadge } from 'lucide-react'
+import SEO from '../../components/seo/SEO'
+import { buildWebPageSchema, buildPersonSchema, buildBreadcrumbSchema } from '../../utils/schemaGenerator'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -173,8 +175,37 @@ export default function CandidateProfile() {
   const initial = profile ? buildInitialForm(profile) : {}
   const isDirty = currentFormValues && JSON.stringify(currentFormValues) !== JSON.stringify(initial)
 
+  const profileSchemas = profile ? [
+    buildWebPageSchema({
+      title: 'Candidate Profile & Skill Portfolio | HireMate',
+      description: 'Manage your professional profile, experience, skills, resume uploads, and job preferences on HireMate.',
+      path: '/profile',
+    }),
+    buildBreadcrumbSchema([{ name: 'Profile', path: '/profile' }]),
+    buildPersonSchema({
+      name: profile.fullName || 'Candidate',
+      username: profile.userId?.username,
+      title: profile.headline || profile.title,
+      company: profile.currentCompany,
+      github: profile.github,
+      linkedin: profile.linkedin,
+    }),
+  ] : []
+
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-4xl mx-auto space-y-6 pb-24 sm:pb-6">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-4xl mx-auto space-y-6 pb-24 sm:pb-6"
+    >
+      <SEO
+        title="Candidate Profile & Skill Portfolio | HireMate"
+        description="Manage your professional profile, experience, skills, resume uploads, and job preferences on HireMate."
+        path="/profile"
+        robots="noindex, follow"
+        schema={profileSchemas}
+      />
       <motion.div variants={itemVariants}>
         <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">My Profile</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-1">Manage your personal information and career details</p>

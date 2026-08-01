@@ -13,6 +13,20 @@ import { cn } from '../../lib/utils'
 import { Briefcase, Sparkles, Brain, Target, CheckCircle, BookOpen, Zap, Award, Clock, AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { TARGET_ROLES } from '../../lib/constants'
+import SEO from '../../components/seo/SEO'
+import SEOPageContent from '../../components/seo/SEOPageContent'
+import { buildWebPageSchema, buildBreadcrumbSchema, buildHowToSchema, buildFAQSchema } from '../../utils/schemaGenerator'
+
+const SKILL_GAP_FAQS = [
+  {
+    question: 'What is AI Skill Gap Analysis on HireMate?',
+    answer: 'HireMate compares your resume skill set against market requirements for target tech positions, pinpointing missing skills, proficiency gaps, and curated learning recommendations.',
+  },
+  {
+    question: 'How does HireMate identify missing technical skills?',
+    answer: 'By scanning thousands of active job postings for engineering roles, HireMate categorizes core skills into essential, recommended, and bonus technologies.',
+  },
+]
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -47,6 +61,26 @@ export default function SkillGapAnalysis() {
 
   const result = data?.data
 
+  const skillGapSchemas = [
+    buildWebPageSchema({
+      title: 'AI Skill Gap Detector & Career Upskilling Guide | HireMate',
+      description: 'Identify missing tech skills compared to target job descriptions and get curated learning paths to close the gap on HireMate.',
+      path: '/skill-gap-analysis',
+    }),
+    buildBreadcrumbSchema([{ name: 'Skill Gap Analysis', path: '/skill-gap-analysis' }]),
+    buildFAQSchema(SKILL_GAP_FAQS),
+    buildHowToSchema({
+      name: 'How to Detect and Close Tech Skill Gaps',
+      description: 'Step-by-step workflow to analyze missing tech stack competencies.',
+      steps: [
+        { name: 'Upload Resume', text: 'Provide your latest experience history.', url: '/skill-gap-analysis' },
+        { name: 'Select Desired Role', text: 'Select target engineering title.' },
+        { name: 'Analyze Skill Gaps', text: 'AI identifies missing frameworks, tools, and domain concepts.' },
+        { name: 'Follow Upskilling Recommendations', text: 'Access targeted learning resources.' },
+      ],
+    }),
+  ]
+
   return (
     <motion.div
       variants={containerVariants}
@@ -54,6 +88,12 @@ export default function SkillGapAnalysis() {
       animate="visible"
       className="max-w-4xl mx-auto space-y-6"
     >
+      <SEO
+        title="AI Skill Gap Detector & Career Upskilling Guide | HireMate"
+        description="Identify missing tech skills compared to target job descriptions and get curated learning paths to close the gap on HireMate."
+        path="/skill-gap-analysis"
+        schema={skillGapSchemas}
+      />
       <motion.div variants={itemVariants}>
         <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-6">
           <Sparkles className="h-4 w-4" /> Back to dashboard
@@ -257,6 +297,29 @@ export default function SkillGapAnalysis() {
           </motion.div>
         </motion.div>
       )}
+
+      <SEOPageContent
+        summary="Discover missing software engineering skills and obtain personalized learning recommendations to qualify for target developer positions."
+        definition="HireMate Skill Gap Detection evaluates your background against target role requirements to highlight missing technical stack proficiencies."
+        questions={[
+          {
+            question: 'How does Skill Gap Analysis accelerate career transitions?',
+            answer: 'It eliminates trial-and-error learning by pinpointing the top 3-5 missing technologies required by employers for your dream role.',
+          },
+        ]}
+        steps={[
+          { title: 'Upload Resume', text: 'Parse your experience history into technical categories.' },
+          { title: 'Select Target Role', text: 'Choose target position tier.' },
+          { title: 'Review Gaps', text: 'Identify essential vs. bonus skill deficits.' },
+          { title: 'Upskill & Apply', text: 'Complete recommended learning pathways to qualify.' },
+        ]}
+        takeaways={[
+          'Instant technical competency gap identification',
+          'Prioritized list of essential vs optional skills',
+          'Direct integration with HireMate Career Roadmaps',
+        ]}
+        faqs={SKILL_GAP_FAQS}
+      />
     </motion.div>
   )
 }

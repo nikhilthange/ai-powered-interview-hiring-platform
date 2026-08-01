@@ -16,6 +16,20 @@ import {
 import { Link } from 'react-router-dom'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import { exportTailoredResumePdf } from '../../utils/pdfExport'
+import SEO from '../../components/seo/SEO'
+import SEOPageContent from '../../components/seo/SEOPageContent'
+import { buildWebPageSchema, buildBreadcrumbSchema, buildHowToSchema, buildFAQSchema } from '../../utils/schemaGenerator'
+
+const RESUME_TAILOR_FAQS = [
+  {
+    question: 'What is AI Resume Tailoring on HireMate?',
+    answer: 'AI Resume Tailoring rewrites your existing resume bullet points to seamlessly incorporate missing keywords, skills, and action verbs specified in a target job description.',
+  },
+  {
+    question: 'How does resume tailoring help pass ATS screeners?',
+    answer: 'ATS screeners score candidates based on keyword exact-matches. Tailoring ensures your qualifications match the employer\'s exact terminology.',
+  },
+]
 
 export default function ResumeTailor() {
   const { toast } = useToast()
@@ -84,6 +98,26 @@ ${result.bulletImprovements.map(b => `• ${b.after}`).join('\n')}
     setTimeout(() => setSaved(false), 3000)
   }
 
+  const resumeTailorSchemas = [
+    buildWebPageSchema({
+      title: 'AI Resume Tailor & Job Keyword Matcher | HireMate',
+      description: 'Tailor your resume for specific job descriptions using AI to boost ATS alignment and highlight key engineering skills.',
+      path: '/resume-tailor',
+    }),
+    buildBreadcrumbSchema([{ name: 'Resume Tailor', path: '/resume-tailor' }]),
+    buildFAQSchema(RESUME_TAILOR_FAQS),
+    buildHowToSchema({
+      name: 'How to Tailor Your Resume to Any Job Description with AI',
+      description: 'Step-by-step procedure to tailor resume bullet points for ATS match scores.',
+      steps: [
+        { name: 'Upload Base Resume', text: 'Select your master resume file.', url: '/resume-tailor' },
+        { name: 'Paste Job Post', text: 'Provide target job description text.' },
+        { name: 'Run AI Tailoring', text: 'AI optimizes bullet points and technical keywords.' },
+        { name: 'Export Tailored Resume', text: 'Download updated PDF version for instant application.' },
+      ],
+    }),
+  ]
+
   return (
     <motion.div
       variants={shouldReduceMotion ? undefined : staggerContainer(0.08)}
@@ -91,6 +125,12 @@ ${result.bulletImprovements.map(b => `• ${b.after}`).join('\n')}
       animate="visible"
       className="max-w-5xl mx-auto space-y-8 pb-16"
     >
+      <SEO
+        title="AI Resume Tailor & Job Keyword Matcher | HireMate"
+        description="Tailor your resume for specific job descriptions using AI to boost ATS alignment and highlight key engineering skills."
+        path="/resume-tailor"
+        schema={resumeTailorSchemas}
+      />
       {/* Header */}
       <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -307,6 +347,29 @@ ${result.bulletImprovements.map(b => `• ${b.after}`).join('\n')}
 
         </motion.div>
       )}
+
+      <SEOPageContent
+        summary="Rephrase resume bullet points and align technical keywords to target specific engineering job descriptions with AI."
+        definition="The HireMate AI Resume Tailor rewrites experience achievements to match employer ATS criteria and maximize job application callback rates."
+        questions={[
+          {
+            question: 'Why is tailoring a resume better than sending a generic resume?',
+            answer: 'Generic resumes get filtered out by ATS scanners when required technologies are missing. Tailoring ensures every bullet point addresses the employer\'s exact requirements.',
+          },
+        ]}
+        steps={[
+          { title: 'Upload Master Resume', desc: 'Select your standard resume file.' },
+          { title: 'Paste Target Job', desc: 'Provide job description text.' },
+          { title: 'Generate Tailored Version', desc: 'AI rephrases achievements with target keywords.' },
+          { title: 'Export Tailored PDF', desc: 'Download custom PDF ready for submission.' },
+        ]}
+        takeaways={[
+          'Instant bullet point rephrasing with quantifiable metric focus',
+          'High-impact keyword matching for ATS screeners',
+          'Direct export to PDF format',
+        ]}
+        faqs={RESUME_TAILOR_FAQS}
+      />
     </motion.div>
   )
 }

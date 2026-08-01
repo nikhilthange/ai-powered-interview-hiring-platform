@@ -13,6 +13,24 @@ import Badge from '../../components/ui/Badge'
 import AIStepLoader from '../../components/ui/AIStepLoader'
 import { AlertCircle, Sparkles, Target, Award, Star, Zap, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import SEO from '../../components/seo/SEO'
+import SEOPageContent from '../../components/seo/SEOPageContent'
+import { buildWebPageSchema, buildBreadcrumbSchema, buildHowToSchema, buildFAQSchema } from '../../utils/schemaGenerator'
+
+const RESUME_ANALYZER_FAQS = [
+  {
+    question: 'What is ATS and why is resume scoring important?',
+    answer: 'Applicant Tracking Systems (ATS) are software tools used by employers to scan, rank, and filter resume submissions based on keywords, experience metrics, and formatting before human recruiters read them.',
+  },
+  {
+    question: 'How does the HireMate AI Resume Analyzer work?',
+    answer: 'HireMate parses your resume file using natural language processing algorithms, compares your technical skills and impact metrics against target job descriptions, and calculates an instant compatibility score.',
+  },
+  {
+    question: 'How can I fix a low ATS resume score?',
+    answer: 'Incorporate missing technical skills directly into your experience bullet points, quantify results with numerical metrics, use clean text section headers, and avoid multi-column graphic layouts that confuse ATS parsers.',
+  },
+]
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -47,6 +65,26 @@ export default function ResumeAnalyzer() {
 
   const result = data?.data
 
+  const resumeAnalyzerSchemas = [
+    buildWebPageSchema({
+      title: 'Free AI Resume Analyzer & ATS Score Checker | HireMate',
+      description: 'Instantly score your resume against ATS filters, detect formatting errors, and get actionable AI recommendations to land technical interviews.',
+      path: '/resume-analyzer',
+    }),
+    buildBreadcrumbSchema([{ name: 'Resume Analyzer', path: '/resume-analyzer' }]),
+    buildFAQSchema(RESUME_ANALYZER_FAQS),
+    buildHowToSchema({
+      name: 'How to Analyze and Optimize Your Resume for ATS',
+      description: 'Step-by-step workflow to check ATS compatibility and increase interview callbacks.',
+      steps: [
+        { name: 'Upload Resume File', text: 'Select your PDF or DOCX resume document.', url: '/resume-analyzer' },
+        { name: 'Provide Job Description', text: 'Paste the target job description requirements into the text box.' },
+        { name: 'Run AI Compatibility Analysis', text: 'Click Analyze Resume to trigger natural language ATS keyword extraction.' },
+        { name: 'Implement Suggestions', text: 'Apply highlighted missing skills, action verbs, and formatting fixes.' },
+      ],
+    }),
+  ]
+
   return (
     <motion.div
       variants={containerVariants}
@@ -54,6 +92,12 @@ export default function ResumeAnalyzer() {
       animate="visible"
       className="max-w-4xl mx-auto space-y-6"
     >
+      <SEO
+        title="Free AI Resume Analyzer & ATS Score Checker | HireMate"
+        description="Instantly score your resume against ATS filters, detect formatting errors, and get actionable AI recommendations to land technical interviews."
+        path="/resume-analyzer"
+        schema={resumeAnalyzerSchemas}
+      />
       <motion.div variants={itemVariants}>
         <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-6">
           <Sparkles className="h-4 w-4" /> Back to dashboard
@@ -227,6 +271,33 @@ export default function ResumeAnalyzer() {
           </motion.div>
         </motion.div>
       )}
+
+      <SEOPageContent
+        summary="Audit your resume for applicant tracking system (ATS) compatibility with instant keyword gap analysis and AI-driven formatting checks."
+        definition="The HireMate ATS Resume Analyzer evaluates candidate CVs against hiring algorithms, scoring readability, section header alignment, and technical keyword density."
+        questions={[
+          {
+            question: 'Why do resumes get rejected by ATS filters before reaching hiring managers?',
+            answer: 'ATS software rejects resumes due to missing technical keywords, complex graphic formatting (such as tables or text boxes), non-standard font choices, or lack of quantifiable project impact metrics.',
+          },
+          {
+            question: 'How often should I analyze my resume against job descriptions?',
+            answer: 'Analyze your resume for every unique engineering application to ensure target keywords match the employer\'s specific technical requirements.',
+          },
+        ]}
+        steps={[
+          { title: 'Upload Resume', desc: 'Select your PDF or DOCX file for instant AI parsing.' },
+          { title: 'Paste Job Post', desc: 'Add target job requirements to calculate keyword match precision.' },
+          { title: 'Review Score', desc: 'Inspect your overall ATS compatibility score and section breakdown.' },
+          { title: 'Fix Keyword Gaps', desc: 'Incorporate recommended skills into experience bullet points.' },
+        ]}
+        takeaways={[
+          'Instant ATS compatibility scoring and section breakdown',
+          'Automated technical keyword gap detection',
+          'Quantifiable impact metric suggestions for engineering resumes',
+        ]}
+        faqs={RESUME_ANALYZER_FAQS}
+      />
     </motion.div>
   )
 }

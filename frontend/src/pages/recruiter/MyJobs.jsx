@@ -8,6 +8,7 @@ import { SkeletonList } from '../../components/ui/Skeleton'
 import EmptyState from '../../components/ui/EmptyState'
 import { Link } from 'react-router-dom'
 import { Briefcase, Users, Plus, Edit, MapPin, Eye } from 'lucide-react'
+import SEO from '../../components/seo/SEO'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -41,6 +42,12 @@ export default function MyJobs() {
       animate="visible"
       className="space-y-6"
     >
+      <SEO
+        title="Manage Job Listings | HireMate Recruiter"
+        description="View, edit, and manage posted job listings and applicant pipelines on HireMate."
+        path="/recruiter/my-jobs"
+        robots="noindex, follow"
+      />
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">My Jobs</h1>

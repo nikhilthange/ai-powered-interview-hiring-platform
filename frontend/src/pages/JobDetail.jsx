@@ -12,6 +12,8 @@ import { SkeletonPage } from '../components/ui/Skeleton'
 import { cn } from '../lib/utils'
 import { useAuth } from '../hooks/useAuth'
 import { stateToggleMotion, staggerContainer, staggerItem } from '../lib/motion'
+import SEO from '../components/seo/SEO'
+import { buildWebPageSchema, buildBreadcrumbSchema, buildJobPostingSchema } from '../utils/schemaGenerator'
 import {
   MapPin, Briefcase, DollarSign,
   Share2, Bookmark, ArrowLeft,
@@ -75,6 +77,26 @@ export default function JobDetail() {
     )
   }
 
+  const jobTitle = job.title || 'Technical Role'
+  const companyName = job.companyId?.name || job.companyName || 'HireMate Partner'
+  const pageTitle = `${jobTitle} at ${companyName} - Job Details | HireMate`
+  const pageDesc = job.description
+    ? job.description.slice(0, 160)
+    : `Apply for ${jobTitle} position at ${companyName}. Evaluate your AI match score and prepare with mock interviews on HireMate.`
+
+  const jobSchemas = [
+    buildWebPageSchema({
+      title: pageTitle,
+      description: pageDesc,
+      path: `/jobs/${id}`,
+    }),
+    buildBreadcrumbSchema([
+      { name: 'Jobs', path: '/jobs' },
+      { name: jobTitle, path: `/jobs/${id}` },
+    ]),
+    buildJobPostingSchema(job),
+  ]
+
   return (
     <motion.div
       variants={shouldReduceMotion ? undefined : staggerContainer(0.08)}
@@ -82,6 +104,12 @@ export default function JobDetail() {
       animate="visible"
       className="max-w-4xl mx-auto space-y-6"
     >
+      <SEO
+        title={pageTitle}
+        description={pageDesc}
+        path={`/jobs/${id}`}
+        schema={jobSchemas}
+      />
       <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
         <Link to="/jobs" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
           <ArrowLeft className="h-4 w-4" /> Back to jobs

@@ -1,8 +1,15 @@
 User-agent: *
 Allow: /
+Allow: /jobs
+Allow: /companies
+Allow: /u/
+Allow: /login
+Allow: /register
+
 Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /settings/
 Disallow: /notifications/
+Disallow: /chat/
 
-Sitemap: https://hiremate.vercel.app/sitemap.xml
+Sitemap: https://hiremate-portal.vercel.app/sitemap.xml

@@ -10,6 +10,8 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import companyService from '../../services/companyService';
 import CompanyReviews from '../../components/company/CompanyReviews';
 import { stateToggleMotion, buttonMotion, modalContainerVariants, modalOverlayVariants } from '../../lib/motion';
+import SEO from '../../components/seo/SEO';
+import { buildWebPageSchema, buildBreadcrumbSchema } from '../../utils/schemaGenerator';
 
 const CompanyDetails = () => {
   const { id } = useParams();
@@ -110,8 +112,41 @@ const CompanyDetails = () => {
     );
   }
 
+  const companyName = company.name || 'Company Profile'
+  const pageTitle = `${companyName} Overview, Open Jobs & Culture | HireMate`
+  const pageDesc = company.about
+    ? company.about.slice(0, 160)
+    : `Explore ${companyName} company culture, open engineering job postings, tech stack details, and interview preparation on HireMate.`
+
+  const companyDetailSchemas = [
+    buildWebPageSchema({
+      title: pageTitle,
+      description: pageDesc,
+      path: `/companies/${id}`,
+    }),
+    buildBreadcrumbSchema([
+      { name: 'Companies', path: '/companies' },
+      { name: companyName, path: `/companies/${id}` },
+    ]),
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: company.name,
+      description: company.about,
+      url: company.website || `https://hiremate-portal.vercel.app/companies/${id}`,
+      logo: company.logo ? getMediaUrl(company.logo) : undefined,
+      sameAs: [company.website].filter(Boolean),
+    },
+  ]
+
   return (
     <div className="bg-[var(--bg-secondary)] min-h-screen pb-12">
+      <SEO
+        title={pageTitle}
+        description={pageDesc}
+        path={`/companies/${id}`}
+        schema={companyDetailSchemas}
+      />
       {/* Cover Image Container */}
       <div className="max-w-7xl mx-auto md:mt-6 md:px-6 lg:px-8">
         <div className="surface-card md:rounded-3xl border border-[var(--border-color)] overflow-hidden">

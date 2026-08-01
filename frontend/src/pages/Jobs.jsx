@@ -14,11 +14,29 @@ import { cn, getMediaUrl } from '../lib/utils'
 import { useDebounce } from '../hooks/useDebounce'
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import { staggerContainer, staggerItem, stateToggleMotion } from '../lib/motion'
+import SEO from '../components/seo/SEO'
+import SEOPageContent from '../components/seo/SEOPageContent'
+import { buildWebPageSchema, buildBreadcrumbSchema, buildItemListSchema, buildFAQSchema } from '../utils/schemaGenerator'
 import {
   Search, MapPin, Briefcase,
   Check, Bookmark, DollarSign,
   GraduationCap, X, Filter, Building2
 } from 'lucide-react'
+
+const JOBS_FAQS = [
+  {
+    question: 'How does AI Job Matching work on HireMate?',
+    answer: 'HireMate evaluates your verified technical skills, experience history, and resume keywords against active job postings to generate an instant fit score and highlight missing skill requirements.',
+  },
+  {
+    question: 'Can I filter jobs by remote status, experience level, or salary?',
+    answer: 'Yes, HireMate allows job seekers to filter by job type (Full-time, Part-time, Remote, Internship), experience levels (Entry, Mid, Senior, Executive), and location.',
+  },
+  {
+    question: 'How can I increase my interview chances when applying?',
+    answer: 'Use the HireMate AI Resume Tailor before submitting applications to align your resume keywords with specific job requirements, ensuring high ATS compatibility.',
+  },
+]
 
 const JobListItem = memo(function JobListItem({ job, savedIds, onSaveToggle, savePending }) {
   const queryClient = useQueryClient()
@@ -349,6 +367,24 @@ export default function Jobs() {
 
   const handleToggleFilters = useCallback(() => setShowFilters((prev) => !prev), [])
 
+  const jobsSchemas = useMemo(() => [
+    buildWebPageSchema({
+      title: 'AI Job Search & Smart Tech Career Matching | HireMate',
+      description: 'Discover software engineering and tech job listings with AI match scoring, skill gap detection, and personalized application insights on HireMate.',
+      path: '/jobs',
+    }),
+    buildBreadcrumbSchema([{ name: 'Jobs', path: '/jobs' }]),
+    buildFAQSchema(JOBS_FAQS),
+    buildItemListSchema({
+      name: 'Tech Job Openings',
+      description: 'Active technical job postings on HireMate',
+      items: jobs.slice(0, 10).map((j) => ({
+        title: `${j.title} at ${j.companyId?.name || 'Tech Partner'}`,
+        path: `/jobs/${j._id}`,
+      })),
+    }),
+  ], [jobs])
+
   if (isLoading && page === 1) {
     return (
       <div className="space-y-6">
@@ -381,6 +417,12 @@ export default function Jobs() {
 
   return (
     <div className="w-full space-y-6">
+      <SEO
+        title="AI Job Search & Smart Tech Career Matching | HireMate"
+        description="Discover software engineering and tech job listings with AI match scoring, skill gap detection, and personalized application insights on HireMate."
+        path="/jobs"
+        schema={jobsSchemas}
+      />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] truncate">Find Jobs</h1>
@@ -496,6 +538,35 @@ export default function Jobs() {
           )}
         </main>
       </div>
+
+      {/* AEO & GEO Content Block */}
+      <SEOPageContent
+        summary="Search and apply for engineering and tech roles with AI match scoring, skill gap detection, and ATS application tailoring on HireMate."
+        definition="The HireMate Job Board is an intelligent career marketplace that connects software engineers, developers, and tech professionals with top hiring employers while offering real-time AI skill match evaluation."
+        questions={[
+          {
+            question: 'What makes searching for jobs on HireMate different from traditional job boards?',
+            answer: 'HireMate doesn\'t just list job openings—it provides AI match analysis, instant skill gap scoring, and automated resume alignment recommendations tailored specifically to each listing.',
+          },
+          {
+            question: 'How can candidates prepare for interviews after finding a job listing?',
+            answer: 'Every job listing on HireMate directly links to the AI Mock Interview Simulator and Skill Gap Analyzer, allowing candidates to practice company-specific interview scenarios prior to applying.',
+          },
+        ]}
+        steps={[
+          { title: 'Search Listings', desc: 'Filter jobs by role title, technical skills, experience tier, or remote location.' },
+          { title: 'Evaluate Fit Score', desc: 'Check your AI-calculated skill compatibility score for the target job.' },
+          { title: 'Tailor Application', desc: 'Optimize your resume and cover letter with AI before submitting.' },
+          { title: 'Track Status', desc: 'Monitor application updates and recruiter communication in real time.' },
+        ]}
+        takeaways={[
+          'AI-assisted job match scoring for software engineering roles',
+          'Integrated ATS resume tailoring and cover letter generation',
+          'Instant transition from job listing to targeted mock interview practice',
+          'Direct connections with verified tech employers',
+        ]}
+        faqs={JOBS_FAQS}
+      />
     </div>
   )
 }

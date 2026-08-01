@@ -6,6 +6,7 @@ import { SkeletonPage } from '../../components/ui/Skeleton'
 import StatCard from '../../components/Analysis/StatCard'
 import SectionCard from '../../components/Analysis/SectionCard'
 import { ArrowLeft, CheckCircle, AlertCircle, FileText, Star, Target, Brain, BarChart3 } from 'lucide-react'
+import SEO from '../../components/seo/SEO'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -36,6 +37,12 @@ export default function ApplicationAnalysis() {
       animate="visible"
       className="max-w-4xl mx-auto space-y-6"
     >
+      <SEO
+        title="Job Application Match Analysis & Resume Scoring | HireMate"
+        description="In-depth AI breakdown of your job application match score, keyword alignment, and interview readiness."
+        path={`/applications/${id}/analysis`}
+        robots="noindex, follow"
+      />
       <motion.div variants={itemVariants}>
         <Link to="/my-applications" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4">
           <ArrowLeft className="h-4 w-4" /> Back to applications

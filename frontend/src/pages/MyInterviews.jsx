@@ -13,6 +13,8 @@ import {
   Play, FileText, AlertCircle, Calendar,
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
+import SEO from '../components/seo/SEO'
+import { buildWebPageSchema, buildBreadcrumbSchema } from '../utils/schemaGenerator'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -50,6 +52,15 @@ export default function MyInterviews() {
     )
   }
 
+  const myInterviewsSchemas = [
+    buildWebPageSchema({
+      title: 'My Mock Interview History & Evaluation Logs | HireMate',
+      description: 'Review past AI mock interview sessions, transcript recordings, AI evaluations, and technical score improvements on HireMate.',
+      path: '/my-interviews',
+    }),
+    buildBreadcrumbSchema([{ name: 'My Interviews', path: '/my-interviews' }]),
+  ]
+
   return (
     <motion.div
       variants={containerVariants}
@@ -57,6 +68,13 @@ export default function MyInterviews() {
       animate="visible"
       className="space-y-6"
     >
+      <SEO
+        title="My Mock Interview History & Evaluation Logs | HireMate"
+        description="Review past AI mock interview sessions, transcript recordings, AI evaluations, and technical score improvements on HireMate."
+        path="/my-interviews"
+        robots="noindex, follow"
+        schema={myInterviewsSchemas}
+      />
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] break-words">My Interviews</h1>

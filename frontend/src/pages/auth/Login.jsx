@@ -6,6 +6,8 @@ import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import { Card, CardContent } from '../../components/ui/Card'
 import { Eye, EyeOff, LogIn, AlertCircle, Sparkles, Mail, Lock } from 'lucide-react'
+import SEO from '../../components/seo/SEO'
+import { buildWebPageSchema, buildBreadcrumbSchema } from '../../utils/schemaGenerator'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -42,8 +44,23 @@ export default function Login() {
     }
   }
 
+  const loginSchemas = [
+    buildWebPageSchema({
+      title: 'Sign In to HireMate | AI Interview & Career Platform',
+      description: 'Access your HireMate account to manage AI mock interviews, ATS resume scores, and career roadmaps.',
+      path: '/login',
+    }),
+    buildBreadcrumbSchema([{ name: 'Sign In', path: '/login' }]),
+  ]
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <SEO
+        title="Sign In to HireMate | AI Interview & Career Platform"
+        description="Access your HireMate account to manage AI mock interviews, ATS resume scores, and career roadmaps."
+        path="/login"
+        schema={loginSchemas}
+      />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-500/5 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-purple-500/5 blur-3xl" />

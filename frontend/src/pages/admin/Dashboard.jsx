@@ -9,6 +9,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area,
 } from 'recharts'
+import SEO from '../../components/seo/SEO'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -113,6 +114,12 @@ export default function AdminDashboard() {
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
+      <SEO
+        title="Admin Panel - Overview | HireMate"
+        description="System administration dashboard for HireMate platform management."
+        path="/admin/dashboard"
+        robots="noindex, nofollow"
+      />
       <motion.div variants={itemVariants}>
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-600 p-6 sm:p-8">
           <div className="absolute inset-0 overflow-hidden">

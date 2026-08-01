@@ -11,6 +11,7 @@ import AIStepLoader from '../../components/ui/AIStepLoader'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Save, AlertCircle, Sparkles, Copy, Check, RefreshCw, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import SEO from '../../components/seo/SEO'
 
 export default function CreateJob() {
   const navigate = useNavigate()
@@ -118,6 +119,12 @@ export default function CreateJob() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto space-y-8 pb-12">
+      <SEO
+        title="Post a Tech Job Listing | HireMate Recruiter"
+        description="Publish AI-optimized job descriptions to attract top software engineering and tech talent on HireMate."
+        path="/recruiter/jobs/create"
+        robots="noindex, follow"
+      />
       <div>
         <Link to="/recruiter/my-jobs" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4">
           <ArrowLeft className="h-4 w-4" /> Back to my jobs

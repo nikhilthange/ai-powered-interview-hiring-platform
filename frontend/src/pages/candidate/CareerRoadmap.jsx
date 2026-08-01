@@ -17,6 +17,20 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
+import SEO from '../../components/seo/SEO'
+import SEOPageContent from '../../components/seo/SEOPageContent'
+import { buildWebPageSchema, buildBreadcrumbSchema, buildHowToSchema, buildFAQSchema } from '../../utils/schemaGenerator'
+
+const CAREER_ROADMAP_FAQS = [
+  {
+    question: 'What is an AI Career Roadmap on HireMate?',
+    answer: 'An AI Career Roadmap generates a structured, step-by-step learning and milestone pathway tailored to your target software engineering role and current skill level.',
+  },
+  {
+    question: 'How are roadmap milestones calculated?',
+    answer: 'HireMate analyzes your uploaded resume against industry benchmarks for roles like Full-Stack, DevOps, or Data Engineering, breaking learning goals into progressive 30-60-90 day milestones.',
+  },
+]
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -102,6 +116,26 @@ export default function CareerRoadmap() {
   const completedMilestones = milestones.filter(m => m.status === 'completed' || m.completed).length
   const progressPercent = milestones.length > 0 ? Math.round((completedMilestones / milestones.length) * 100) : 0
 
+  const careerRoadmapSchemas = [
+    buildWebPageSchema({
+      title: 'AI Career Roadmap & Technical Pathway Generator | HireMate',
+      description: 'Create personalized career progression roadmaps, tech skill learning pathways, and milestones powered by AI.',
+      path: '/career-roadmap',
+    }),
+    buildBreadcrumbSchema([{ name: 'Career Roadmap', path: '/career-roadmap' }]),
+    buildFAQSchema(CAREER_ROADMAP_FAQS),
+    buildHowToSchema({
+      name: 'How to Build an AI Technical Career Roadmap',
+      description: 'Generate structured learning milestones for software engineering growth.',
+      steps: [
+        { name: 'Upload Resume', text: 'Provide your existing experience history.', url: '/career-roadmap' },
+        { name: 'Set Target Engineering Role', text: 'Select your target position (e.g. Senior Backend Engineer).' },
+        { name: 'Generate Roadmap', text: 'AI builds personalized 30-60-90 day skill milestones.' },
+        { name: 'Track Progression', text: 'Mark milestones complete as you build projects and learn skills.' },
+      ],
+    }),
+  ]
+
   return (
     <motion.div
       variants={containerVariants}
@@ -109,6 +143,12 @@ export default function CareerRoadmap() {
       animate="visible"
       className="max-w-4xl mx-auto space-y-6"
     >
+      <SEO
+        title="AI Career Roadmap & Technical Pathway Generator | HireMate"
+        description="Create personalized career progression roadmaps, tech skill learning pathways, and milestones powered by AI."
+        path="/career-roadmap"
+        schema={careerRoadmapSchemas}
+      />
       <motion.div variants={itemVariants}>
         <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-6">
           <Sparkles className="h-4 w-4" /> Back to dashboard
@@ -386,6 +426,29 @@ export default function CareerRoadmap() {
           )}
         </>
       )}
+
+      <SEOPageContent
+        summary="Plan your tech career advancement with personalized 30-60-90 day skill milestones, project recommendations, and learning resources."
+        definition="The HireMate AI Career Roadmap Generator maps out chronological learning paths and skill acquisitions required to transition into senior software engineering roles."
+        questions={[
+          {
+            question: 'How does an AI career roadmap help software developers level up?',
+            answer: 'It eliminates guesswork by highlighting exact technology frameworks, system design concepts, and hands-on portfolio projects required for your target role.',
+          },
+        ]}
+        steps={[
+          { title: 'Upload Resume', desc: 'Scan existing experience to detect baseline qualifications.' },
+          { title: 'Target Goal Role', desc: 'Choose target career tier (Mid/Senior Full-Stack, DevOps, Data).' },
+          { title: 'Follow Milestones', desc: 'Execute curated learning tasks and project deliverables.' },
+          { title: 'Track Success', desc: 'Update completed milestones to observe overall career readiness.' },
+        ]}
+        takeaways={[
+          'Custom 30-60-90 day milestone generation',
+          'Curated learning resources and hands-on project ideas',
+          'Real-time career completion percentage tracking',
+        ]}
+        faqs={CAREER_ROADMAP_FAQS}
+      />
     </motion.div>
   )
 }

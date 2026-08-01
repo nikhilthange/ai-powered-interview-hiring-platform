@@ -15,6 +15,20 @@ import { Link } from 'react-router-dom'
 import { staggerContainer, staggerItem } from '../../lib/motion'
 import { exportToPdf } from '../../utils/pdfExport'
 import { Document, Packer, Paragraph, TextRun } from 'docx'
+import SEO from '../../components/seo/SEO'
+import SEOPageContent from '../../components/seo/SEOPageContent'
+import { buildWebPageSchema, buildBreadcrumbSchema, buildHowToSchema, buildFAQSchema } from '../../utils/schemaGenerator'
+
+const COVER_LETTER_FAQS = [
+  {
+    question: 'How does the AI Cover Letter Generator write personalized letters?',
+    answer: 'HireMate analyzes key requirements from the job description and merges them with your resume achievements, producing a custom cover letter matching your chosen tone.',
+  },
+  {
+    question: 'Can I export cover letters to PDF or Word formats?',
+    answer: 'Yes! Generated cover letters can be exported instantly to PDF or DOCX format, or copied directly to clipboard.',
+  },
+]
 
 const TONES = [
   { id: 'Professional', label: 'Professional', desc: 'Balanced, confident, industry-standard tone' },
@@ -99,6 +113,26 @@ export default function CoverLetterGenerator() {
     toast.success('Generating Cover Letter PDF...')
   }
 
+  const coverLetterSchemas = [
+    buildWebPageSchema({
+      title: 'AI Cover Letter Generator for Tech Jobs | HireMate',
+      description: 'Generate compelling, customized cover letters tailored to job listings and recruiter preferences with AI.',
+      path: '/cover-letter-generator',
+    }),
+    buildBreadcrumbSchema([{ name: 'Cover Letter Generator', path: '/cover-letter-generator' }]),
+    buildFAQSchema(COVER_LETTER_FAQS),
+    buildHowToSchema({
+      name: 'How to Generate an AI Cover Letter for Tech Jobs',
+      description: 'Step-by-step procedure to generate candidate cover letters.',
+      steps: [
+        { name: 'Upload Resume', text: 'Provide your existing experience details.', url: '/cover-letter-generator' },
+        { name: 'Paste Job Description', text: 'Add employer requirements.' },
+        { name: 'Choose Tone', text: 'Select Professional, Friendly, or Formal tone.' },
+        { name: 'Export Document', text: 'Download in PDF, DOCX, or text format.' },
+      ],
+    }),
+  ]
+
   return (
     <motion.div
       variants={shouldReduceMotion ? undefined : staggerContainer(0.08)}
@@ -106,6 +140,12 @@ export default function CoverLetterGenerator() {
       animate="visible"
       className="max-w-4xl mx-auto space-y-8 pb-16"
     >
+      <SEO
+        title="AI Cover Letter Generator for Tech Jobs | HireMate"
+        description="Generate compelling, customized cover letters tailored to job listings and recruiter preferences with AI."
+        path="/cover-letter-generator"
+        schema={coverLetterSchemas}
+      />
       {/* Header */}
       <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
         <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-2">
@@ -225,6 +265,29 @@ export default function CoverLetterGenerator() {
           </Card>
         </motion.div>
       )}
+
+      <SEOPageContent
+        summary="Generate personalized, recruiter-friendly cover letters tailored to engineering job postings and company cultures with AI."
+        definition="The HireMate AI Cover Letter Generator aligns candidate resumes with specific job specs, highlighting technical achievements in a structured narrative."
+        questions={[
+          {
+            question: 'Why send a cover letter for tech and software engineering applications?',
+            answer: 'A customized cover letter demonstrates genuine interest in the company\'s product mission and articulates how your technical background fits their immediate engineering challenges.',
+          },
+        ]}
+        steps={[
+          { title: 'Upload Resume', desc: 'Parse achievements and career history.' },
+          { title: 'Paste Job Post', desc: 'Extract key employer skill requirements.' },
+          { title: 'Select Tone', desc: 'Choose Professional, Friendly, or Formal phrasing.' },
+          { title: 'Export File', desc: 'Download instantly as PDF or DOCX file.' },
+        ]}
+        takeaways={[
+          'Instant cover letter customization matching target job descriptions',
+          'Multiple tone choices (Professional, Friendly, Formal)',
+          'Direct export to PDF and DOCX formats',
+        ]}
+        faqs={COVER_LETTER_FAQS}
+      />
     </motion.div>
   )
 }

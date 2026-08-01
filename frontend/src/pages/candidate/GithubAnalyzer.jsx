@@ -15,6 +15,20 @@ import {
 import { Link } from 'react-router-dom'
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
 import { staggerContainer, staggerItem } from '../../lib/motion'
+import SEO from '../../components/seo/SEO'
+import SEOPageContent from '../../components/seo/SEOPageContent'
+import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from '../../utils/schemaGenerator'
+
+const GITHUB_FAQS = [
+  {
+    question: 'What is the HireMate GitHub Portfolio Analyzer?',
+    answer: 'The GitHub Analyzer inspects developer repositories, language composition, commit activity, code quality markers, and star metrics to calculate a verified engineering profile score.',
+  },
+  {
+    question: 'How do technical recruiters view my GitHub score?',
+    answer: 'Verified GitHub metrics can be showcased on your public HireMate portfolio link (`/u/username`) to demonstrate open-source contributions and active coding habits.',
+  },
+]
 
 const COLORS = ['#6366f1', '#a855f7', '#ec4899', '#3b82f6', '#10b981']
 
@@ -45,6 +59,16 @@ export default function GithubAnalyzer() {
     }
   }
 
+  const githubSchemas = [
+    buildWebPageSchema({
+      title: 'AI GitHub Portfolio Analyzer for Developers | HireMate',
+      description: 'Analyze your GitHub repositories, code quality, commit activity, and tech stack presence to showcase engineering expertise on HireMate.',
+      path: '/github-analyzer',
+    }),
+    buildBreadcrumbSchema([{ name: 'GitHub Analyzer', path: '/github-analyzer' }]),
+    buildFAQSchema(GITHUB_FAQS),
+  ]
+
   return (
     <motion.div
       variants={shouldReduceMotion ? undefined : staggerContainer(0.08)}
@@ -52,6 +76,12 @@ export default function GithubAnalyzer() {
       animate="visible"
       className="max-w-4xl mx-auto space-y-8 pb-16"
     >
+      <SEO
+        title="AI GitHub Portfolio Analyzer for Developers | HireMate"
+        description="Analyze your GitHub repositories, code quality, commit activity, and tech stack presence to showcase engineering expertise on HireMate."
+        path="/github-analyzer"
+        schema={githubSchemas}
+      />
       {/* Header */}
       <motion.div variants={shouldReduceMotion ? undefined : staggerItem}>
         <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-2">
@@ -209,6 +239,29 @@ export default function GithubAnalyzer() {
           </motion.div>
         </motion.div>
       )}
+
+      <SEOPageContent
+        summary="Evaluate your public GitHub repositories, commit frequency, language distribution, and open-source contributions with AI."
+        definition="The HireMate GitHub Portfolio Analyzer checks open-source activity on GitHub to provide engineering recruiters with verified proof of technical capability."
+        questions={[
+          {
+            question: 'Why is GitHub profile evaluation valuable for software engineering applicants?',
+            answer: 'A strong GitHub profile proves practical coding experience, version control discipline, and open-source collaboration beyond static resume bullet points.',
+          },
+        ]}
+        steps={[
+          { title: 'Enter Username', desc: 'Type your GitHub handle.' },
+          { title: 'Analyze Repos', desc: 'AI scans repositories, languages, and stars.' },
+          { title: 'Check Quality Score', desc: 'Review commit frequency and code structure metrics.' },
+          { title: 'Publish to Portfolio', desc: 'Display verified badge on your HireMate profile.' },
+        ]}
+        takeaways={[
+          'Instant GitHub profile scoring and programming language distribution',
+          'Repository quality and open-source contribution analysis',
+          'Verified integration with public candidate portfolios',
+        ]}
+        faqs={GITHUB_FAQS}
+      />
     </motion.div>
   )
 }

@@ -80,9 +80,9 @@ export default function JobDetail() {
   const jobTitle = job.title || 'Technical Role'
   const companyName = job.companyId?.name || job.companyName || 'HireMate Partner'
   const pageTitle = `${jobTitle} at ${companyName} - Job Details | HireMate`
-  const pageDesc = job.description
-    ? job.description.slice(0, 160)
-    : `Apply for ${jobTitle} position at ${companyName}. Evaluate your AI match score and prepare with mock interviews on HireMate.`
+  const rawDesc = job.description?.replace(/<[^>]*>/g, '').trim() || ''
+  const fallbackDesc = `Apply for ${jobTitle} at ${companyName}. Evaluate your AI match score, review key requirements, and practice mock interviews on HireMate.`
+  const pageDesc = rawDesc.length >= 110 ? rawDesc.slice(0, 155) + '...' : fallbackDesc
 
   const jobSchemas = [
     buildWebPageSchema({

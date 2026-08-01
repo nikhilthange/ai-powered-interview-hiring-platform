@@ -203,16 +203,16 @@ export default function CandidateDashboard() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
-              <Link to="/jobs">
+              <Link to="/jobs" aria-label="Browse available tech jobs">
                 <Button className="w-full sm:w-auto bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/30 backdrop-blur-md shadow-none rounded-xl py-2.5 transition-all">
-                  <Briefcase className="h-4 w-4 mr-2" />
+                  <Briefcase className="h-4 w-4 mr-2" aria-hidden="true" />
                   Browse Jobs
                 </Button>
               </Link>
               {profileCompletion < 100 && (
-                <Link to="/profile">
+                <Link to="/profile" aria-label="Complete your candidate profile">
                   <Button className="w-full sm:w-auto bg-white text-indigo-900 hover:bg-indigo-50 hover:scale-[1.02] active:scale-[0.98] shadow-lg rounded-xl py-2.5 transition-all font-semibold border-none">
-                    <Sparkles className="h-4 w-4 mr-2 text-indigo-600" />
+                    <Sparkles className="h-4 w-4 mr-2 text-indigo-600" aria-hidden="true" />
                     Complete Profile
                   </Button>
                 </Link>
@@ -223,7 +223,7 @@ export default function CandidateDashboard() {
       </motion.div>
 
       {/* Metrics Row */}
-      <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-6 w-full">
+      <motion.div variants={shouldReduceMotion ? undefined : staggerItem} className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-6 w-full" role="region" aria-label="Candidate key metrics">
         {metrics.map((metric) => (
           <motion.div 
             key={metric.label}
@@ -231,9 +231,12 @@ export default function CandidateDashboard() {
             whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
             transition={TRANSITIONS.easeOut}
             className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer min-w-0 w-full overflow-hidden"
+            tabIndex={0}
+            role="group"
+            aria-label={`${metric.label}: ${metric.value}`}
           >
             <div className={cn("inline-flex rounded-2xl p-2.5 sm:p-3 mb-3 sm:mb-4", metric.bg)}>
-              <metric.icon className={cn("h-5 w-5 sm:h-6 sm:w-6", metric.color)} />
+              <metric.icon className={cn("h-5 w-5 sm:h-6 sm:w-6", metric.color)} aria-hidden="true" />
             </div>
             <h3 className="text-[clamp(0.7rem,2vw,0.875rem)] font-semibold text-[var(--text-secondary)] leading-tight truncate">{metric.label}</h3>
             <p className="text-[clamp(1.25rem,4vw,1.5rem)] font-extrabold text-[var(--text-primary)] mt-1 tracking-tight truncate">

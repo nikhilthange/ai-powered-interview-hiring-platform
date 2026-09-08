@@ -4,7 +4,7 @@ class AIProvider {
     this.openaiApiKey = process.env.OPENAI_API_KEY;
     this.nvidiaApiKey = process.env.NVIDIA_API_KEY;
     this.nvidiaBaseUrl = process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1';
-    this.nvidiaModel = process.env.NVIDIA_MODEL || 'meta/llama-3.1-8b-instruct';
+    this.nvidiaModel = process.env.NVIDIA_MODEL || 'meta/llama-3.2-11b-vision-instruct';
     this.geminiModel = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
     this.openaiModel = process.env.OPENAI_MODEL || 'gpt-4o-mini';
   }
@@ -30,11 +30,11 @@ class AIProvider {
       try {
         switch (provider) {
           case 'gemini':
-            return await this.callGemini(messages, { temperature, maxTokens, responseFormat });
+            return await this.callGemini(messages, options);
           case 'openai':
-            return await this.callOpenAI(messages, { temperature, maxTokens, responseFormat });
+            return await this.callOpenAI(messages, options);
           case 'nvidia':
-            return await this.callNVIDIA(messages, { temperature, maxTokens, responseFormat });
+            return await this.callNVIDIA(messages, options);
         }
       } catch (err) {
         lastError = err;
@@ -44,8 +44,34 @@ class AIProvider {
     throw new Error(`All AI providers failed. Last error: ${lastError?.message}`);
   }
 
+  async fetchWithRetry(url, fetchOptions, maxRetries = 2, baseDelay = 1000) {
+    let lastError;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(url, fetchOptions);
+        if (!response.ok && (response.status === 429 || response.status >= 500) && attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt);
+          console.warn(`[AIProvider] HTTP ${response.status}. Retrying attempt ${attempt + 1}/${maxRetries} after ${delay}ms...`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+        return response;
+      } catch (err) {
+        lastError = err;
+        if (attempt < maxRetries && err.name !== 'AbortError') {
+          const delay = baseDelay * Math.pow(2, attempt);
+          console.warn(`[AIProvider] Fetch failure (${err.message}). Retrying attempt ${attempt + 1}/${maxRetries} after ${delay}ms...`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw lastError;
+  }
+
   async callGemini(messages, options = {}) {
-    const { temperature = 0.2, maxTokens = 1024, responseFormat } = options;
+    const { temperature = 0.2, maxTokens = 1024, responseFormat, timeout = 60000 } = options;
     if (!this.geminiApiKey) throw new Error('Gemini API key not configured');
 
     const systemMsg = messages.find(m => m.role === 'system');
@@ -66,11 +92,11 @@ class AIProvider {
     }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:generateContent?key=${this.geminiApiKey}`;
-    const response = await fetch(url, {
+    const response = await this.fetchWithRetry(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(30000)
+      signal: AbortSignal.timeout(timeout)
     });
 
     if (!response.ok) throw new Error(`Gemini API error (${response.status})`);
@@ -81,7 +107,7 @@ class AIProvider {
   }
 
   async callOpenAI(messages, options = {}) {
-    const { temperature = 0.2, maxTokens = 1024, responseFormat } = options;
+    const { temperature = 0.2, maxTokens = 1024, responseFormat, timeout = 60000 } = options;
     if (!this.openaiApiKey) throw new Error('OpenAI API key not configured');
 
     const body = {
@@ -95,14 +121,14 @@ class AIProvider {
       body.response_format = { type: 'json_object' };
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await this.fetchWithRetry('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.openaiApiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(30000)
+      signal: AbortSignal.timeout(timeout)
     });
 
     if (!response.ok) throw new Error(`OpenAI API error (${response.status})`);
@@ -113,7 +139,7 @@ class AIProvider {
   }
 
   async callNVIDIA(messages, options = {}) {
-    const { temperature = 0.2, maxTokens = 1024, responseFormat } = options;
+    const { temperature = 0.2, maxTokens = 1024, responseFormat, timeout = 60000 } = options;
     if (!this.nvidiaApiKey) throw new Error('NVIDIA API key not configured');
 
     const body = {
@@ -128,14 +154,14 @@ class AIProvider {
       body.response_format = { type: 'json_object' };
     }
 
-    const response = await fetch(`${this.nvidiaBaseUrl}/chat/completions`, {
+    const response = await this.fetchWithRetry(`${this.nvidiaBaseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.nvidiaApiKey}`
       },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(30000)
+      signal: AbortSignal.timeout(timeout)
     });
 
     if (!response.ok) {
@@ -147,15 +173,54 @@ class AIProvider {
   }
 
   extractJson(text) {
-    const trimmed = text.trim();
+    if (!text || typeof text !== 'string') {
+      throw new Error('Invalid or empty AI response text');
+    }
+    let trimmed = text.trim()
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/[\u2018\u2019]/g, "'");
+
+    // 1. Direct parse
     try { return JSON.parse(trimmed); } catch {}
-    const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (fenceMatch) { try { return JSON.parse(fenceMatch[1].trim()); } catch {} }
+
+    // 2. Code fence ```json ... ```
+    const fenceMatches = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/gi);
+    if (fenceMatches) {
+      for (const fence of fenceMatches) {
+        const inner = fence.replace(/```(?:json)?/i, '').replace(/```$/, '').trim();
+        try { return JSON.parse(inner); } catch {}
+        try {
+          const sanitized = inner.replace(/,\s*([}\]])/g, '$1');
+          return JSON.parse(sanitized);
+        } catch {}
+      }
+    }
+
+    // 3. Balanced Object Extraction { ... }
     const braceStart = trimmed.indexOf('{');
-    if (braceStart !== -1) { try { return JSON.parse(trimmed.slice(braceStart)); } catch {} }
+    const braceEnd = trimmed.lastIndexOf('}');
+    if (braceStart !== -1 && braceEnd > braceStart) {
+      const objCandidate = trimmed.slice(braceStart, braceEnd + 1);
+      try { return JSON.parse(objCandidate); } catch {}
+      try {
+        const sanitized = objCandidate.replace(/,\s*([}\]])/g, '$1');
+        return JSON.parse(sanitized);
+      } catch {}
+    }
+
+    // 4. Balanced Array Extraction [ ... ]
     const bracketStart = trimmed.indexOf('[');
-    if (bracketStart !== -1) { try { return JSON.parse(trimmed.slice(bracketStart)); } catch {} }
-    throw new Error('Failed to parse JSON from AI response');
+    const bracketEnd = trimmed.lastIndexOf(']');
+    if (bracketStart !== -1 && bracketEnd > bracketStart) {
+      const arrCandidate = trimmed.slice(bracketStart, bracketEnd + 1);
+      try { return JSON.parse(arrCandidate); } catch {}
+      try {
+        const sanitized = arrCandidate.replace(/,\s*([}\]])/g, '$1');
+        return JSON.parse(sanitized);
+      } catch {}
+    }
+
+    throw new Error(`Failed to parse JSON from AI response: ${trimmed.slice(0, 150)}...`);
   }
 
   async callWithJson(messages, options = {}) {

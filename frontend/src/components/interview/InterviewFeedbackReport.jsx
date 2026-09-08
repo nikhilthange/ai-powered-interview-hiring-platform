@@ -45,18 +45,18 @@ export default function InterviewFeedbackReport({ sessionData, onRetake }) {
     { name: 'Body Language', value: 89, fullMark: 100 },
   ]
 
-  const strengths = sessionData?.strengths || [
+  const strengths = sessionData?.strengths?.length ? sessionData.strengths : sessionData?.topStrengths?.length ? sessionData.topStrengths : [
     'Strong structural clarity using STAR method during behavioral responses.',
     'Deep understanding of asynchronous state handling and web performance.',
     'Clear tone, steady speech rate (140 wpm), and confident delivery.'
   ]
 
-  const weaknesses = sessionData?.weaknesses || [
+  const weaknesses = sessionData?.weaknesses?.length ? sessionData.weaknesses : sessionData?.areasToImprove?.length ? sessionData.areasToImprove : sessionData?.areasForImprovement?.length ? sessionData.areasForImprovement : [
     'Could provide more explicit complexity analysis (Big-O notation) for DSA questions.',
     'Occasional filler words ("like", "um") when navigating tough edge cases.'
   ]
 
-  const suggestions = sessionData?.suggestions || [
+  const suggestions = sessionData?.suggestions?.length ? sessionData.suggestions : sessionData?.detailedFeedback?.length ? sessionData.detailedFeedback : sessionData?.overallFeedback ? [sessionData.overallFeedback] : [
     'Practice stating time and space complexity prior to implementing code solutions.',
     'Pause briefly for 2 seconds before answering complex architectural questions.'
   ]

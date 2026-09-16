@@ -11,7 +11,15 @@ const EmailLogSchema = new mongoose.Schema({
   },
   template: {
     type: String,
-    required: true
+    default: 'custom'
+  },
+  html: {
+    type: String,
+    default: ''
+  },
+  text: {
+    type: String,
+    default: ''
   },
   status: {
     type: String,
@@ -38,8 +46,7 @@ const EmailLogSchema = new mongoose.Schema({
       ref: 'User'
     },
     referenceType: {
-      type: String,
-      enum: ['application', 'interview', 'user', 'password_reset', 'verification']
+      type: String
     },
     referenceId: {
       type: mongoose.Schema.Types.ObjectId

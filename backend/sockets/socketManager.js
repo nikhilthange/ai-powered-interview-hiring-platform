@@ -11,12 +11,27 @@ const initSocket = (server) => {
   const allowedOrigins = [
     process.env.FRONTEND_URL,
     "https://hiremate-portal.vercel.app",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "http://127.0.0.1:3000"
   ].filter(Boolean);
 
   const io = socketIO(server, {
     cors: {
-      origin: allowedOrigins,
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (
+          allowedOrigins.includes(origin) ||
+          /^http:\/\/localhost:\d+$/.test(origin) ||
+          /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)
+        ) {
+          return callback(null, true);
+        }
+        return callback(new Error(`Socket CORS origin not allowed: ${origin}`));
+      },
       methods: ["GET", "POST", "OPTIONS"],
       credentials: true
     }

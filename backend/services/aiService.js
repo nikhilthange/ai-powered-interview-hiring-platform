@@ -110,7 +110,7 @@ exports.generateChatStream = async (messages, context, callbacks, options = {}) 
     ...messages
   ];
 
-  return aiProvider.nvidiaStream(aiMessages, callbacks, options);
+  return aiProvider.stream(aiMessages, callbacks, options);
 };
 
 exports.generateChatTitle = async (message) => {

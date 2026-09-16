@@ -72,7 +72,9 @@ exports.getJobs = asyncHandler(async (req, res, next) => {
  * GET SINGLE JOB BY ID
  */
 exports.getJob = asyncHandler(async (req, res, next) => {
-  const job = await Job.findById(req.params.id).populate('recruiterId', 'email');
+  const job = await Job.findById(req.params.id)
+    .populate('recruiterId', 'name email')
+    .populate('companyId', 'name logo isVerified industry website about location employeeCount');
   if (!job) {
     return next(new AppError('No job found with that ID.', 404));
   }

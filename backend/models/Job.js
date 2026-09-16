@@ -46,6 +46,10 @@ const JobSchema = new mongoose.Schema({
     type: String,
     enum: ['Active', 'Closed'],
     default: 'Active'
+  },
+  isFeatured: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

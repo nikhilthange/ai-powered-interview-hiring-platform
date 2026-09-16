@@ -64,7 +64,7 @@ export function truncate(str, len = 100) {
   return str.slice(0, len) + '...'
 }
 
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
 
 export function getMediaUrl(path) {
   if (!path) return null
@@ -75,7 +75,7 @@ export function getMediaUrl(path) {
     normalizedPath = `/uploads/${normalizedPath}`
   }
   
-  const baseUrl = API_URL.replace(/\/api\/v1\/?$/, '')
+  const baseUrl = (API_URL || 'http://localhost:5000').replace(/\/api\/v1\/?$/, '')
   return `${baseUrl}${normalizedPath.startsWith('/') ? '' : '/'}${normalizedPath}`
 }
 

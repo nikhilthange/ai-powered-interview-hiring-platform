@@ -1,13 +1,13 @@
 const Resume = require('../models/Resume');
 const aiService = require('../services/aiService');
-const pdfParse = require('pdf-parse');
-const mammoth = require('mammoth');
+const { extractTextFromFile } = require('../utils/fileParser');
+const { cleanup } = require('../services/resumeService');
 const fs = require('fs');
 
 exports.createResume = async (req, res) => {
   try {
     const resume = await Resume.create({
-      userId: req.user.id,
+      userId: req.user._id || req.user.id,
       title: req.body.title || 'Untitled Resume',
       template: req.body.template || 'classic',
       content: req.body.content || {}
@@ -20,7 +20,7 @@ exports.createResume = async (req, res) => {
 
 exports.getResumes = async (req, res) => {
   try {
-    const resumes = await Resume.find({ userId: req.user.id }).sort('-createdAt');
+    const resumes = await Resume.find({ userId: req.user._id || req.user.id }).sort('-createdAt');
     res.status(200).json({ success: true, data: resumes });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
@@ -29,7 +29,7 @@ exports.getResumes = async (req, res) => {
 
 exports.getResume = async (req, res) => {
   try {
-    const resume = await Resume.findOne({ _id: req.params.id, userId: req.user.id });
+    const resume = await Resume.findOne({ _id: req.params.id, userId: req.user._id || req.user.id });
     if (!resume) {
       return res.status(404).json({ success: false, message: 'Resume not found' });
     }
@@ -42,7 +42,7 @@ exports.getResume = async (req, res) => {
 exports.updateResume = async (req, res) => {
   try {
     const resume = await Resume.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
+      { _id: req.params.id, userId: req.user._id || req.user.id },
       req.body,
       { new: true, runValidators: true }
     );
@@ -57,7 +57,7 @@ exports.updateResume = async (req, res) => {
 
 exports.deleteResume = async (req, res) => {
   try {
-    const resume = await Resume.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    const resume = await Resume.findOneAndDelete({ _id: req.params.id, userId: req.user._id || req.user.id });
     if (!resume) {
       return res.status(404).json({ success: false, message: 'Resume not found' });
     }
@@ -68,41 +68,26 @@ exports.deleteResume = async (req, res) => {
 };
 
 exports.importResume = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'Please upload a file' });
+  }
+
+  const filePath = req.file.path;
+
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'Please upload a file' });
-    }
-
-    let text = '';
-    const filePath = req.file.path;
-    const mimeType = req.file.mimetype;
-
-    if (mimeType === 'application/pdf') {
-      const dataBuffer = fs.readFileSync(filePath);
-      const data = await pdfParse(dataBuffer);
-      text = data.text;
-    } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      const result = await mammoth.extractRawText({ path: filePath });
-      text = result.value;
-    } else {
-      fs.unlinkSync(filePath);
-      return res.status(400).json({ success: false, message: 'Only PDF and DOCX files are supported' });
-    }
-
-    // Clean up uploaded file
-    fs.unlinkSync(filePath);
+    const text = await extractTextFromFile(filePath, req.file.originalname);
+    cleanup(filePath);
 
     if (!text || text.trim().length === 0) {
       return res.status(400).json({ success: false, message: 'Could not extract text from the file' });
     }
 
-    // Call AI service to parse
     const parsedData = await aiService.parseResumeToJson(text);
-
     res.status(200).json({ success: true, data: parsedData });
   } catch (error) {
+    cleanup(filePath);
     console.error('Import Resume Error:', error);
-    res.status(500).json({ success: false, message: 'Error importing resume' });
+    res.status(500).json({ success: false, message: error.message || 'Error importing resume' });
   }
 };
 

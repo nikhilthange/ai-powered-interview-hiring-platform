@@ -33,17 +33,20 @@ const handleMulterError = (err) => {
 };
 
 const sendErrorJSON = (err, req, res) => {
+  const statusCode = err.statusCode || 500;
+  const status = err.status || (statusCode >= 400 && statusCode < 500 ? 'fail' : 'error');
   const response = {
     success: false,
+    status,
     message: err.isOperational ? err.message : 'Something went wrong internally.',
-    statusCode: err.statusCode || 500
+    statusCode
   };
   if (err.code) response.code = err.code;
   if (err.errors) response.errors = err.errors;
   if (process.env.NODE_ENV === 'development' && !err.isOperational) {
     response.error = err.stack || err.message;
   }
-  return res.status(err.statusCode || 500).json(response);
+  return res.status(statusCode).json(response);
 };
 
 module.exports = (err, req, res, next) => {

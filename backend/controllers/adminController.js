@@ -224,10 +224,24 @@ exports.getRecruiters = asyncHandler(async (req, res, next) => {
   const profileMap = new Map(profiles.map(p => [p.userId.toString(), p]));
   const jobsCounts = await Job.aggregate([{ $match: { recruiterId: { $in: userIds } } }, { $group: { _id: '$recruiterId', count: { $sum: 1 } } }]);
   const jobCountMap = new Map(jobsCounts.map(j => [j._id.toString(), j.count]));
-  const appCounts = await Application.aggregate([{ $match: { jobId: { $in: (await Job.find({ recruiterId: { $in: userIds } }).select('_id').lean()).map(j => j._id) } } }, { $group: { _id: '$jobId', count: { $sum: 1 } } }]);
+  
+  const recruiterJobs = await Job.find({ recruiterId: { $in: userIds } }).select('_id recruiterId').lean();
+  const jobToRecruiterMap = new Map(recruiterJobs.map(j => [j._id.toString(), j.recruiterId.toString()]));
+  const appCounts = await Application.aggregate([
+    { $match: { jobId: { $in: recruiterJobs.map(j => j._id) } } },
+    { $group: { _id: '$jobId', count: { $sum: 1 } } }
+  ]);
+  const recruiterAppMap = new Map();
+  appCounts.forEach(a => {
+    const rId = jobToRecruiterMap.get(a._id.toString());
+    if (rId) {
+      recruiterAppMap.set(rId, (recruiterAppMap.get(rId) || 0) + a.count);
+    }
+  });
+
   const enriched = users.map(u => {
     const p = profileMap.get(u._id.toString());
-    const totalApps = appCounts.filter(a => { return true; }).reduce((s, a) => s + a.count, 0);
+    const totalApps = recruiterAppMap.get(u._id.toString()) || 0;
     return { _id: u._id, name: u.name, email: u.email, createdAt: u.createdAt, isEmailVerified: u.isEmailVerified, companyName: p?.company?.name || '', isVerified: p?.company?.isVerified || false, avatarUrl: p?.avatarUrl || '', jobsPosted: jobCountMap.get(u._id.toString()) || 0, totalApplications: totalApps };
   });
   res.json({ status: 'success', results: enriched.length, totalPages: Math.ceil(total / limit), total, data: { recruiters: enriched, pagination: { page, limit, totalPages: Math.ceil(total / limit), totalItems: total, hasNextPage: page < Math.ceil(total / limit), hasPrevPage: page > 1 } } });
@@ -313,8 +327,11 @@ exports.getAiConfig = asyncHandler(async (req, res) => {
 
 exports.updateAiConfig = asyncHandler(async (req, res) => {
   const { provider } = req.body;
-  if (!provider || !['mock', 'nvidia'].includes(provider)) throw new AppError('Provider must be one of: mock, nvidia', 400);
-  await aiService.setProvider(provider);
+  const allowed = ['mock', 'nvidia', 'gemini', 'openai'];
+  if (!provider || !allowed.includes(provider.toLowerCase())) {
+    throw new AppError(`Provider must be one of: ${allowed.join(', ')}`, 400);
+  }
+  await aiService.setProvider(provider.toLowerCase());
   await logAdminAction(req, 'ai_provider_changed', null, 'config', { provider });
   res.json({ status: 'success', message: `AI provider switched to ${provider}.`, data: { provider } });
 });

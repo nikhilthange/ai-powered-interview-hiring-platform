@@ -168,7 +168,7 @@ exports.getJobApplications = asyncHandler(async (req, res, next) => {
  */
 exports.updateApplicationStatus = asyncHandler(async (req, res, next) => {
   const { status } = req.body;
-  const validStatuses = ['Applied', 'Reviewing', 'Shortlisted', 'Interview Scheduled', 'Rejected', 'Hired'];
+  const validStatuses = ['Applied', 'Reviewing', 'Shortlisted', 'Interview Scheduled', 'Technical Round', 'HR Round', 'Offered', 'Rejected', 'Hired'];
   if (!validStatuses.includes(status)) {
     return next(new AppError(`Invalid status. Must be one of: ${validStatuses.join(', ')}`, 400));
   }

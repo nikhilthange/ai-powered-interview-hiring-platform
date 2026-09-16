@@ -633,7 +633,33 @@ Requirements: ${requirements.join(', ')}`;
     ], { temperature: 0.3, maxTokens: 30 });
   }
 
-  async generateChatStream({ messages = [], context = {} }) {
+  async stream(messages, callbacks, options = {}) {
+    const providers = this.getProviderOrder();
+    let lastError;
+
+    for (const provider of providers) {
+      try {
+        switch (provider) {
+          case 'gemini':
+            return await this.geminiStream(messages, callbacks, options);
+          case 'openai':
+            return await this.openaiStream(messages, callbacks, options);
+          case 'nvidia':
+            return await this.nvidiaStream(messages, callbacks, options);
+        }
+      } catch (err) {
+        lastError = err;
+        console.warn(`[AIProvider] ${provider} stream failed: ${err.message}`);
+      }
+    }
+
+    if (callbacks?.onError) {
+      callbacks.onError(lastError || new Error('All AI streaming providers failed.'));
+    }
+    throw new Error(`All AI streaming providers failed. Last error: ${lastError?.message}`);
+  }
+
+  async generateChatStream({ messages = [], context = {} }, callbacks, options = {}) {
     const systemParts = ['You are an expert AI Career Assistant for a hiring platform.'];
     if (context?.type === 'resume' && context.resumeText) {
       systemParts.push(`\n\nThe user's resume:\n${context.resumeText}`);
@@ -643,14 +669,146 @@ Requirements: ${requirements.join(', ')}`;
     }
     const systemMsg = { role: 'system', content: systemParts.join('\n') };
 
-    const activeProvider = this.activeProvider;
-    if (activeProvider === 'gemini' && this.geminiApiKey) {
-      return this.geminiStream([systemMsg, ...messages]);
+    return this.stream([systemMsg, ...messages], callbacks, options);
+  }
+
+  async geminiStream(messages, callbacks, options = {}) {
+    const { temperature = 0.7, maxTokens = 2048 } = options;
+    const { onChunk, onDone, onError } = callbacks || {};
+
+    if (!this.geminiApiKey) throw new Error('Gemini API key not configured');
+
+    const systemMsg = messages.find(m => m.role === 'system');
+    const userMessages = messages.filter(m => m.role !== 'system');
+    const contents = userMessages.map(m => ({ parts: [{ text: m.content }] }));
+
+    const body = {
+      contents,
+      generationConfig: { temperature, maxOutputTokens: maxTokens }
+    };
+
+    if (systemMsg) {
+      body.systemInstruction = { parts: [{ text: systemMsg.content }] };
     }
-    if (activeProvider === 'openai' && this.openaiApiKey) {
-      return this.openaiStream([systemMsg, ...messages]);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    let fullContent = '';
+
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:streamGenerateContent?alt=sse&key=${this.geminiApiKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) throw new Error(`Gemini API stream error (${response.status})`);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || !trimmed.startsWith('data: ')) continue;
+          const data = trimmed.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            if (content) {
+              fullContent += content;
+              if (onChunk) onChunk(content);
+            }
+          } catch {}
+        }
+      }
+
+      if (onDone) onDone(fullContent);
+      return fullContent;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (onError) onError(err);
+      throw err;
     }
-    return this.nvidiaStream([systemMsg, ...messages]);
+  }
+
+  async openaiStream(messages, callbacks, options = {}) {
+    const { temperature = 0.7, maxTokens = 2048 } = options;
+    const { onChunk, onDone, onError } = callbacks || {};
+
+    if (!this.openaiApiKey) throw new Error('OpenAI API key not configured');
+
+    const body = {
+      model: this.openaiModel,
+      messages,
+      temperature,
+      max_tokens: maxTokens,
+      stream: true
+    };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    let fullContent = '';
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.openaiApiKey}`
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) throw new Error(`OpenAI API stream error (${response.status})`);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || !trimmed.startsWith('data: ')) continue;
+          const data = trimmed.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices?.[0]?.delta?.content || '';
+            if (content) {
+              fullContent += content;
+              if (onChunk) onChunk(content);
+            }
+          } catch {}
+        }
+      }
+
+      if (onDone) onDone(fullContent);
+      return fullContent;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (onError) onError(err);
+      throw err;
+    }
   }
 
   async nvidiaStream(messages, callbacks, options = {}) {

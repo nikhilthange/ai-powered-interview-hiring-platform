@@ -24,7 +24,7 @@ exports.globalSearch = catchAsync(async (req, res, next) => {
   // Prepare parallel queries
   // 1. Search Jobs (title, location)
   const jobsPromise = Job.find({
-    status: 'active',
+    status: { $in: ['Active', 'active'] },
     $or: [
       { title: queryRegex },
       { location: queryRegex }
@@ -68,7 +68,7 @@ exports.globalSearch = catchAsync(async (req, res, next) => {
   // 4. Search Skills
   // We can search the distinct skills in profiles and jobs
   const profileSkillsPromise = Profile.distinct('skills', { skills: queryRegex });
-  const jobSkillsPromise = Job.distinct('skillsRequired', { skillsRequired: queryRegex });
+  const jobSkillsPromise = Job.distinct('requirements', { requirements: queryRegex });
 
   // Execute all promises in parallel
   const [jobs, companies, users, profileSkills, jobSkills] = await Promise.all([

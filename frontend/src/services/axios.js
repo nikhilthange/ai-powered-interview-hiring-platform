@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
 
 const api = axios.create({
   baseURL: API_URL,
@@ -10,12 +10,23 @@ const api = axios.create({
   },
 })
 
-let inMemoryAccessToken = null
+let inMemoryAccessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
 let isRefreshing = false
 let failedQueue = []
 
+if (inMemoryAccessToken) {
+  api.defaults.headers.common.Authorization = `Bearer ${inMemoryAccessToken}`
+}
+
 export const setAccessToken = (token) => {
   inMemoryAccessToken = token
+  if (typeof window !== 'undefined') {
+    if (token) {
+      localStorage.setItem('accessToken', token)
+    } else {
+      localStorage.removeItem('accessToken')
+    }
+  }
   if (token) {
     api.defaults.headers.common.Authorization = `Bearer ${token}`
   } else {
@@ -23,7 +34,7 @@ export const setAccessToken = (token) => {
   }
 }
 
-export const getAccessToken = () => inMemoryAccessToken
+export const getAccessToken = () => inMemoryAccessToken || (typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null)
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
@@ -86,9 +97,6 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null)
         setAccessToken(null)
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-          window.location.href = '/login'
-        }
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false

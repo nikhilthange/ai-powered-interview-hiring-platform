@@ -15,7 +15,10 @@ exports.analyzeGithubUser = catchAsync(async (req, res, next) => {
     return next(new AppError('GitHub username is required', 400));
   }
 
-  const cleanUser = username.replace('https://github.com/', '').replace('/', '').trim();
+  const cleanUser = username
+    .replace(/^https?:\/\/(www\.)?github\.com\//i, '')
+    .replace(/[\/\s]+$/g, '')
+    .trim();
 
   let userProfile = {};
   let userRepos = [];
@@ -27,8 +30,10 @@ exports.analyzeGithubUser = catchAsync(async (req, res, next) => {
   }
 
   try {
-    userProfile = await githubFetch(`https://api.github.com/users/${cleanUser}`, githubHeaders);
-    userRepos = await githubFetch(`https://api.github.com/users/${cleanUser}/repos?sort=updated&per_page=10`, githubHeaders);
+    const profileRes = await githubFetch(`https://api.github.com/users/${cleanUser}`, githubHeaders);
+    userProfile = (profileRes && typeof profileRes === 'object' && !profileRes.message) ? profileRes : {};
+    const reposRes = await githubFetch(`https://api.github.com/users/${cleanUser}/repos?sort=updated&per_page=10`, githubHeaders);
+    userRepos = Array.isArray(reposRes) ? reposRes : [];
   } catch (err) {
     console.warn(`GitHub API request for ${cleanUser} failed: ${err?.message}`);
   }
@@ -42,8 +47,9 @@ exports.analyzeGithubUser = catchAsync(async (req, res, next) => {
     console.warn(`[githubAnalyzer] Events fetch failed: ${err.message}`);
   }
 
-  const reposList = userRepos.map(r => ({
-    name: r.name,
+  const safeRepos = Array.isArray(userRepos) ? userRepos : [];
+  const reposList = safeRepos.map(r => ({
+    name: r.name || 'Repository',
     desc: r.description || 'Public GitHub Repository',
     stars: r.stargazers_count || 0,
     forks: r.forks_count || 0,

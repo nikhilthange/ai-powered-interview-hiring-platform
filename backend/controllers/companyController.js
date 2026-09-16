@@ -3,6 +3,7 @@ const User = require('../models/User');
 const catchAsync = require('../utils/asyncHandler');
 const AppError = require('../utils/appError');
 const upload = require('../middleware/uploadImageMiddleware');
+const cacheService = require('../services/cacheService');
 
 // Handle multiple file uploads for company
 exports.uploadCompanyImages = upload.fields([
@@ -154,8 +155,6 @@ exports.getAllCompanies = catchAsync(async (req, res, next) => {
     data: { companies }
   });
 });
-
-const cacheService = require('../services/cacheService');
 
 exports.getCompanyById = catchAsync(async (req, res, next) => {
   const cacheKey = `company:${req.params.id}`;

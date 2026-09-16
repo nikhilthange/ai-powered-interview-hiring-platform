@@ -6,25 +6,52 @@ import { useLayout } from '../../context/LayoutContext'
 import { cn } from '../../lib/utils'
 import { LayoutDashboard, Sparkles, Bell, User, Search } from 'lucide-react'
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/jobs', label: 'Jobs', icon: Search },
-  { to: '/resume-analyzer', label: 'AI', icon: Sparkles },
-  { to: '/notifications', label: 'Alerts', icon: Bell },
-  { to: '/profile', label: 'Profile', icon: User },
-]
-
 export default function BottomNav() {
-  const { isAuthenticated } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const { unreadCount } = useNotifications()
   const { sidebarOpen } = useLayout()
   const location = useLocation()
 
   if (!isAuthenticated) return null
 
+  const getDashboardPath = () => {
+    if (user?.role === 'recruiter') return '/recruiter/dashboard'
+    if (user?.role === 'admin') return '/admin/dashboard'
+    return '/dashboard'
+  }
+
+  const getJobsPath = () => {
+    if (user?.role === 'recruiter') return '/recruiter/my-jobs'
+    if (user?.role === 'admin') return '/admin/jobs'
+    return '/jobs'
+  }
+
+  const getAIPath = () => {
+    if (user?.role === 'recruiter') return '/recruiter/ai-interview-assistant'
+    if (user?.role === 'admin') return '/admin/ai-config'
+    return '/resume-analyzer'
+  }
+
+  const getProfilePath = () => {
+    if (user?.role === 'recruiter') return '/recruiter/profile'
+    if (user?.role === 'admin') return '/admin/settings'
+    return '/profile'
+  }
+
+  const navItems = [
+    { to: getDashboardPath(), label: 'Dashboard', icon: LayoutDashboard },
+    { to: getJobsPath(), label: user?.role === 'recruiter' ? 'My Jobs' : 'Jobs', icon: Search },
+    { to: getAIPath(), label: 'AI', icon: Sparkles },
+    { to: user?.role === 'admin' ? '/admin/notifications' : '/notifications', label: 'Alerts', icon: Bell },
+    { to: getProfilePath(), label: user?.role === 'admin' ? 'Settings' : 'Profile', icon: User },
+  ]
+
   const isActive = (path) => {
-    if (path === '/profile') {
-      return location.pathname === '/profile' || location.pathname === '/recruiter/profile'
+    if (path === '/profile' || path === '/recruiter/profile' || path === '/admin/settings') {
+      return location.pathname === '/profile' || location.pathname === '/recruiter/profile' || location.pathname === '/admin/settings'
+    }
+    if (path === '/dashboard' || path === '/recruiter/dashboard' || path === '/admin/dashboard') {
+      return location.pathname === '/dashboard' || location.pathname === '/recruiter/dashboard' || location.pathname === '/admin/dashboard'
     }
     return location.pathname === path || location.pathname.startsWith(path + '/')
   }

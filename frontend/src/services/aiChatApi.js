@@ -1,4 +1,4 @@
-import api from './axios'
+import api, { getAccessToken } from './axios'
 
 export const aiChatApi = {
   getConversations: () => api.get('/ai-chat/conversations').then(r => r.data?.data?.conversations || []),
@@ -16,15 +16,20 @@ export const aiChatApi = {
   getMessages: (id) => api.get(`/ai-chat/conversations/${id}/messages`).then(r => r.data?.data?.messages || []),
 
   sendMessageStream: (id, content, { onChunk, onDone, onError, signal } = {}) => {
-    const token = localStorage.getItem('accessToken')
-    const API_URL = import.meta.env.VITE_API_URL || '/api/v1'
+    const token = getAccessToken() || localStorage.getItem('accessToken')
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
 
     return fetch(`${API_URL}/ai-chat/conversations/${id}/messages`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
+      headers,
+      credentials: 'include',
       body: JSON.stringify({ content }),
       signal
     }).then(async (response) => {

@@ -1,4 +1,18 @@
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? new URL(import.meta.env.VITE_API_URL).origin : '');
+import { getAccessToken } from './axios';
+
+const getSocketUrl = () => {
+  if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
+  if (import.meta.env.VITE_API_URL) {
+    try {
+      return new URL(import.meta.env.VITE_API_URL).origin;
+    } catch {
+      return 'http://localhost:5000';
+    }
+  }
+  return 'http://localhost:5000';
+};
+
+const SOCKET_URL = getSocketUrl();
 
 let socket = null
 let ioModule = null
@@ -9,13 +23,17 @@ export function getSocket() {
 
 async function refreshTokenAndReconnect() {
   try {
-    const { default: api } = await import('./axios')
+    const { default: api, setAccessToken } = await import('./axios')
     const response = await api.post('/auth/refresh', {}, { withCredentials: true })
-    const newToken = response.data.accessToken
-    localStorage.setItem('accessToken', newToken)
-    return newToken
+    const newToken = response.data?.accessToken || response.data?.data?.accessToken
+    if (newToken) {
+      setAccessToken(newToken)
+      return newToken
+    }
+    return null
   } catch {
-    localStorage.removeItem('accessToken')
+    const { setAccessToken } = await import('./axios')
+    setAccessToken(null)
     window.location.href = '/login'
     return null
   }
@@ -35,8 +53,10 @@ export async function connectSocket() {
     socket = null
   }
 
+  const token = getAccessToken() || localStorage.getItem('accessToken')
+
   socket = ioModule(SOCKET_URL, {
-    auth: { token: localStorage.getItem('accessToken') },
+    auth: { token },
     transports: ['websocket', 'polling'],
     withCredentials: true,
     reconnection: true,

@@ -32,6 +32,7 @@ const sendRefreshTokenCookie = (res, token) => {
   const cookieOptions = {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days matching token duration
     httpOnly: true,
+    path: '/',
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   };
@@ -208,11 +209,19 @@ exports.refreshToken = asyncHandler(async (req, res, next) => {
     .update(refreshToken)
     .digest('hex');
 
-  // 3. Find user matching token
-  const user = await User.findOne({
+  // 3. Find user matching current token or previous token within grace period (30s)
+  let user = await User.findOne({
     _id: decoded.id,
     refreshToken: hashedRefreshToken
   });
+
+  if (!user) {
+    user = await User.findOne({
+      _id: decoded.id,
+      previousRefreshToken: hashedRefreshToken,
+      previousRefreshTokenExpires: { $gt: new Date() }
+    });
+  }
 
   if (!user) {
     return next(new AppError('Token reuse detected or session invalid. Please login again.', 401));
@@ -222,12 +231,14 @@ exports.refreshToken = asyncHandler(async (req, res, next) => {
   const newAccessToken = signAccessToken(user._id);
   const newRefreshToken = signRefreshToken(user._id);
 
-  // Save new hashed Refresh Token
+  // Save new hashed Refresh Token and store previous in grace window
   const newHashedRefreshToken = crypto
     .createHash('sha256')
     .update(newRefreshToken)
     .digest('hex');
 
+  user.previousRefreshToken = user.refreshToken || hashedRefreshToken;
+  user.previousRefreshTokenExpires = new Date(Date.now() + 30 * 1000);
   user.refreshToken = newHashedRefreshToken;
   await user.save({ validateBeforeSave: false });
 
@@ -334,8 +345,8 @@ exports.logout = asyncHandler(async (req, res, next) => {
         .update(refreshToken)
         .digest('hex');
       await User.findOneAndUpdate(
-        { _id: decoded.id, refreshToken: hashedRefreshToken },
-        { $unset: { refreshToken: 1 } }
+        { _id: decoded.id },
+        { $unset: { refreshToken: 1, previousRefreshToken: 1, previousRefreshTokenExpires: 1 } }
       );
     } catch {
       // Token invalid/expired — cookie will be cleared below
@@ -345,6 +356,7 @@ exports.logout = asyncHandler(async (req, res, next) => {
   // 2. Invalidate refresh token cookie on the client
   res.clearCookie('refreshToken', {
     httpOnly: true,
+    path: '/',
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   });

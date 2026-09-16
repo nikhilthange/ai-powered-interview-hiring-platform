@@ -21,7 +21,9 @@ const sendEmail = async ({ to, subject, html, text, template, metadata }) => {
   const logEntry = await EmailLog.create({
     to,
     subject,
-    template,
+    template: template || 'custom',
+    html: html || '',
+    text: text || '',
     status: 'pending',
     metadata
   });
@@ -210,7 +212,8 @@ const retryFailedEmails = async () => {
         from: process.env.SMTP_FROM || 'no-reply@ai-powered-interview.com',
         to: log.to,
         subject: log.subject,
-        html: ''
+        text: log.text || '',
+        html: log.html || (log.text ? `<div style="font-family:sans-serif;">${log.text.replace(/\n/g, '<br>')}</div>` : '')
       });
 
       log.status = 'sent';

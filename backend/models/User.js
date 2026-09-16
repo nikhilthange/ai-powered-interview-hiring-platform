@@ -42,6 +42,14 @@ const UserSchema = new mongoose.Schema({
     type: String,
     select: false // Do not return in standard user queries
   },
+  previousRefreshToken: {
+    type: String,
+    select: false
+  },
+  previousRefreshTokenExpires: {
+    type: Date,
+    select: false
+  },
   followingCompanies: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'

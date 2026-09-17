@@ -116,21 +116,21 @@ app.use(cookieParser()); // Cookie parser to process refresh cookies
 app.use(mongoSanitize()); // Prevent NoSQL query injection (e.g. email: { $ne: null })
 
 // Recursively sanitize all string values in req.body, req.query, req.params against XSS
-function sanitizeObject(val) {
-  if (Array.isArray(val)) return val.map(sanitizeObject);
-  if (typeof val === 'object' && val !== null) {
-    const out = {};
-    for (const key of Object.keys(val)) out[key] = sanitizeObject(val[key]);
-    return out;
+function sanitizeInPlace(obj) {
+  if (!obj || typeof obj !== 'object') return;
+  for (const key of Object.keys(obj)) {
+    if (typeof obj[key] === 'string') {
+      obj[key] = xss(obj[key]);
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      sanitizeInPlace(obj[key]);
+    }
   }
-  if (typeof val === 'string') return xss(val);
-  return val;
 }
 
 const xssSanitizer = (req, res, next) => {
-  if (req.body) req.body = sanitizeObject(req.body);
-  if (req.query) req.query = sanitizeObject(req.query);
-  if (req.params) req.params = sanitizeObject(req.params);
+  if (req.body) sanitizeInPlace(req.body);
+  if (req.query) sanitizeInPlace(req.query);
+  if (req.params) sanitizeInPlace(req.params);
   next();
 };
 app.use(xssSanitizer);

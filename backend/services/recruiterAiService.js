@@ -4,8 +4,9 @@ exports.generateJobDescription = async (prompt, title) => {
   return aiProvider.generateJobDescription({ prompt, title });
 };
 
-exports.generateInterviewQuestions = async (title, description, requirements, experienceLevel) => {
-  const prompt = `Job Title: ${title}\nDescription: ${description}\nRequirements: ${requirements.join(', ')}\nExperience Level: ${experienceLevel}`;
+exports.generateInterviewQuestions = async (title, description, requirements = [], experienceLevel = 'Mid') => {
+  const reqStr = Array.isArray(requirements) ? requirements.join(', ') : (requirements || '');
+  const prompt = `Job Title: ${title}\nDescription: ${description}\nRequirements: ${reqStr}\nExperience Level: ${experienceLevel}`;
   const result = await aiProvider.generateInterviewQuestions({ jobDescription: prompt });
   const questions = Array.isArray(result) ? result : (result.questions || []);
   return {
@@ -35,7 +36,7 @@ exports.rankApplicants = async (applications, jobDescription) => {
   return Array.isArray(result) ? result.map((c, idx) => ({ ...c, rank: idx + 1 })) : [];
 };
 
-exports.suggestSalaryRange = async (title, description, requirements, location, experienceLevel) => {
+exports.suggestSalaryRange = async (title, description, requirements = [], location = 'Remote', experienceLevel = 'Mid') => {
   return aiProvider.suggestSalary({ title, description, requirements, location, experienceLevel });
 };
 
@@ -61,8 +62,9 @@ exports.generateRejectionEmail = async (candidateName, jobTitle, companyName, re
   };
 };
 
-exports.generateTechnicalAssignment = async (title, description, requirements, experienceLevel) => {
-  const prompt = `Create a technical assignment for a ${experienceLevel} ${title} position. Requirements: ${requirements.join(', ')}. Description: ${description}`;
+exports.generateTechnicalAssignment = async (title, description, requirements = [], experienceLevel = 'Mid') => {
+  const reqStr = Array.isArray(requirements) ? requirements.join(', ') : (requirements || '');
+  const prompt = `Create a technical assignment for a ${experienceLevel} ${title} position. Requirements: ${reqStr}. Description: ${description}`;
   const result = await aiProvider.generateJobDescription({ prompt, title });
   return {
     title: `${title} - Technical Assessment`,

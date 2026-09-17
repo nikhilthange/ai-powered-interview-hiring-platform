@@ -108,8 +108,8 @@ const globalLimiter = rateLimit({
 app.use('/api', globalLimiter);
 
 // 2. Data Parsing Middlewares
-app.use(express.json({ limit: '100kb' })); // Body parser
-app.use(express.urlencoded({ extended: true, limit: '100kb' }));
+app.use(express.json({ limit: '10mb' })); // Body parser
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser()); // Cookie parser to process refresh cookies
 
 // 3. Security Data Sanitization Middlewares

@@ -2,7 +2,8 @@
  * Caching Service with Memory Fallback
  */
 class CacheService {
-  constructor() {
+  constructor(maxSize = 1000) {
+    this.maxSize = maxSize;
     this.memoryCache = new Map();
     this.ttlMap = new Map();
   }
@@ -20,6 +21,14 @@ class CacheService {
   }
 
   async set(key, value, ttlSeconds = 600) {
+    // Evict oldest entry if capacity limit is reached
+    if (this.memoryCache.size >= this.maxSize) {
+      const oldestKey = this.memoryCache.keys().next().value;
+      if (oldestKey) {
+        this.memoryCache.delete(oldestKey);
+        this.ttlMap.delete(oldestKey);
+      }
+    }
     this.memoryCache.set(key, value);
     this.ttlMap.set(key, Date.now() + ttlSeconds * 1000);
     return true;
